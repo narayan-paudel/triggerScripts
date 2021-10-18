@@ -1,0 +1,24 @@
+##############################
+## submit description file
+#############################
+
+Universe = vanilla
+Executable = /home/enpaudel/icecube/triggerStudy/scripts/runDetectorCluster.sh
+Log        = /scratch/enpaudel/log/trigStudy$(Process).log
+Output     = /data/user/enpaudel/triggerStudy/log/trigStudy$(Process).output
+Error      = /data/user/enpaudel/triggerStudy/log/trigStudy$(Process).error
+request_cpus = 1
+request_memory = 3GB
+request_disk = 1GB
+#request_gpus = 1
+#should_transfer_files   = IF_NEEDED
+#when_to_transfer_output = ON_EXIT
+#notification = Complete
+#notify_user = <email-address>
+#priority = <integer>
+##long job
+#+AccountingGroup="long.$ENV(USER)" #other options 1_week, 2_week,
+#set arguments to executable
+arguments = $(Item)
+
+queue 1

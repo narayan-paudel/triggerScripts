@@ -1,0 +1,25 @@
+########################################
+## submit description file
+########################################
+
+Universe   = vanilla
+Executable = /home/enpaudel/icecube/triggerStudy/scripts/runDetectorCluster.sh
+Log        = /scratch/enpaudel/log/trigStudyDAT003000.log
+Output     = /data/user/enpaudel/triggerStudy/log/trigStudyDAT003000.out
+Error      = /data/user/enpaudel/triggerStudy/log/trigStudyDAT003000.err
+request_cpus = 1
+request_memory = 4GB
+request_disk = 1GB
+#request_gpus = 1
+#should_transfer_files   = IF_NEEDED
+#when_to_transfer_output = ON_EXIT
+#notification = Complete
+#notify_user = <email-address>
+#priority = <integer>
+##long job
++AccountingGroup="1_week.$ENV(USER)" 
+
+#set arguments to executable
+arguments = /data/sim/IceTop/2009/generated/CORSIKA-ice-top/10410/7.9/DAT003000.bz2
+
+queue 1
