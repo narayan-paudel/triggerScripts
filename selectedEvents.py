@@ -233,7 +233,7 @@ def AddTotalTankHit(frame,pulseseriesList):
 		frame[str(pulseseries)+"TotalHit"] = dataclasses.I3Double(NCh)
 		# print("No. of Hits in ",pulseseries,NCh,len(channels),frame[str(pulseseries)+"TotalTankHit"])
 
-def AddSLCHLCTankHitDuration(frame,pulseseriesList):
+def AddTimeSLCHLCTankHit(frame,pulseseriesList):
 	'''calculates total SLC or HLC charges in tank pulses
 	keys:[OfflineIceTopHLCTankPulses,OfflineIceTopSLCTankPulses,OfflineIceTopHLCVEMPulses,OfflineIceTopSLCVEMPulses]
 	'''
@@ -255,11 +255,39 @@ def AddSLCHLCTankHitDuration(frame,pulseseriesList):
 			frame[str(pulseseries)+"HitTimeDuration"] = dataclasses.I3Double(-1*timeList[0])
 		else:
 			frame[str(pulseseries)+"HitTimeDuration"] = dataclasses.I3Double(max(timeList)-min(timeList))
-			if frame[str(pulseseries)+"HitTimeDuration"] > 1000000000:
+			if frame[str(pulseseries)+"HitTimeDuration"] > 10**6:
+				frame["UnusualTime"] = dataclasses.I3Double(max(timeList)-min(timeList))
 				print("Yell that there is  a problem", frame[str(pulseseries)+"HitTimeDuration"],max(timeList),min(timeList),"in file",fileName,"event",frame["I3EventHeader"],frame["I3EventHeader"].event_id)
-		# print("time interval",frame[str(pulseseries)+"HitTimeInterval"])
-		# print("No. of Hits in ",pulseseries,NCh,len(channels),frame[str(pulseseries)+"TotalTankHit"])
+	if frame.Has("UnusualTime"):
+		return True
+	else:
+		return False
+nEvt = 0
+def writeSelectedEvents(frame):
+	'''calculates total SLC or HLC charges in tank pulses
+	keys:[OfflineIceTopHLCTankPulses,OfflineIceTopSLCTankPulses,OfflineIceTopHLCVEMPulses,OfflineIceTopSLCVEMPulses]
+	'''
+	global nEvt
+	nEvt += 1
+	if frame.Has("IceTopPulses"):
+		omList = []
+		hitTimeList = []
+		chargesList = []
+		psm = dataclasses.I3RecoPulseSeriesMap.from_frame(frame,"IceTopPulses")
+		for om, pulses in psm:
+			for pulse in pulses:
+				omList.append(om)
+				hitTimeList.append(pulse.time)
+				chargesList.append(pulse.charge)
+		# with open("../selectedEvtIceTopPulses"+str(nEvt)+".txt","w") as f:
+		# 	f.write("{0}, {1}, {2}\n".format("om","time [ns]","charge [vem]"))
+		# 	for (om,time,charge) in zip(omList,hitTimeList,chargesList):
+		# 		f.write("{0}, {1}, {2}\n".format(om,time,charge))
 
+
+def printKeyInFrames(frame):
+	for ikey in frame.keys():
+		print(ikey)
 
 
 tray = I3Tray()
@@ -291,84 +319,272 @@ tray.AddModule(AddTotalTankHit,"addHit",
 	           pulseseriesList=['OfflineIceTopSLCTankPulses','OfflineIceTopHLCTankPulses','OfflineIceTopSLCVEMPulses','OfflineIceTopHLCVEMPulses']
 	           # pulseseriesList=['OfflineIceTopHLCTankPulses']
 	           	)
-tray.AddModule(AddSLCHLCTankHitDuration,"addTime",
+tray.AddModule(AddTimeSLCHLCTankHit,"addTime",
 	           Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
 	           pulseseriesList=['OfflineIceTopSLCTankPulses','OfflineIceTopHLCTankPulses']
 	           # pulseseriesList=['OfflineIceTopHLCTankPulses']
 	           	)
-def addCleanSLCVemPulses(frame):
-	if frame.Has("OfflineIceTopSLCVEMPulses"):
-		psm = dataclasses.I3RecoPulseSeriesMap.from_frame(frame,"OfflineIceTopSLCVEMPulses")
-		cleanEvt = []
-		psmClean = dataclasses.I3RecoPulseSeriesMap()
+# keep_list = ["BeaconLaunches","I3Triggers","MCPrimary","ClusterCleaningExcludedTanks","OfflineIceTopHLCTankPulses",
+# 			"FilterMask_NullSplit0","PassedKeepSuperDSTOnly","CalibratedWaveformRange","I3EventHeader",
+# 			"OfflineIceTopHLCTankPulsesHitTimeDuration","InIceDSTPulses","PassedAnyFilter","I3MCPESeriesMap",
+# 			"I3Calibration","IceTopComponentPulses_Electron","I3VEMCalData","DSTTriggers","I3MCPulseSeriesMapParticleIDMap",
+# 			"BadDomsList","I3MCTree","I3SuperDST","QFilterMask","I3MCPulseSeriesMap","IceTopComponentPulses_ElectronFromChargedMesons",
+# 			"OfflineIceTopSLCVEMPulses","IceTopComponentPulses_Gamma","IceTopComponentPulses_GammaFromChargedMesons",
+# 			"TankPulseMergerExcludedTanks","IceTopComponentPulses_Muon","IceTopDSTPulses","IceTopPulses","IceTopRawData",
+# 			"I3MCPESeriesMapParticleIDMap","InIceRawData","PassedConventional","OfflineIceTopSLCVEMPulsesTotalHit",
+# 			"ExcludedSLCTanks","UncleanedInIcePulsesTimeRange","MCPrimaryInfo","CleanIceTopRawData","OfflineIceTopHLCVEMPulses",
+# 			"OfflineIceTopHLCVEMPulsesTotalCharge","IceTopComponentPulses_Hadron","InIcePulses","SimTrimmer","QTriggerHierarchy"]
+keep_list = ["I3Triggers","MCPrimary","ClusterCleaningExcludedTanks","OfflineIceTopHLCTankPulses",
+			"FilterMask_NullSplit0","PassedKeepSuperDSTOnly","CalibratedWaveformRange","I3EventHeader",
+			"OfflineIceTopHLCTankPulsesHitTimeDuration","InIceDSTPulses","PassedAnyFilter","I3MCPESeriesMap",
+			"I3Calibration","IceTopComponentPulses_Electron","I3VEMCalData","DSTTriggers","I3MCPulseSeriesMapParticleIDMap",
+			"BadDomsList","I3MCTree","I3SuperDST","QFilterMask","I3MCPulseSeriesMap","IceTopComponentPulses_ElectronFromChargedMesons",
+			"OfflineIceTopSLCVEMPulses","IceTopComponentPulses_Gamma","IceTopComponentPulses_GammaFromChargedMesons",
+			"TankPulseMergerExcludedTanks","IceTopComponentPulses_Muon","IceTopDSTPulses","IceTopPulses","IceTopRawData",
+			"I3MCPESeriesMapParticleIDMap","InIceRawData","PassedConventional","OfflineIceTopSLCVEMPulsesTotalHit",
+			"ExcludedSLCTanks","UncleanedInIcePulsesTimeRange","MCPrimaryInfo","CleanIceTopRawData","OfflineIceTopHLCVEMPulses",
+			"OfflineIceTopHLCVEMPulsesTotalCharge","IceTopComponentPulses_Hadron","InIcePulses","SimTrimmer","QTriggerHierarchy",
+			"MCPrimary","ITSMTTriggered","ITGlobalTriggered","OfflineIceTopHLCTankPulses","OfflineIceTopSLCTankPulses","OfflineIceTopSLCTankPulsesTotalCharge",
+			"OfflineIceTopHLCTankPulsesTotalCharge","OfflineIceTopHLCTankPulsesTotalHit","OfflineIceTopSLCTankPulsesTotalHit","OfflineIceTopHLCVEMPulses",
+			"OfflineIceTopSLCVEMPulses","OfflineIceTopSLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalHit",
+			"OfflineIceTopSLCVEMPulsesTotalHit","OfflineIceTopSLCTankPulsesHitTimeDuration","OfflineIceTopHLCTankPulsesHitTimeDuration","UnusualTime"
+			]
+
+# tray.AddModule(printKeyInFrames,'keys',
+# 				streams=[icetray.I3Frame.DAQ]
+# 				)
+# def haveUnusualTime(frame):
+# 	'''acts as  a simple filter
+# 	'''
+# 	if frame.Has("UnusualTime"):
+# 		return True
+# 	else:
+# 		return False
+
+# def haveHadronEvent(frame):
+# 	'''acts as  a simple filter
+# 	'''
+# 	if frame.Has("IceTopComponentPulses_Hadron"):
+# 		psm = dataclasses.I3RecoPulseSeriesMap.from_frame(frame,"IceTopComponentPulses_Hadron")
+# 		hadronEvt = []
+# 		triggeredHadronEvt = []
+# 		for omkey,pulses in psm:
+# 			for pulse in pulses:
+# 				if abs(pulse.charge - 0) > 0.1:
+# 					hadronEvt.append(omkey)
+# 					print("this event has hadron with key",omkey,pulse.charge,pulse.time)
+# 					if frame["ITSMTTriggered"]==dataclasses.I3Double(0):
+# 						print("trigger status",frame["ITSMTTriggered"])
+# 						triggeredHadronEvt.append(omkey)
+# 		if len(triggeredHadronEvt) > 0:
+# 			return True
+# 		else:
+# 			return False
+# 	else:
+# 		return False
+
+
+def haveHadronEvent(frame):
+	'''acts as  a simple filter
+	'''
+	if frame.Has("IceTopComponentPulses_Hadron"):
+		psm = dataclasses.I3RecoPulseSeriesMap.from_frame(frame,"IceTopComponentPulses_Hadron")
+		hadronEvt = []
 		for omkey,pulses in psm:
-			ps = dataclasses.I3RecoPulseSeries()
 			for pulse in pulses:
-				if pulse.time < 10.0**6.0:
-					ps.append(pulse)
-			if len(ps) > 0:
-				psmClean[omkey] = dataclasses.I3RecoPulseSeries(sorted(ps,
-            key=lambda pulse: pulse.time))
-		frame["ITCleanSLCVEMPulses"] = psmClean
+				if abs(pulse.charge - 0) > 0.1:
+					hadronEvt.append(omkey)
+					print("this event has hadron with key",omkey,pulse.charge,pulse.time)
+		if len(hadronEvt) > 0:
+			return True
+		else:
+			return False
+	else:
+		return False
 
-tray.AddModule(addCleanSLCVemPulses,"cleanSLCVEM",
-	streams=[icetray.I3Frame.DAQ])
+def haveElectronEvent(frame):
+	'''acts as  a simple filter
+	'''
+	if frame.Has("IceTopComponentPulses_Electron"):
+		psm = dataclasses.I3RecoPulseSeriesMap.from_frame(frame,"IceTopComponentPulses_Electron")
+		hadronEvt = []
+		for omkey,pulses in psm:
+			for pulse in pulses:
+				if abs(pulse.charge - 0) > 0.1:
+					hadronEvt.append(omkey)
+					print("this event has hadron with key",omkey,pulse.charge,pulse.time)
+		if len(hadronEvt) > 0:
+			return True
+		else:
+			return False
+	else:
+		return False
 
-tray.AddModule('I3HLCTankPulseMerger',"slcMerger",
-	           InputVEMPulses = 'ITCleanSLCVEMPulses',
-	           OutputTankPulses = 'ITCleanSLCTankPulses',
-	           ExcludedTanks  = 'ExcludedSLCTanksAfterCleaning')
+def haveMuonEvent(frame):
+	'''acts as  a simple filter
+	'''
+	if frame.Has("IceTopComponentPulses_Muon"):
+		psm = dataclasses.I3RecoPulseSeriesMap.from_frame(frame,"IceTopComponentPulses_Muon")
+		hadronEvt = []
+		for omkey,pulses in psm:
+			for pulse in pulses:
+				if abs(pulse.charge - 0) > 0.1:
+					hadronEvt.append(omkey)
+					print("this event has hadron with key",omkey,pulse.charge,pulse.time)
+		if len(hadronEvt) > 0:
+			return True
+		else:
+			return False
+	else:
+		return False
 
-tray.AddModule(AddTotalTankHit,"addCleanHit",
-	           Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	           pulseseriesList=['ITCleanSLCTankPulses']
-	           # pulseseriesList=['OfflineIceTopHLCTankPulses']
-	           	)
-tray.AddModule(AddSLCHLCTankHitDuration,"addTimeClean",
-	           Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	           pulseseriesList=['ITCleanSLCTankPulses']
-	           # pulseseriesList=['OfflineIceTopHLCTankPulses']
-	           	)
+def nonHadronEvent(frame):
+	'''acts as  a simple filter
+	'''
+	if frame.Has("IceTopComponentPulses_Hadron"):
+		psm = dataclasses.I3RecoPulseSeriesMap.from_frame(frame,"IceTopComponentPulses_Hadron")
+		hadronEvt = []
+		for omkey,pulses in psm:
+			for pulse in pulses:
+				if abs(pulse.charge - 0) > 0.1:
+					hadronEvt.append(omkey)
+					print("this event has hadron with key",omkey,pulse.charge,pulse.time)
+		if len(hadronEvt) > 0:
+			return False
+		else:
+			return True
+	else:
+		return True
+
+
+
+		
+def onlyTriggeredEvent(frame):
+	'''acts as  a simple filter
+	'''
+	if frame["ITSMTTriggered"]==dataclasses.I3Double(1):
+		return True
+	else:
+		return False
+
+def onlyNonTriggeredEvent(frame):
+	'''acts as  a simple filter
+	'''
+	if frame["ITSMTTriggered"]==dataclasses.I3Double(0):
+		return True
+	else:
+		return False
+def onlyProperTimeEvents(frame):
+	'''acts as  a simple filter
+	'''
+	if frame["OfflineIceTopSLCTankPulsesHitTimeDuration"] < 10.0**6:
+		return True
+	else:
+		return False
+
+def onlyImProperTimeEvents(frame):
+	'''acts as  a simple filter
+	'''
+	if frame["OfflineIceTopSLCTankPulsesHitTimeDuration"] >= 10.0**6:
+		return True
+	else:
+		return False
+
+def onlyProperTimeEventsHLC(frame):
+	'''acts as  a simple filter
+	'''
+	if frame["OfflineIceTopHLCTankPulsesHitTimeDuration"] < 5.0*10**3:
+		return True
+	else:
+		return False
+
+def onlyImProperTimeEventsHLC(frame):
+	'''acts as  a simple filter
+	'''
+	if frame["OfflineIceTopHLCTankPulsesHitTimeDuration"] >= 5.0*10**3:
+		return True
+	else:
+		return False
+
+
+# tray.AddModule(lambda frame : frame.Has("UnusualTime"),streams = [icetray.I3Frame.DAQ,icetray.I3Frame.Physics])
+
+# tray.AddModule("Keep","keep unusual time",
+#  	           keys = keep_list,
+#  	           If = haveUnusualTime,
+#  	           )
+# tray.AddModule(haveUnusualTime,"unusualTime",
+# 				streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
+# 				)
+# tray.AddModule(haveHadronEvent,"hadronEvent",
+# 				streams=[icetray.I3Frame.DAQ]
+# 				)
+# tray.AddModule(nonHadronEvent,"nonHadronEvent",
+# 				streams=[icetray.I3Frame.DAQ]
+# 				)
+# tray.AddModule(onlyNonTriggeredEvent,"nonTrigEvent",
+# 				streams=[icetray.I3Frame.DAQ]
+# 				)
+# tray.AddModule(onlyImProperTimeEvents,"ImpropTime",
+# 				streams=[icetray.I3Frame.DAQ]
+# 				)
+# tray.AddModule(onlyTriggeredEvent,"TrigEvent",
+# 				streams=[icetray.I3Frame.DAQ]
+# 				)
+# tray.AddModule(onlyImProperTimeEventsHLC,"ImpropTimeHLC",
+# 				streams=[icetray.I3Frame.DAQ]
+# 				)
+# tray.AddModule(onlyProperTimeEvents,"propTime",
+# 				streams=[icetray.I3Frame.DAQ]
+# 				)
+
+tray.AddModule(writeSelectedEvents,"selectedEvts",
+				streams=[icetray.I3Frame.DAQ]
+				)
+
 tray.AddModule("I3Writer","i3writer",
-	          filename=str(outputDir)+"trigChkTestSeparate/"+str(fileName)+"TrigCount.i3.gz",
-	          # streams=[icetray.I3Frame.DAQ],
-	          streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+	          # filename=str(outputDir)+"/hadronTimeTest/"+str(fileName)+"HadronNonTrigImProperTEvts.i3.gz",
+	          filename=str(outputDir)+"/hadronTimeTest/"+str(fileName)+"SelectedEvents.i3.gz",
+	          streams=[icetray.I3Frame.DAQ],
+	          # streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
 	          # streams=[icetray.I3Frame.Geometry,icetray.I3Frame.Calibration, icetray.I3Frame.DetectorStatus]
 	          )
 
 # tray.AddModule("I3NullSplitter","nullsplitter")
 
-tray.Add(hdfwriter.I3HDFWriter, 'hdfNull',
-    Output=str(outputDir)+"/trigChkTestSeparate/"+str(fileName)+"TrigCountNullSplit.hdf5",
-    CompressionLevel=9,
-    # SubEventStreams=['IceTopSplit'],
-    SubEventStreams=['NullSplit'],
-    # SubEventStreams=["nullsplitter",'IceTopSplit',"nullsplitter",'NullSplit',]
-    # SubEventStreams=["ice_top"],
-    # Streams=[icetray.I3Frame.DAQ],
-    keys = [
-    "MCPrimary","ITSMTTriggered","ITGlobalTriggered","OfflineIceTopHLCTankPulses","OfflineIceTopSLCTankPulses","OfflineIceTopSLCTankPulsesTotalCharge",
-    "OfflineIceTopHLCTankPulsesTotalCharge","OfflineIceTopHLCTankPulsesTotalHit","OfflineIceTopSLCTankPulsesTotalHit","OfflineIceTopHLCVEMPulses",
-    "OfflineIceTopSLCVEMPulses","OfflineIceTopSLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalHit",
-    "OfflineIceTopSLCVEMPulsesTotalHit","OfflineIceTopSLCTankPulsesHitTimeDuration","OfflineIceTopHLCTankPulsesHitTimeDuration",'ITCleanSLCTankPulsesHitTimeDuration','ITCleanSLCTankPulsesTotalHit'
-    ]
-    )
+# tray.Add(hdfwriter.I3HDFWriter, 'hdfNull',
+#     Output=str(outputDir)+"/selectedEvents/"+str(fileName)+"NullSelectedEvents.hdf5",
+#     # Output=str(outputDir)+"/selectedEvents/"+str(fileName)+"NullHadronNonTrigImProperTEvts.hdf5",
+#     CompressionLevel=9,
+#     # SubEventStreams=['IceTopSplit'],
+#     SubEventStreams=['NullSplit'],
+#     # SubEventStreams=["nullsplitter",'IceTopSplit',"nullsplitter",'NullSplit',]
+#     # SubEventStreams=["ice_top"],
+#     # Streams=[icetray.I3Frame.DAQ],
+#     keys = [
+#     "MCPrimary","ITSMTTriggered","ITGlobalTriggered","OfflineIceTopHLCTankPulses","OfflineIceTopSLCTankPulses","OfflineIceTopSLCTankPulsesTotalCharge",
+#     "OfflineIceTopHLCTankPulsesTotalCharge","OfflineIceTopHLCTankPulsesTotalHit","OfflineIceTopSLCTankPulsesTotalHit","OfflineIceTopHLCVEMPulses",
+#     "OfflineIceTopSLCVEMPulses","OfflineIceTopSLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalHit",
+#     "OfflineIceTopSLCVEMPulsesTotalHit","OfflineIceTopSLCTankPulsesHitTimeDuration","OfflineIceTopHLCTankPulsesHitTimeDuration"
+#     ]
+#     )
 
-tray.Add(hdfwriter.I3HDFWriter, 'hdfIce',
-    Output=str(outputDir)+"/trigChkTestSeparate/"+str(fileName)+"TrigCountIceTopSplit.hdf5",
-    CompressionLevel=9,
-    SubEventStreams=['IceTopSplit'],
-    # SubEventStreams=['NullSplit'],
-    # SubEventStreams=["nullsplitter",'IceTopSplit',"nullsplitter",'NullSplit',]
-    # SubEventStreams=["ice_top"],
-    # Streams=[icetray.I3Frame.DAQ],
-    keys = [
-    "MCPrimary","ITSMTTriggered","ITGlobalTriggered","OfflineIceTopHLCTankPulses","OfflineIceTopSLCTankPulses","OfflineIceTopSLCTankPulsesTotalCharge",
-    "OfflineIceTopHLCTankPulsesTotalCharge","OfflineIceTopHLCTankPulsesTotalHit","OfflineIceTopSLCTankPulsesTotalHit","OfflineIceTopHLCVEMPulses",
-    "OfflineIceTopSLCVEMPulses","OfflineIceTopSLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalHit",
-    "OfflineIceTopSLCVEMPulsesTotalHit","OfflineIceTopSLCTankPulsesHitTimeDuration","OfflineIceTopHLCTankPulsesHitTimeDuration",'ITCleanSLCTankPulsesHitTimeDuration','ITCleanSLCTankPulsesTotalHit'
-    ]
-    )
+# tray.Add(hdfwriter.I3HDFWriter, 'hdfIce',
+#     Output=str(outputDir)+"/selectedEvents/"+str(fileName)+"IceTopSelectedEvents.hdf5",
+#     # Output=str(outputDir)+"/selectedEvents/"+str(fileName)+"IceTopHadronNonTrigImProperTEvts.hdf5",
+#     CompressionLevel=9,
+#     SubEventStreams=['IceTopSplit'],
+#     # SubEventStreams=['NullSplit'],
+#     # SubEventStreams=["nullsplitter",'IceTopSplit',"nullsplitter",'NullSplit',]
+#     # SubEventStreams=["ice_top"],
+#     # Streams=[icetray.I3Frame.DAQ],
+#     keys = [
+#     "MCPrimary","ITSMTTriggered","ITGlobalTriggered","OfflineIceTopHLCTankPulses","OfflineIceTopSLCTankPulses","OfflineIceTopSLCTankPulsesTotalCharge",
+#     "OfflineIceTopHLCTankPulsesTotalCharge","OfflineIceTopHLCTankPulsesTotalHit","OfflineIceTopSLCTankPulsesTotalHit","OfflineIceTopHLCVEMPulses",
+#     "OfflineIceTopSLCVEMPulses","OfflineIceTopSLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalHit",
+#     "OfflineIceTopSLCVEMPulsesTotalHit","OfflineIceTopSLCTankPulsesHitTimeDuration","OfflineIceTopHLCTankPulsesHitTimeDuration"
+#     ]
+#     )
 
 tray.Execute()
 tray.Finish()

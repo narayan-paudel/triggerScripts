@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+import os
+import glob
+import subprocess
+
 import tables
 import pandas as pd
 import matplotlib as mpl
@@ -13,11 +17,16 @@ from matplotlib.colors import ListedColormap
 
 import numpy as np
 
-import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument('input', type=str, nargs='+', default="/home/enpaudel/icecube/triggerStudy/simFiles/trigChk/DAT059871GenDetFiltProcTrigCount.hdf5", help='Input files after running plotTrigHist.py.')
-args = parser.parse_args()
+# import argparse
+# parser = argparse.ArgumentParser()
+# parser.add_argument('input', type=str, nargs='+', default="/home/enpaudel/icecube/triggerStudy/simFiles/trigChk/DAT059871GenDetFiltProcTrigCount.hdf5", help='Input files after running plotTrigHist.py.')
+# args = parser.parse_args()
 
+
+ABS_PATH_HERE = str(os.path.dirname(os.path.realpath(__file__)))
+ABS_PATH_HERE += "/"
+basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/ITGenClean/"
+hdf5NullList=sorted(glob.glob(basePath+"Fe*Clean*.hdf5"))
 
 def Rdisk(energy):
 	"""calculates radius of disc in m overwhich shower core spread"""
@@ -31,19 +40,9 @@ def showerArea(energy):
 	'''
 	R = Rdisk(energy)
 	return np.pi*R**2 * 10**(-6)
-
-# f = tables.open_file("../simFiles/trigChkTest/DAT000005GenDetFiltProcTrigCount.hdf5")
-# print(f.root.OfflineIceTopSLCTankPulsesTotalTankHit)
-# print(f.root.)
-
-# f = tables.open_file("/home/enpaudel/icecube/triggerStudy/simFiles/trigChk/DAT059871GenDetFiltProcTrigCount.hdf5")
-# print(f.root)
-# print(f.root.SLCTankCharge)
-# print(f.root.SLCTankCharge.cols.value[:])
-
+sin2ZenBins = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.822]
 plotFolder = "/home/enpaudel/icecube/triggerStudy/plots/"
 
-sin2ZenBins = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.822]
 class zenChargeHLCSLC(object):
 	"""docstring for zenChargeHLCSLC"""
 	def __init__(self,x,y,zenith,energy,SMTTrig,GlobalTrig,chargeHLC,chargeSLC,tankHitHLC,tankHitSLC,VEMHitHLC,VEMHitSLC,tankHitHLCTime,tankHitSLCTime,cleanTankHitSLC,cleanTankHitSLCTime):
@@ -58,45 +57,43 @@ class zenChargeHLCSLC(object):
 		self.chargeSLC = chargeSLC
 		self.tankHitHLC = tankHitHLC
 		self.tankHitSLC = tankHitSLC
-		self.cleanTankHitSLC = cleanTankHitSLC
 		self.VEMHitHLC = VEMHitHLC
 		self.VEMHitSLC = VEMHitSLC
 		self.tankHitSLCTime = tankHitSLCTime
 		self.tankHitHLCTime = tankHitHLCTime
+		self.cleanTankHitSLC = cleanTankHitSLC
 		self.cleanTankHitSLCTime = cleanTankHitSLCTime
 
-
-fh_primary = pd.read_hdf(str(args.input[0]),key="MCPrimary")
-zenithList = fh_primary['zenith'].values
-coreXlist = fh_primary['x'].values
-coreYlist = fh_primary["y"].values
-energyList = fh_primary['energy'].values
-coreX = fh_primary['x'].values
-coreY = fh_primary['y'].values
-SLCTankCharge = pd.read_hdf(str(args.input[0]),key="OfflineIceTopSLCTankPulsesTotalCharge")["value"].values
-HLCTankCharge = pd.read_hdf(str(args.input[0]),key="OfflineIceTopHLCTankPulsesTotalCharge")["value"].values
-SLCTankHit = pd.read_hdf(str(args.input[0]),key="OfflineIceTopSLCTankPulsesTotalHit")["value"].values
-CleanSLCTankHit = pd.read_hdf(str(args.input[0]),key="ITCleanSLCTankPulsesTotalHit")["value"].values
-HLCTankHit = pd.read_hdf(str(args.input[0]),key="OfflineIceTopHLCTankPulsesTotalHit")["value"].values
-SLCVEMHit = pd.read_hdf(str(args.input[0]),key="OfflineIceTopSLCVEMPulsesTotalHit")["value"].values
-HLCVEMHit = pd.read_hdf(str(args.input[0]),key="OfflineIceTopHLCVEMPulsesTotalHit")["value"].values
-ITGlobalTrig = pd.read_hdf(str(args.input[0]),key="ITGlobalTriggered")["value"].values
-ITSMTTrig = pd.read_hdf(str(args.input[0]),key="ITSMTTriggered")["value"].values
-SLCTankPulseTime = pd.read_hdf(str(args.input[0]),key="OfflineIceTopSLCTankPulsesHitTimeDuration")["value"].values
-CleanSLCTankPulseTime = pd.read_hdf(str(args.input[0]),key="ITCleanSLCTankPulsesHitTimeDuration")["value"].values
-HLCTankPulseTime = pd.read_hdf(str(args.input[0]),key="OfflineIceTopHLCTankPulsesHitTimeDuration")["value"].values
-print("len zen",len(zenithList))
-
-
-zenChargeList = []
-for x,y,zen,energy,smtTrig,globalTrig,hlc,slc,hlcHit,slcHit,vemHlcHit,vemSlcHit,hlcTime,slcTime,cleanslcHit,cleanslcTime in zip(coreX,coreY,zenithList,energyList,ITSMTTrig,ITGlobalTrig,HLCTankCharge,SLCTankCharge,HLCTankHit,SLCTankHit,HLCVEMHit,SLCVEMHit,HLCTankPulseTime,SLCTankPulseTime,CleanSLCTankHit,CleanSLCTankPulseTime):
-	zc = zenChargeHLCSLC(x,y,zen,energy,smtTrig,globalTrig,hlc,slc,hlcHit,slcHit,vemHlcHit,vemSlcHit,hlcTime,slcTime,cleanslcHit,cleanslcTime)
-	zenChargeList.append(zc)
-
-
-
-# slcLim = 100
-# zenChargeList = np.asarray([zc for zc in zenChargeList if zc.chargeSLC < slcLim]) #to remove events with very high slc charge
+def getEventClass(hdfList):
+	zenChargeList = []
+	for ifile in hdfList:
+		print("reading file",ifile)
+		fh_primary = pd.read_hdf(str(ifile),key="MCPrimary")
+		zenithList = fh_primary['zenith'].values
+		coreXlist = fh_primary['x'].values
+		coreYlist = fh_primary["y"].values
+		energyList = fh_primary['energy'].values
+		coreX = fh_primary['x'].values
+		coreY = fh_primary['y'].values
+		SLCTankCharge = pd.read_hdf(str(ifile),key="OfflineIceTopSLCTankPulsesTotalCharge")["value"].values
+		HLCTankCharge = pd.read_hdf(str(ifile),key="OfflineIceTopHLCTankPulsesTotalCharge")["value"].values
+		SLCTankHit = pd.read_hdf(str(ifile),key="OfflineIceTopSLCTankPulsesTotalHit")["value"].values
+		CleanSLCTankHit = pd.read_hdf(str(ifile),key="OfflineIceTopSLCTankPulsesCleanTimeCleanChargeTotalHit")["value"].values
+		HLCTankHit = pd.read_hdf(str(ifile),key="OfflineIceTopHLCTankPulsesTotalHit")["value"].values
+		SLCVEMHit = pd.read_hdf(str(ifile),key="OfflineIceTopSLCVEMPulsesTotalHit")["value"].values
+		HLCVEMHit = pd.read_hdf(str(ifile),key="OfflineIceTopHLCVEMPulsesTotalHit")["value"].values
+		ITGlobalTrig = pd.read_hdf(str(ifile),key="ITGlobalTriggered")["value"].values
+		ITSMTTrig = pd.read_hdf(str(ifile),key="ITSMTTriggered")["value"].values
+		SLCTankPulseTime = pd.read_hdf(str(ifile),key="OfflineIceTopSLCTankPulsesHitTimeDuration")["value"].values
+		HLCTankPulseTime = pd.read_hdf(str(ifile),key="OfflineIceTopHLCTankPulsesHitTimeDuration")["value"].values
+		CleanSLCTankPulseTime = pd.read_hdf(str(ifile),key="OfflineIceTopSLCTankPulsesCleanTimeCleanChargeHitTimeDuration")["value"].values
+		CleanHLCTankPulseTime = pd.read_hdf(str(ifile),key="OfflineIceTopHLCTankPulsesCleanTimeCleanChargeHitTimeDuration")["value"].values
+		for x,y,zen,energy,smtTrig,globalTrig,hlc,slc,hlcHit,slcHit,vemHlcHit,vemSlcHit,hlcTime,slcTime,cleanslcHit,cleanslcTime in zip(coreX,coreY,zenithList,energyList,ITSMTTrig,ITGlobalTrig,HLCTankCharge,SLCTankCharge,HLCTankHit,SLCTankHit,HLCVEMHit,SLCVEMHit,HLCTankPulseTime,SLCTankPulseTime,CleanSLCTankHit,CleanSLCTankPulseTime):
+			zc = zenChargeHLCSLC(x,y,zen,energy,smtTrig,globalTrig,hlc,slc,hlcHit,slcHit,vemHlcHit,vemSlcHit,hlcTime,slcTime,cleanslcHit,cleanslcTime)
+			zenChargeList.append(zc)
+	return zenChargeList
+print("creating class of events")
+zenChargeList = getEventClass(hdf5NullList)
 
 def triggerEfficiency(n_trig,n_total):
 	print("n_trig,n_total",n_trig,n_total)
@@ -110,11 +107,11 @@ def effectiveArea(n_trig,n_total,area):
 
 energyBins = 10**np.linspace(5, 8.0, 31) #[5*10**5,10**6,5*10**6,10**7,5*10**7,10**8]
 
-# zeroHLCEvents = [zc for zc in zenChargeList if abs(zc.tankHitHLC - 0) < 0.2]
-# slcHitTimes = np.asarray([zc.tankHitSLCTime for zc in zeroHLCEvents])
-# slcHitTimes *= 10**-9 #to second
-# # print("early late slc Hit {},{} and difference {} ns".format(min(slcHitTimes),max(slcHitTimes),max(slcHitTimes)-min(slcHitTimes)))
-# SLCTankHitZeroHLC = [zc.tankHitSLC for zc in zeroHLCEvents]
+zeroHLCEvents = [zc for zc in zenChargeList if abs(zc.tankHitHLC - 0) < 0.2]
+slcHitTimes = np.asarray([zc.tankHitSLCTime for zc in zeroHLCEvents])
+slcHitTimes *= 10**-9 #to second
+# print("early late slc Hit {},{} and difference {} ns".format(min(slcHitTimes),max(slcHitTimes),max(slcHitTimes)-min(slcHitTimes)))
+SLCTankHitZeroHLC = [zc.tankHitSLC for zc in zeroHLCEvents]
 
 # def plotHist(xdata,suffix):
 # 	fig = plt.figure(figsize=(8,5))
@@ -151,6 +148,7 @@ def plotHist(xdata,suffix):
 	plt.close()
 
 # plotHist(slcHitTimes,"SLCHitsTimeWZeroHLC")
+print("plotting events")
 
 
 def plotScatterHLCHitInterval(zenChargeList,suffix):
@@ -208,14 +206,15 @@ def plotScatterCleanSLCHitInterval(zenChargeList,suffix):
 	fig = plt.figure(figsize=(8,5))
 	gs = gridspec.GridSpec(nrows=1,ncols=1)
 	ax = fig.add_subplot(gs[0])
-	slcHitList = [zc.cleanTankHitSLC for zc in zenChargeList]
-	slcHitInterval = [zc.cleanTankHitSLCTime for zc in zenChargeList]
+	slcHitList = [zc.cleanTankHitSLC for zc in zenChargeList if zc.tankHitSLCTime > 0]
+	slcHitInterval = [zc.cleanTankHitSLCTime for zc in zenChargeList if zc.tankHitSLCTime > 0]
 	ax.scatter(slcHitList,slcHitInterval,s=10)
 	ax.tick_params(axis='both',which='both', direction='in', labelsize=24)
-	ax.set_xlabel(r"Clean SLC tank hits", fontsize=24)
-	ax.set_ylabel(r"time [ns]", fontsize=24)
-	# ax.set_xlim(0,100)
+	ax.set_xlabel(r"SLC tank hits", fontsize=24)
+	ax.set_ylabel(r"time interval [ns]", fontsize=24)
+	ax.set_xlim(0,None)
 	ax.set_ylim(0.1,10**9)
+	ax.set_ylim(0.1,None)
 	ax.set_yscale("log")
 	# ax.set_ylim(-100,50000)
 	ax.grid(True,alpha=0.2)
@@ -223,46 +222,10 @@ def plotScatterCleanSLCHitInterval(zenChargeList,suffix):
 	if suffix != "":
 		# (?# ax.set_title(r"$\sin ^{{2}} \theta = {0} $".format(suffix),fontsize=24))
 		ax.set_title(r"{0}".format(suffix),fontsize=24)
-	plt.savefig(plotFolder+"/scatterCleanSLCHitDuration"+str(suffix)+".png",transparent=False,bbox_inches='tight')
+	plt.savefig(plotFolder+"/scatterCleanSLCHitInterval"+str(suffix)+".png",transparent=False,bbox_inches='tight')
 	plt.close()
 
 plotScatterCleanSLCHitInterval(zenChargeList,"")
-
-def plotScatterTimeBeforeAfter(zenChargeList,suffix):
-	fig = plt.figure(figsize=(8,5))
-	gs = gridspec.GridSpec(nrows=1,ncols=1)
-	ax = fig.add_subplot(gs[0])
-	slcHitIntervalBefore = [zc.tankHitSLCTime for zc in zenChargeList]
-	slcHitIntervalAfter = [zc.cleanTankHitSLCTime for zc in zenChargeList]
-	ax.scatter(slcHitIntervalBefore,slcHitIntervalAfter,s=10)
-	ax.tick_params(axis='both',which='both', direction='in', labelsize=24)
-	ax.set_xlabel(r"time before cleaning [ns]", fontsize=24)
-	ax.set_ylabel(r"time after cleaning [ns]", fontsize=24)
-	# ax.set_xlim(0,None)
-	ax.set_ylim(0.1,10**9)
-	ax.set_yscale("log")
-	ax.set_xscale("log")
-	# ax.set_ylim(-100,50000)
-	ax.grid(True,alpha=0.2)
-	# ax.set_aspect("equal")
-	if suffix != "":
-		# (?# ax.set_title(r"$\sin ^{{2}} \theta = {0} $".format(suffix),fontsize=24))
-		ax.set_title(r"{0}".format(suffix),fontsize=24)
-	plt.savefig(plotFolder+"/timeBeforeAfter"+str(suffix)+".png",transparent=False,bbox_inches='tight')
-	plt.close()
-
-plotScatterTimeBeforeAfter(zenChargeList,"")
-
-
-
-
-
-
-
-
-
-
-
 
 
 

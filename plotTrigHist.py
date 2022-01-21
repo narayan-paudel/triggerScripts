@@ -115,6 +115,7 @@ energyBins = 10**np.linspace(5, 8.0, 31) #[5*10**5,10**6,5*10**6,10**7,5*10**7,1
 
 def plotDiskRadius(energyBins):
 	diskR = [Rdisk(energy) for energy in energyBins]
+	print("disk radius",set(diskR))
 	diskArea = [showerArea(energy) for energy in energyBins]
 	fig = plt.figure(figsize=(8,5))
 	gs = gridspec.GridSpec(nrows=1,ncols=1)
@@ -131,7 +132,7 @@ def plotDiskRadius(energyBins):
 	plt.savefig(plotFolder+"/diskRadius.pdf",transparent=False,bbox_inches='tight')
 	plt.close()
 
-# plotDiskRadius(energyBins)
+plotDiskRadius(energyBins)
 
 def energyEfficiency(energyBins,zclist,ratioType):
 	smtTrigEfficiencyList = []
@@ -197,13 +198,40 @@ def plotEffectiveArea(zenChargeList):
 	ax.legend(fontsize=12)
 	plt.savefig(plotFolder+"/trigEffectiveArea.pdf",transparent=False,bbox_inches='tight')
 	plt.close()
+def getCircle(radius):
+	theta = np.linspace(0,2*np.pi,100)
+	return radius*np.cos(theta),radius*np.sin(theta)
 
-def plotCoreScatter(zenChargeList,suffix):
+def plotCoreScatter(zenChargeList,suffix_E,suffix_Z,trig):
 	fig = plt.figure(figsize=(8,5))
 	gs = gridspec.GridSpec(nrows=1,ncols=1)
 	ax = fig.add_subplot(gs[0])
 	x = [zc.x for zc in zenChargeList]
 	y = [zc.y for zc in zenChargeList]
+	if int(suffix_E) < 6:
+		xCirc,yCirc = getCircle(800)
+		ax.plot(xCirc,yCirc,'-',c="blue",label="r = 800 m")
+	elif int(suffix_E) < 7:
+		xCirc,yCirc = getCircle(800)
+		ax.plot(xCirc,yCirc,'-',c="blue",label="r = 800 m")
+		xCirc,yCirc = getCircle(1100)
+		ax.plot(xCirc,yCirc,'-',c="yellow",label="r = 1100 m")
+	elif int(suffix_E) < 8:
+		xCirc,yCirc = getCircle(800)
+		ax.plot(xCirc,yCirc,'-',c="blue",label="r = 800 m")
+		xCirc,yCirc = getCircle(1100)
+		ax.plot(xCirc,yCirc,'-',c="yellow",label="r = 1100 m")
+		xCirc,yCirc = getCircle(1700)
+		ax.plot(xCirc,yCirc,'-',c="orangered",label="r = 1700 m")
+	elif int(suffix_E) >= 8:
+		xCirc,yCirc = getCircle(800)
+		ax.plot(xCirc,yCirc,'-',c="blue",label="r = 800 m")
+		xCirc,yCirc = getCircle(1100)
+		ax.plot(xCirc,yCirc,'-',c="yellow",label="r = 1100 m")
+		xCirc,yCirc = getCircle(1700)
+		ax.plot(xCirc,yCirc,'-',c="orangered",label="r = 1700 m")
+		xCirc,yCirc = getCircle(2600)
+		ax.plot(xCirc,yCirc,'-',c="purple",label="r = 2600 m")
 	ax.scatter(x,y,s=10)
 	ax.tick_params(axis='both',which='both', direction='in', labelsize=24)
 	ax.set_xlabel(r"x [m]", fontsize=24)
@@ -212,30 +240,69 @@ def plotCoreScatter(zenChargeList,suffix):
 	# ax.set_ylim(0,100)
 	ax.grid(True,alpha=0.2)
 	ax.set_aspect("equal")
-	if suffix != "":
-		ax.set_title(r"log(energy/GeV) = {0}".format(suffix),fontsize=24)
-	print("saving file",plotFolder+"/scatterSLCHitTime1s"+str(suffix)+".png")
-	plt.savefig(plotFolder+"/scatterSLCHitTime1s"+str(suffix)+".png",transparent=False,bbox_inches='tight')
+	if suffix_E != "":
+		ax.set_title(r"log(energy/GeV) = {0:.1f}, $\theta$ = {1:.1f}$^{{\circ}}$".format(float(suffix_E),np.arcsin(np.sqrt(float(suffix_Z)))*180/np.pi),fontsize=24)
+	# print("saving file",plotFolder+"/scatterSLCHit"+str(suffix)+".png")
+	plt.legend(fontsize=12)
+	plt.savefig(plotFolder+"/scatterSLCHit"+str(suffix_E)+"sin2Z"+str(suffix_Z)+"trig"+str(trig)+".png",transparent=False,bbox_inches='tight')
 	plt.close()
 
 
-def plotCoreScatterEnergy(zenChargeList):
-	for nbin,binStart in enumerate(energyBins[:-1]):
-		zenChargeListInBin = [zc for zc in zenChargeList if zc.energy >= energyBins[nbin] and zc.energy < energyBins[nbin+1]]
-		if len(zenChargeListInBin) > 1:
-			plotCoreScatter(zenChargeListInBin,np.log10(binStart))
+# def plotCoreScatterEnergy(zenChargeList,trig):
+# 	for nbin,binStart in enumerate(energyBins[:-1]):
+# 		if trig == True:
+# 			zenChargeListInBin = [zc for zc in zenChargeList if zc.energy >= energyBins[nbin] and zc.energy < energyBins[nbin+1] and abs(zc.SMTTrig - np.float64(1.0))<0.1]
+# 		elif trig == False:
+# 			zenChargeListInBin = [zc for zc in zenChargeList if zc.energy >= energyBins[nbin] and zc.energy < energyBins[nbin+1]]
+# 		if len(zenChargeListInBin) > 1:
+# 			plotCoreScatter(zenChargeListInBin,np.log10(binStart),trig)
 
 
+# plotCoreScatterEnergy(zenChargeList,trig=True)
+# plotCoreScatterEnergy(zenChargeList,trig=False)
 
-def plotCoreScatterTrigEnergy(zenChargeList):
-	for nbin,binStart in enumerate(energyBins[:-1]):
-		zenChargeListInBin = [zc for zc in zenChargeList if zc.energy >= energyBins[nbin] and zc.energy < energyBins[nbin+1] and abs(zc.SMTTrig - np.float64(1.0))<0.1]
-		if len(zenChargeListInBin) > 1:
-			plotCoreScatter(zenChargeListInBin,np.log10(binStart))
+def plotCoreScatterEnergyZenith(zenChargeList,trig):
+	for nbin_E,binStart_E in enumerate(energyBins[:-1]):
+		if trig == True:
+			zenChargeListInEBin = [zc for zc in zenChargeList if zc.energy >= energyBins[nbin_E] and zc.energy < energyBins[nbin_E+1] and abs(zc.SMTTrig - np.float64(1.0))<0.1]
+		elif trig == False:
+			zenChargeListInEBin = [zc for zc in zenChargeList if zc.energy >= energyBins[nbin_E] and zc.energy < energyBins[nbin_E+1]]
+		for nbin_Z,binStart_Z in enumerate(sin2ZenBins[:-1]):
+			zenChargeListInEZBin = [zc for zc in zenChargeListInEBin if (np.square(np.sin(zc.zenith)) >= sin2ZenBins[nbin_Z] and np.square(np.sin(zc.zenith)) < sin2ZenBins[nbin_Z+1])]
+			if len(zenChargeListInEZBin) > 1:
+				plotCoreScatter(zenChargeListInEZBin,np.log10(binStart_E),binStart_Z, trig)
+# plotCoreScatterEnergyZenith(zenChargeList,trig=True)
+# plotCoreScatterEnergyZenith(zenChargeList,trig=False)
 
 
-# plotCoreScatterEnergy(zenChargeList)
-plotCoreScatterEnergy(zenChargeList)
+def plotHLCHitCoreDist(zenChargeList,suffix_E):
+	fig = plt.figure(figsize=(8,5))
+	gs = gridspec.GridSpec(nrows=1,ncols=1)
+	ax = fig.add_subplot(gs[0])
+	HLCHits = [zc.tankHitHLC for zc in zenChargeList]
+	coreDist = [np.sqrt(zc.x**2+zc.y**2) for zc in zenChargeList]
+	ax.scatter(coreDist, HLCHits ,s=10)
+	ax.tick_params(axis='both',which='both', direction='in', labelsize=24)
+	ax.set_xlabel(r"core distance [m]", fontsize=24)
+	ax.set_ylabel(r"HLC tank hits", fontsize=24)
+	# ax.set_xlim(0,100)
+	# ax.set_ylim(0,100)
+	ax.grid(True,alpha=0.2)
+	# ax.set_aspect("equal")
+	if suffix_E != "":
+		ax.set_title(r"log(energy/GeV) = {0:.1f}".format(float(suffix_E)),fontsize=24)
+	# print("saving file",plotFolder+"/scatterSLCHit"+str(suffix)+".png")
+	# plt.legend(fontsize=12)
+	plt.savefig(plotFolder+"/scatterHLCHitCoreDist"+str(suffix_E)+".png",transparent=False,bbox_inches='tight')
+	plt.close()
+
+def plotCoreScatterEnergyZenith(zenChargeList):
+	for nbin_E,binStart_E in enumerate(energyBins[:-1]):
+		zenChargeListInEBin = [zc for zc in zenChargeList if zc.energy >= energyBins[nbin_E] and zc.energy < energyBins[nbin_E+1]]
+		if len(zenChargeListInEBin) > 1:
+			plotHLCHitCoreDist(zenChargeListInEBin,np.log10(binStart_E))
+plotCoreScatterEnergyZenith(zenChargeList)
+
 
 
 # plotEffectiveArea(zenChargeList)

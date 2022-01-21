@@ -32,6 +32,10 @@ fileName = args.input[0].split("/")[-1]
 fileName = fileName.split(".")[0]
 print(fileName)
 
+
+
+
+
 tray = I3Tray()
 tray.AddModule("I3Reader","reader",
 	           filenameList=[GCD]+args.input,
@@ -39,10 +43,17 @@ tray.AddModule("I3Reader","reader",
 	           # streams=[icetray.I3Frame.Geometry,icetray.I3Frame.Calibration, icetray.I3Frame.DetectorStatus]
 	          )
 
+# tray.AddModule("I3Writer","i3writer",
+# 	          filename=str(outputDir)+"trigChkTestSeparate/"+str(fileName)+"TrigCount.i3.gz",
+# 	          # streams=[icetray.I3Frame.DAQ],
+# 	          streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+# 	          # streams=[icetray.I3Frame.Geometry,icetray.I3Frame.Calibration, icetray.I3Frame.DetectorStatus]
+# 	          )
+
 # tray.AddModule("I3NullSplitter","nullsplitter")
 
-tray.Add(hdfwriter.I3HDFWriter, 'hdf',
-    Output=str(outputDir)+"/trigChkTest/"+str(fileName)+"TrigCount.hdf5",
+tray.Add(hdfwriter.I3HDFWriter, 'hdfNull',
+    Output=str(outputDir)+"/trigChkTestSeparate/"+str(fileName)+"TrigCountNullSplitSingle.hdf5",
     CompressionLevel=9,
     # SubEventStreams=['IceTopSplit'],
     SubEventStreams=['NullSplit'],
@@ -53,21 +64,25 @@ tray.Add(hdfwriter.I3HDFWriter, 'hdf',
     "MCPrimary","ITSMTTriggered","ITGlobalTriggered","OfflineIceTopHLCTankPulses","OfflineIceTopSLCTankPulses","OfflineIceTopSLCTankPulsesTotalCharge",
     "OfflineIceTopHLCTankPulsesTotalCharge","OfflineIceTopHLCTankPulsesTotalHit","OfflineIceTopSLCTankPulsesTotalHit","OfflineIceTopHLCVEMPulses",
     "OfflineIceTopSLCVEMPulses","OfflineIceTopSLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalHit",
-    "OfflineIceTopSLCVEMPulsesTotalHit"
+    "OfflineIceTopSLCVEMPulsesTotalHit","OfflineIceTopSLCTankPulsesHitTimeDuration","OfflineIceTopHLCTankPulsesHitTimeDuration",'ITCleanSLCTankPulsesHitTimeDuration','ITCleanSLCTankPulsesTotalHit'
+    ]
+    )
+
+tray.Add(hdfwriter.I3HDFWriter, 'hdfIce',
+    Output=str(outputDir)+"/trigChkTestSeparate/"+str(fileName)+"TrigCountIceTopSplitSingle.hdf5",
+    CompressionLevel=9,
+    SubEventStreams=['IceTopSplit'],
+    # SubEventStreams=['NullSplit'],
+    # SubEventStreams=["nullsplitter",'IceTopSplit',"nullsplitter",'NullSplit',]
+    # SubEventStreams=["ice_top"],
+    # Streams=[icetray.I3Frame.DAQ],
+    keys = [
+    "MCPrimary","ITSMTTriggered","ITGlobalTriggered","OfflineIceTopHLCTankPulses","OfflineIceTopSLCTankPulses","OfflineIceTopSLCTankPulsesTotalCharge",
+    "OfflineIceTopHLCTankPulsesTotalCharge","OfflineIceTopHLCTankPulsesTotalHit","OfflineIceTopSLCTankPulsesTotalHit","OfflineIceTopHLCVEMPulses",
+    "OfflineIceTopSLCVEMPulses","OfflineIceTopSLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalHit",
+    "OfflineIceTopSLCVEMPulsesTotalHit","OfflineIceTopSLCTankPulsesHitTimeDuration","OfflineIceTopHLCTankPulsesHitTimeDuration",'ITCleanSLCTankPulsesHitTimeDuration','ITCleanSLCTankPulsesTotalHit'
     ]
     )
 
 tray.Execute()
 tray.Finish()
-
-
-
-#################################################333
-###################################################
-# hdftable = hdfwriter.I3HDFTableService(str(outputDir)+"/trigChk/"+str(fileName)+"TrigCount.hdf5")
-# tray.AddModule(tableio.I3TableWriter,'hdf1',
-# 	         tableservice = hdftable,
-# 	         # SubEventStreams = ['in_ice'],
-# 	         keys = ['I3EventHeader',"I3Triggers","ITSMTTriggered","ITGlobalTriggered"],
-# 	         # types = [dataclasses.I3Particle] #inplace of keys
-# 	        )
