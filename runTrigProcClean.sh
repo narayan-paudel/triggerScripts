@@ -9,7 +9,7 @@ ICETRAY_ENV=/home/enpaudel/icecube/surfaceArray/build/env-shell.sh
 # libraryAddress="/data/user/enpaudel/polarizationStudy/data/"
 
 fileDir="/home/enpaudel/icecube/triggerStudy/simFiles/ITGen/"
-fileList=$(ls -d $fileDir/??DAT*GenDetFiltProc.i3.bz2)
+fileList=$(ls -d $fileDir/*DAT*GenDetFiltProc.i3.bz2)
 # fileList=${$fileList[@]:3:10}
 arr=($fileList)
 echo "starting with first shower" $ICETRAY_ENV $PYTHON_SCRIPT  ${arr[0]}
