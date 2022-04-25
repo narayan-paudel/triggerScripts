@@ -10,7 +10,7 @@ ABS_PATH_HERE += "/"
 print("abs path",ABS_PATH_HERE)
 ############################################################################
 # inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique/"
-inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique/"
+inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUniqueSeedSame/"
 OinputList = sorted(glob.glob(inputPath+"ODAT*GenDetFiltProcUnique.i3.gz"))
 pinputList = sorted(glob.glob(inputPath+"pDAT*GenDetFiltProcUnique.i3.gz"))
 HeinputList = sorted(glob.glob(inputPath+"HeDAT*GenDetFiltProcUnique.i3.gz"))
@@ -38,7 +38,7 @@ def makeSubFile(fileList):
 	submitFile.write("Output     = /data/user/enpaudel/triggerStudy/log/cleanTrig$(Process).out\n")
 	submitFile.write("Error      = /data/user/enpaudel/triggerStudy/log/cleanTrig$(Process).err\n")
 	submitFile.write("request_cpus = 1\n")
-	submitFile.write("request_memory = 3GB\n")
+	submitFile.write("request_memory = 2GB\n")
 	submitFile.write("request_disk = 1GB\n")
 	submitFile.write("#request_gpus = 1\n")
 	submitFile.write("#should_transfer_files   = IF_NEEDED\n")

@@ -16,10 +16,17 @@ from matplotlib.ticker import AutoMinorLocator,MultipleLocator
 import matplotlib.lines as mlines
 from matplotlib.colors import ListedColormap
 
+from customColors import qualitative_colors
+
 import numpy as np
 
-from weighting import GetWeight
+plt.rcParams["font.family"] = "serif"
+plt.rcParams["mathtext.fontset"] = "dejavuserif"
+plt.rcParams.update({'font.size': 20})
 
+from weighting import GetWeight, ParticleType, PDGCode
+
+# basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/"
 basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/"
 hdf5NullListP = sorted(glob.glob(basePath+"p*Clean*.hdf5"))
 hdf5NullListHe = sorted(glob.glob(basePath+"He*Clean*.hdf5"))
@@ -27,7 +34,6 @@ hdf5NullListO = sorted(glob.glob(basePath+"O*Clean*.hdf5"))
 hdf5NullListFe = sorted(glob.glob(basePath+"Fe*Clean*.hdf5"))
 hdf5NullList = np.concatenate((hdf5NullListP,hdf5NullListHe,hdf5NullListO,hdf5NullListFe))
 plotFolder = "/home/enpaudel/icecube/triggerStudy/plots/"
-
 
 #level 2
 basePathOfficial = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetCleanOfficialL2/"
@@ -38,8 +44,14 @@ hdf5NullListFeOfficial = sorted(glob.glob(basePathOfficial+"012362*.hdf5"))
 
 hdf5NullListOfficial = np.concatenate((hdf5NullListPOfficial,hdf5NullListHeOfficial,hdf5NullListOOfficial,hdf5NullListFeOfficial))
 
+# colorsList = ['#9467bd', '#e377c2','#1f77b4','#2ca02c','#bcbd22','#ff7f0e','#8c564b','#7f7f7f','#17becf','#d62728',
+# 			'#4477AA', '#332288', '#6699CC', '#88CCEE', '#44AA99', '#117733','#999933', '#DDCC77', '#661100', '#CC6677',
+# 			'#AA4466','#882255','#AA4499'"tab:brown","lime",'teal',"navy","darkkhaki","olive","gray", 'sienna','slategray']
+colorsList = ['#1f77b4','#ff7f0e','#2ca02c','#8c564b','#9467bd', '#e377c2','#bcbd22','#7f7f7f','#17becf','#d62728',
+			'#4477AA', '#332288','#2ca02c', '#6699CC', '#88CCEE', '#44AA99', '#117733','#999933', '#DDCC77', '#661100', '#CC6677',
+			'#AA4466','#882255','#AA4499'"tab:brown","lime",'teal',"navy","darkkhaki","olive","gray", 'sienna','slategray']
 
-colorsIter = iter(['#1f77b4','#9467bd','#e377c2', '#ff7f0e','#bcbd22', '#2ca02c', '#8c564b', '#e377c2', '#7f7f7f',  '#17becf','#d62728',"tab:brown","lime",'teal',"navy","darkkhaki","olive","gray", 'sienna','slategray'])
+colorsCustom = qualitative_colors(10)
 
 def nCorFiles(hdfFileList):
 	nfiles = 0
@@ -55,6 +67,83 @@ nfilesFe = nCorFiles(hdf5NullListFe)
 print("no of files",nfilesP,nfilesHe,nfilesO,nfilesFe)
 
 trigWindow = 10**(-6) # in ns
+
+sin2ZenBins = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.822]
+# sin2ZenBins = [0.0,0.822]
+
+class CREvent(object):
+	"""docstring for CREvent"""
+	def __init__(self,runID,eventID,CRType,energy,zenith,coreX,coreY):
+		super(CREvent, self).__init__()
+		self.runID = runID
+		self.eventID = eventID
+		self.CRType = CRType
+		self.energy = energy
+		self.zenith = zenith
+		self.coreX = coreX
+		self.coreY = coreY
+
+	def addWeight(self,H4aWeight):
+		self.H4aWeight = H4aWeight
+
+	def addTrigger(self,ITSMTTriggered,STA1Trigger):
+		self.ITSMTTriggered = ITSMTTriggered
+		self.STA1Trigger = STA1Trigger
+
+	def addFilter(self,ITSTA5_filter,ITSTA3_filter):
+		self.ITSTA5_filter = ITSTA5_filter
+		self.ITSTA3_filter = ITSTA3_filter
+
+
+def getValue_(hdfFile,key):
+	'''extract value of given key in hdf file 
+	as single array
+	'''
+	dataT = pd.read_hdf(hdfFile,key=key)
+	return dataT["value"].values
+
+def getValue(hdfFileList,key):
+	hitList = np.array([])
+	for ihdf in hdfFileList:
+		ihit = getValue_(ihdf,key)
+		hitList = np.concatenate((hitList,ihit))
+	return hitList
+
+
+def extractEvents_(hdfFile):
+	"""
+	extracts events from the hdfFile
+	"""
+	mcPrim_df = pd.read_hdf(hdfFile,key="MCPrimary")
+	evtHead_df = pd.read_hdf(hdfFile,key="I3EventHeader")
+	eventList = evtHead_df["Event"].values
+	runList = evtHead_df["Run"].values
+	primaryList = mcPrim_df["type"].values
+	energyList = mcPrim_df["energy"].values
+	zenithList = mcPrim_df["zenith"].values
+	coreXList = mcPrim_df["x"].values
+	coreYList = mcPrim_df["y"].values
+	H4aWeightList = getValue_(hdfFile,key="H4aWeight")
+	ITSMTTriggeredList = getValue_(hdfFile,key="ITSMTTriggered")
+	STA1TriggerList = getValue_(hdfFile,key="OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_isSTA1")
+	ITSTA5_filterList = getValue_(hdfFile,key="IceTopSTA5_13_filter")
+	ITSTA3_filterList = getValue_(hdfFile,key="SDST_IceTopSTA3_13_filter")
+	evtObjList = []
+	for nEvt,evtID in enumerate(eventList):
+		thisEvt = CREvent(runList[nEvt],evtID,primaryList[nEvt],energyList[nEvt],zenithList[nEvt],coreXList[nEvt],coreYList[nEvt])
+		thisEvt.addWeight(H4aWeightList[nEvt])
+		thisEvt.addTrigger(ITSMTTriggeredList[nEvt],STA1TriggerList[nEvt])
+		thisEvt.addFilter(ITSTA5_filterList[nEvt],ITSTA3_filterList[nEvt])
+		evtObjList.append(thisEvt)
+	return evtObjList
+
+def extractEvents(hdf5List):
+	evtList = []
+	for ihdf in hdf5List:
+		evtList += extractEvents_(ihdf)
+	return evtList
+
+evtList = extractEvents(hdf5NullList)
 
 
 
@@ -77,21 +166,6 @@ def showerArea(energy):
 def getCircle(radius):
 	theta = np.linspace(0,2*np.pi,100)
 	return radius*np.cos(theta),radius*np.sin(theta)
-
-
-def getValue_(hdfFile,key):
-	'''extract value of given key in hdf file 
-	as single array
-	'''
-	dataT = pd.read_hdf(hdfFile,key=key)
-	return dataT["value"].values
-
-def getValue(hdfFileList,key):
-	hitList = np.array([])
-	for ihdf in hdfFileList:
-		ihit = getValue_(ihdf,key)
-		hitList = np.concatenate((hitList,ihit))
-	return hitList
 
 def getVectorItem(hdfFileList,key):
 	hitDuration = np.array([])
@@ -119,7 +193,6 @@ def getCore(hdfFileList):
 
 def filterArray(arr,filt):
 	return arr[abs(np.asarray(filt-1)) < 0.001]
-
 
 def getWeight_(hdfFile):
 	dataT = pd.read_hdf(hdfFile,key="H4aWeight")
@@ -161,6 +234,24 @@ def weightCalc(hdfFileList):
 	return adjustedWeights
 
 
+def addDirectWeights(eventList):
+	# nfilesP = len([ievt.runID for ievt in eventList if str(ievt.CRType) == "PPlus"])
+	# nfilesHe = len([ievt.runID for ievt in eventList if str(ievt.CRType) == "He4Nucleus"])
+	# nfilesO = len([ievt.runID for ievt in eventList if str(ievt.CRType) == "O16Nucleus"])
+	# nfilesFe = len([ievt.runID for ievt in eventList if str(ievt.CRType) == "Fe56Nucleus"])
+	nfilesP = len(set([ievt.runID for ievt in eventList if str(ievt.CRType) == str(2212)]))
+	nfilesHe = len(set([ievt.runID for ievt in eventList if str(ievt.CRType) == str(1000020040)]))
+	nfilesO = len(set([ievt.runID for ievt in eventList if str(ievt.CRType) == str(1000080160)]))
+	nfilesFe = len(set([ievt.runID for ievt in eventList if str(ievt.CRType) == str(1000260560)]))
+	print("number of files",nfilesP,nfilesHe,nfilesO,nfilesFe)
+	zen = [ievt.zenith for ievt in eventList]
+	energy = [ievt.energy for ievt in eventList]
+	ptype = [ievt.CRType for ievt in eventList]
+	weights = GetWeight().getWeight(nfilesP,nfilesHe,nfilesO,nfilesFe,zen,energy,ptype)
+	for ievt,iweight in zip(eventList,weights):
+		ievt.directWeight = iweight
+evtList = evtList
+addDirectWeights(evtList)
 # zenith,ptype,energy = getZenithTypeEnergy(hdf5NullList)
 
 
@@ -180,22 +271,30 @@ def weightCalc(hdfFileList):
 # 		adjustedWeights.append(iweight)
 
 
-
-energyBins = np.linspace(5.0,8.0,3100)
+# energyBins = 10**np.linspace(5, 8.0, 31)
+energyBins = 10**np.linspace(5, 8.0, 7)
+energyBinslgE = np.linspace(5.0,8.9,4000)
+energyBinCenter = [5.1,6.1,7.1,8.1]
 print("energy bins",energyBins)
 
 def plotRadiusEnergy(energyBins):
 	radiusList = [Rdisk(ienergy) for ienergy in energyBins]
+	radiusBinValue = [Rdisk(ienergy) for ienergy in energyBinCenter]
 	fig = plt.figure(figsize=(8,5))
 	gs = gridspec.GridSpec(nrows=1,ncols=1)
 	ax = fig.add_subplot(gs[0])
-	ax.plot(energyBins,radiusList,"-",c=next(colorsIter),label="radius",alpha=1)
+	ax.plot(energyBins,radiusList,"-",lw=2.5,c=qualitative_colors(3)[1],label="radius",alpha=1)
 	# ax.plot(angleBins,totalEvts_list,"o-",c=next(colorsIter),label="total Evts",alpha=1)
+	for x in energyBinCenter:
+		ax.text(x,Rdisk(x)-200,s="{0:.0f} m".format(Rdisk(x)))
 	ax.set_xlabel(r"log(Energy[GeV])", fontsize=20)
 	ax.set_ylabel(r"disc radius [m]", fontsize=20)
 	ax.tick_params(axis='both',which='both',direction='in', labelsize=20)
+	ax.tick_params(which='both', width=1.5)
+	ax.tick_params(which='major', length=7)
+	ax.tick_params(which='minor', length=4)
 	# ax.set_yscale('log')
-	ax.grid(True,alpha=0.2)
+	ax.grid(True,alpha=0.5)
 	ax.set_ylim(0,None)
 	# ax.legend(fontsize=14)
 	# ax.legend(fontsize=14,ncol=2)
@@ -203,7 +302,7 @@ def plotRadiusEnergy(energyBins):
 	ax.xaxis.set_minor_locator(MultipleLocator(0.1))
 	plt.savefig(plotFolder+"simRadius.pdf",transparent=False,bbox_inches='tight')
 	plt.close()
-# plotRadiusEnergy(energyBins)
+plotRadiusEnergy(energyBinslgE)
 
 
 def plotCoreScatter_(x,y,suffix,title):
@@ -276,7 +375,7 @@ def plotCoreScatterEnergy(hdfFileList,energyLow,energyHigh,filtKey):
 # plotCoreScatterEnergy(hdf5NullList,7.0,7.1,filtKey="IceTopSTA5_13_filter")
 # plotCoreScatterEnergy(hdf5NullList,6.9,7.0,filtKey="IceTopSTA5_13_filter")
 # plotCoreScatterEnergy(hdf5NullList,6.9,7.0,filtKey="SDST_IceTopSTA3_13_filter")
-plotCoreScatterEnergy(hdf5NullListOfficial,6.9,7.0,filtKey="IceTopSTA5_12_filter")
+# plotCoreScatterEnergy(hdf5NullListOfficial,6.9,7.0,filtKey="IceTopSTA5_12_filter")
 # plotCoreScatterEnergy(hdf5NullList,6.0,7.0,filtKey=None)
 
 
@@ -373,6 +472,7 @@ plotEnergyFlux(hdf5NullList,"linear","fluxlinear")
 plotEnergyFlux(hdf5NullList,"log","fluxLog")
 
 HLCStationDuration = getVectorItem(hdf5NullList,"OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_delta_t")
+
 def delta_t_hist(duration,suffix,key):
     fig = plt.figure(figsize=(8,5))
     gs = gridspec.GridSpec(ncols=1,nrows=1)
@@ -404,13 +504,14 @@ def getEventsZenith_(hdfFile,zenLim):
 			selEvents.append(ievent)
 	return list(set(selEvents))
 
-def getTriggeredEvents_(hdfFile,zenLim,weighting):
+def getTriggeredEvents_(hdfFile,zenLim,energyLim,weighting):
 	"""
 	returns total events sta1 and sta3 trigered events
 	"""
 	STA1Trigger_df = pd.read_hdf(hdfFile,key="OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_isSTA1")	
 	STA3Trigger_df = pd.read_hdf(hdfFile,key="ITSMTTriggered")
-	selEvents = getEventsZenith_(hdfFile,zenLim)
+	# selEvents = getEventsZenith_(hdfFile,zenLim)
+	selEvents = getEventsZenithEnergy_(hdfFile,zenLim,energyLim)
 	eventList = STA1Trigger_df["Event"].values
 	totalEvts = np.ones(len(eventList))
 	if weighting == True:
@@ -432,7 +533,7 @@ def getTriggeredEvents_(hdfFile,zenLim,weighting):
 			totalEvts_select.append(isEvt)
 	return np.sum(totalEvts),np.sum(STA1Triggers_select),np.sum(STA3Triggers_select)
 	
-def getTriggeredEvents(hdfFileList,zenLim,weighting):
+def getTriggeredEvents(hdfFileList,zenLim,energyLim,weighting):
 	"""
 	sums total sta1 and sta3 events from all hdfFileList files
 	"""
@@ -440,11 +541,27 @@ def getTriggeredEvents(hdfFileList,zenLim,weighting):
 	sta1_evts = 0
 	sta3_evts = 0
 	for ihdf in hdfFileList:
-		n_total,n_sta1,n_sta3 = getTriggeredEvents_(ihdf,zenLim,weighting)
+		n_total,n_sta1,n_sta3 = getTriggeredEvents_(ihdf,zenLim,energyLim,weighting)
 		totalEvts += n_total
 		sta1_evts += n_sta1
 		sta3_evts += n_sta3
 	return totalEvts,sta1_evts,sta3_evts
+
+def getEventsZenithEnergy_(hdfFile,zenLim,energyLim):
+	'''get events belonging to given zenith bin:
+	zenith angles in degree
+	'''	
+	df_MCPrimary = pd.read_hdf(hdfFile,key="MCPrimary")
+	events_MC = df_MCPrimary["Event"].values
+	zeniths_MC = df_MCPrimary["zenith"].values
+	energy_MC = df_MCPrimary["energy"].values
+	selEvents = []
+	for ievent,izenith,ienergy in zip(events_MC,zeniths_MC,energy_MC):
+		if np.rad2deg(izenith) >= zenLim[0] and np.rad2deg(izenith) < zenLim[1]:
+			if ienergy >= energyLim[0] and ienergy < energyLim[1]:
+				selEvents.append(ievent)
+	return list(set(selEvents))
+
 
 def trigZen(hdfFileList,zenBins,fraction,weighting,suffix):
 	"""
@@ -462,7 +579,7 @@ def trigZen(hdfFileList,zenBins,fraction,weighting,suffix):
 	for n,bin_start in enumerate(zenBins[:-1]):
 		lowEdge = zenBins[n]
 		highEdge = zenBins[n+1]
-		totalEvts,sta1_evts,sta3_evts = getTriggeredEvents(hdfFileList,[lowEdge,highEdge],weighting)
+		totalEvts,sta1_evts,sta3_evts = getTriggeredEvents(hdfFileList,[lowEdge,highEdge],[5.0,8.0],weighting)
 		angleBins.append((lowEdge+highEdge)/2.0)
 		sta1_list.append(sta1_evts)
 		sta3_list.append(sta3_evts)
@@ -478,10 +595,17 @@ def trigZen(hdfFileList,zenBins,fraction,weighting,suffix):
 	    ax.plot(angleBins,sta3_list,"o-",c=next(colorsIter),label="STA3",alpha=1)
 	    # ax.plot(angleBins,totalEvts_list,"o-",c=next(colorsIter),label="total Evts",alpha=1)
 	    ax.set_ylabel(r"rate [Hz]", fontsize=20)
+	    for iangle,ista1,ista3,itot in zip(angleBins,sta1_list,sta3_list,totalEvts_list):
+	    	# ax.text(iangle,ista1+1,s="{0:.3f}".format(ista1/itot))
+	    	# ax.text(iangle,ista3+1,s="{0:.3f}".format(ista3/itot))
+	    	# ax.text(iangle,itot-200,s="{0:.0f}".format(itot))
+	    	ax.text(iangle,ista1,s="{0:.4f}%".format(ista1/itot*100))
+	    	ax.text(iangle,ista3,s="{0:.4f}%".format(ista3/itot*100))
+	    	# ax.text(iangle,itot,s="{0:.0f}".format(itot))
 	ax.tick_params(axis='both',which='both',direction='in', labelsize=20)
 	ax.set_xlabel(r"$\theta ^{{\circ}}$", fontsize=20)
 	# ax.set_yscale('log')
-	ax.set_title("total rate STA1 {:.2f} Hz STA3 {:.2f} Hz".format(np.sum(sta1_list),np.sum(sta3_list)),fontsize=12)
+	ax.set_title("total rate: STA1 = {:.2f} Hz, STA3 = {:.2f} Hz".format(np.sum(sta1_list),np.sum(sta3_list)),fontsize=12)
 	ax.set_xlim(0,65)
 	ax.grid(True,alpha=0.2)
 	ax.legend(fontsize=14)
@@ -489,10 +613,315 @@ def trigZen(hdfFileList,zenBins,fraction,weighting,suffix):
 	plt.savefig(plotFolder+"/"+str(suffix)+"Frac"+str(fraction)+"Wts"+str(weighting)+"trigger_zen.pdf",transparent=False,bbox_inches='tight')
 	plt.close()
 
+
 # trigZen(hdf5NullList,[0,10,20,30,40,50,65.1],True,False,"HLCVEM")
 # trigZen(hdf5NullList,[0,10,20,30,40,50,65.1],False,False,"HLCVEM")
 # trigZen(hdf5NullList,[0,10,20,30,40,50,65.1],True,True,"HLCVEM")
 # trigZen(hdf5NullList,[0,10,20,30,40,50,65.1],False,True,"HLCVEM")
+
+
+def triggerEfficiency(n_trig,n_total):
+	print("n_trig,n_total",n_trig,n_total)
+	if n_total != 0:
+		return (n_trig/n_total)
+	else:
+		return 0
+
+def effectiveArea(n_trig,n_total,area):
+	return triggerEfficiency(n_trig,n_total)*area
+
+
+def plotTrigEfficiency(hdfFileList,energyBins,weighting):
+	'''
+	plots trigger efficiency in different zenith bins
+	'''
+	fig = plt.figure(figsize=(8,5))
+	gs = gridspec.GridSpec(nrows=1,ncols=1)
+	ax = fig.add_subplot(gs[0])
+	# colorIter = iter(colorsCustom)
+	colorIter = iter(colorsList)
+	for nbin, binStart in enumerate(sin2ZenBins[:-1]):
+		lowEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin]))
+		highEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))
+		evtZenBin = [ievt for ievt in evtList if lowEdge <= ievt.zenith < highEdge]
+		energyList = []
+		sta3_efficiencyList = []
+		sta1_efficiencyList = []
+		for ebin, ebinStart in enumerate(energyBins[:-1]):
+			lowEdge_E = energyBins[ebin]
+			highEdge_E = energyBins[ebin+1]
+			evtEBin = [ievt for ievt in evtZenBin if lowEdge_E <= ievt.energy < highEdge_E]
+			# totalEvts = len(evtEBin)
+			weights = [ievt.H4aWeight for ievt in evtEBin]
+			totalEvts = np.sum(weights)
+			sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
+			# sta3 = [ievt.ITSTA5_filter for ievt in evtEBin]
+			sta1 = [ievt.STA1Trigger for ievt in evtEBin]
+			sta3_trigEff = triggerEfficiency(sum(sta3),totalEvts)
+			sta1_trigEff = triggerEfficiency(sum(sta1),totalEvts)
+			sta3_efficiencyList.append(sta3_trigEff)
+			sta1_efficiencyList.append(sta1_trigEff)
+			energyList.append((lowEdge_E+highEdge_E)/2.0)		
+		ax.plot(energyList,sta3_efficiencyList,".",ls='-',lw = 2.5,c=next(colorIter),label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),alpha=1)
+	ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
+	ax.set_xlabel(r"energy [GeV]", fontsize=22)
+	ax.set_ylabel(r"trigger efficiency", fontsize=22)
+	# ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
+	ax.set_xscale('log')
+	ax.grid(True,alpha=0.2)
+	ax.legend(fontsize=12)
+	plt.savefig(plotFolder+"/trigEfficiency.pdf",transparent=False,bbox_inches='tight')
+	plt.close()
+
+# plotTrigEfficiency(hdf5NullList,energyBins,weighting=False)
+
+def plotTrigEfficiency2(hdfFileList,energyBins,weighting):
+	'''
+	plots trigger efficiency in different zenith bins
+	'''
+	fig = plt.figure(figsize=(8,5))
+	gs = gridspec.GridSpec(nrows=1,ncols=1)
+	ax = fig.add_subplot(gs[0])
+	# colorIter = iter(colorsCustom)
+	colorIter = iter(colorsList)
+	for nbin, binStart in enumerate(sin2ZenBins[:-1]):
+		lowEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin]))
+		highEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))
+		evtZenBin = [ievt for ievt in evtList if lowEdge <= ievt.zenith < highEdge]
+		energyList = []
+		sta3_efficiencyList = []
+		sta1_efficiencyList = []
+		for ebin, ebinStart in enumerate(energyBins[:-1]):
+			lowEdge_E = energyBins[ebin]
+			highEdge_E = energyBins[ebin+1]
+			evtEBin = [ievt for ievt in evtZenBin if lowEdge_E <= ievt.energy < highEdge_E]
+			# totalEvts = len(evtEBin)
+			weights = [ievt.H4aWeight for ievt in evtEBin]
+			totalEvts = np.sum(weights)
+			sta3 = [ievt.ITSMTTriggered for ievt in evtEBin]
+			# sta3 = [ievt.ITSTA5_filter for ievt in evtEBin]
+			sta1 = [ievt.STA1Trigger for ievt in evtEBin]
+			sta3_trigEff = triggerEfficiency(sum(sta3),totalEvts)
+			sta1_trigEff = triggerEfficiency(sum(sta1),totalEvts)
+			sta3_efficiencyList.append(sta3_trigEff)
+			sta1_efficiencyList.append(sta1_trigEff)
+			energyList.append((lowEdge_E+highEdge_E)/2.0)		
+		ax.plot(energyList,sta3_efficiencyList,".",ls='-',lw = 2.5,c=next(colorIter),label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),alpha=1)
+	ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
+	ax.set_xlabel(r"energy [GeV]", fontsize=22)
+	ax.set_ylabel(r"trigger efficiency", fontsize=22)
+	# ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
+	ax.set_xscale('log')
+	ax.grid(True,alpha=0.2)
+	ax.legend(fontsize=12)
+	plt.savefig(plotFolder+"/trigEfficiency.pdf",transparent=False,bbox_inches='tight')
+	plt.close()
+
+plotTrigEfficiency2(hdf5NullList,energyBins,weighting=False)
+
+
+
+
+
+
+
+
+def plotEffectiveArea(hdfFileList,energyBins,weighting):
+	'''
+	plots trigger efficiency in different zenith bins
+	'''
+	fig = plt.figure(figsize=(8,5))
+	gs = gridspec.GridSpec(nrows=1,ncols=1)
+	ax = fig.add_subplot(gs[0])
+	# colorIter = iter(colorsCustom)
+	colorIter = iter(colorsList)
+	for nbin, binStart in enumerate(sin2ZenBins[:-1]):
+		lowEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin]))
+		highEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))
+		evtZenBin = [ievt for ievt in evtList if lowEdge <= ievt.zenith < highEdge]
+		energyList = []
+		sta3_efficiencyList = []
+		sta1_efficiencyList = []
+		for ebin, ebinStart in enumerate(energyBins[:-1]):
+			lowEdge_E = energyBins[ebin]
+			highEdge_E = energyBins[ebin+1]
+			evtEBin = [ievt for ievt in evtZenBin if lowEdge_E <= ievt.energy < highEdge_E]
+			# totalEvts = len(evtEBin)
+			weights = [ievt.H4aWeight for ievt in evtEBin]
+			totalEvts = np.sum(weights)
+			sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
+			# sta3 = [ievt.ITSTA5_filter for ievt in evtEBin]
+			sta1 = [ievt.STA1Trigger for ievt in evtEBin]
+			sta3_trigEff = effectiveArea(sum(sta3),totalEvts,showerArea(np.log10(lowEdge_E)))
+			sta1_trigEff = triggerEfficiency(sum(sta1),totalEvts)
+			sta3_efficiencyList.append(sta3_trigEff)
+			sta1_efficiencyList.append(sta1_trigEff)
+			energyList.append((lowEdge_E+highEdge_E)/2.0)		
+		ax.plot(energyList,sta3_efficiencyList,".",ls='-',lw = 2.5,c=next(colorIter),label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),alpha=1)
+	ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
+	ax.set_xlabel(r"energy [GeV]", fontsize=22)
+	ax.set_ylabel(r"effective area [$km^{2}$]", fontsize=22)
+	# ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
+	ax.set_xscale('log')
+	ax.grid(True,alpha=0.2)
+	ax.legend(fontsize=12)
+	plt.savefig(plotFolder+"/effectiveArea.pdf",transparent=False,bbox_inches='tight')
+	plt.close()
+
+plotEffectiveArea(hdf5NullList,energyBins,weighting=False)
+
+
+def plotFluxEnergyZenith(hdfFileList,energyBins,weighting):
+	'''
+	plots trigger efficiency in different zenith bins
+	'''
+	fig = plt.figure(figsize=(8,5))
+	gs = gridspec.GridSpec(nrows=1,ncols=1)
+	ax = fig.add_subplot(gs[0])
+	# colorIter = iter(colorsCustom)
+	colorIter = iter(colorsList)
+	for nbin, binStart in enumerate(sin2ZenBins[:-1]):
+		lowEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin]))
+		highEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))
+		evtZenBin = [ievt for ievt in evtList if lowEdge <= ievt.zenith < highEdge]
+		energyList = []
+		sta3_fluxList = []
+		sta1_fluxList = []
+		totalEvts_list = []
+		for ebin, ebinStart in enumerate(energyBins[:-1]):
+			lowEdge_E = energyBins[ebin]
+			highEdge_E = energyBins[ebin+1]
+			evtEBin = [ievt for ievt in evtZenBin if lowEdge_E <= ievt.energy < highEdge_E]
+			# totalEvts = len(evtEBin)
+			# weights = [ievt.H4aWeight for ievt in evtEBin]
+			weights = [ievt.directWeight for ievt in evtEBin]
+			totalEvts = np.sum(weights)
+			sta3_flux = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
+			sta1_flux = [ievt.STA1Trigger*ievt.H4aWeight for ievt in evtEBin]
+			# sta3_fluxList.append(sum(sta3_flux))
+			sta3_fluxList.append(sum(sta3_flux)/totalEvts*100.0)
+			totalEvts_list.append(totalEvts)
+			energyList.append((lowEdge_E+highEdge_E)/2.0)
+			print("zen energy frac",binStart,np.log10(ebinStart),sum(sta3_flux)/totalEvts*100.0,sum(sta1_flux)/totalEvts*100.0)
+			# if sum(sta3_flux) > 10**-3:
+			# 	ax.text((lowEdge_E+highEdge_E)/2.0,sum(sta3_flux),s="{0:.2f}".format(sum(sta3_flux)/totalEvts*100.0),fontsize=8)		
+		refLine=ax.plot(energyList,sta3_fluxList,".",ls='-',lw = 2.5,c=next(colorIter),label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),alpha=1)
+		ax.plot(energyList,totalEvts_list,".",ls='-',lw = 2.5,c=refLine[0].get_color(),label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),alpha=1)
+	ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
+	ax.set_xlabel(r"energy [GeV]", fontsize=22)
+	# ax.set_ylabel(r"rate [Hz]", fontsize=22))
+	ax.set_ylabel(r"percentage", fontsize=22)
+	# ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
+	ax.set_xscale('log')
+	# ax.set_yscale('log')
+	ax.grid(True,alpha=0.2)
+	ax.legend(fontsize=12)
+	plt.savefig(plotFolder+"/fluxEnergyZenith.pdf",transparent=False,bbox_inches='tight')
+	plt.close()
+
+plotFluxEnergyZenith(hdf5NullList,energyBins,weighting=False)
+
+
+def plotFluxEnergyZenithScaled(hdfFileList,energyBins,weighting):
+	'''
+	plots trigger efficiency in different zenith bins
+	'''
+	fig = plt.figure(figsize=(8,5))
+	gs = gridspec.GridSpec(nrows=1,ncols=1)
+	ax = fig.add_subplot(gs[0])
+	# colorIter = iter(colorsCustom)
+	colorIter = iter(colorsList)
+	for nbin, binStart in enumerate(sin2ZenBins[:-1]):
+		lowEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin]))
+		highEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))
+		evtZenBin = [ievt for ievt in evtList if lowEdge <= ievt.zenith < highEdge]
+		energyList = []
+		totalEvts_list = []
+		sta3_fluxList = []
+		sta1_fluxList = []
+		for ebin, ebinStart in enumerate(energyBins[:-1]):
+			lowEdge_E = energyBins[ebin]
+			highEdge_E = energyBins[ebin+1]
+			evtEBin = [ievt for ievt in evtZenBin if lowEdge_E <= ievt.energy < highEdge_E]
+			# totalEvts = len(evtEBin)
+			weights = [ievt.H4aWeight for ievt in evtEBin]
+			totalEvts = np.sum(weights)
+			sta3_flux = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
+			sta3_fluxList.append(sum(sta3_flux)*((lowEdge_E+highEdge_E)/2.0)**1.8)
+			totalEvts_list.append(totalEvts*((lowEdge_E+highEdge_E)/2.0)**1.8)
+			energyList.append((lowEdge_E+highEdge_E)/2.0)		
+		refLine=ax.plot(energyList,sta3_fluxList,".",ls='-',lw = 2.5,c=next(colorIter),label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),alpha=1)
+		ax.plot(energyList,totalEvts_list,".",ls='-',lw = 2.5,c=refLine[0].get_color(),label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),alpha=1)
+	ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
+	ax.set_xlabel(r"energy [GeV]", fontsize=22)
+	ax.set_ylabel(r"$E^{1.8}$ rate [Hz]", fontsize=22)
+	# ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
+	ax.set_xscale('log')
+	ax.set_yscale('log')
+	ax.grid(True,alpha=0.2)
+	# ax.legend(fontsize=12)
+	plt.savefig(plotFolder+"/fluxEnergyZenithScaled.pdf",transparent=False,bbox_inches='tight')
+	plt.close()
+
+plotFluxEnergyZenithScaled(hdf5NullList,energyBins,weighting=False)
+
+
+
+# def plotTrigEfficiency(hdfFileList,energyBins,weighting):
+# 	'''
+# 	plots trigger efficiency in different zenith bins
+# 	'''
+# 	fig = plt.figure(figsize=(8,5))
+# 	gs = gridspec.GridSpec(nrows=1,ncols=1)
+# 	ax = fig.add_subplot(gs[0])
+# 	for nbin, binStart in enumerate(sin2ZenBins[:-1]):
+# 		lowEdge = sin2ZenBins[nbin]
+# 		highEdge = sin2ZenBins[nbin+1]
+# 		energyList = []
+# 		sta3_efficiencyList = []
+# 		sta1_efficiencyList = []
+# 		for ebin, ebinStart in enumerate(energyBins[:-1]):
+# 			lowEdge_E = energyBins[ebin]
+# 			highEdge_E = energyBins[ebin+1]
+# 			totalEvts,sta1_evts,sta3_evts = getTriggeredEvents(hdfFileList,[lowEdge,highEdge],[lowEdge_E,highEdge_E],weighting)
+# 			sta3_trigEff = triggerEfficiency(sta3_evts,totalEvts)
+# 			sta1_trigEff = triggerEfficiency(sta1_evts,totalEvts)
+# 			sta3_efficiencyList.append(sta3_trigEff)
+# 			sta1_efficiencyList.append(sta1_trigEff)
+# 			energyList.append((lowEdge_E+highEdge_E)/2.0)		
+# 		ax.plot(energyList,sta3_efficiencyList,".",ls='-',lw = 2.5,label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),alpha=1)
+# 	ax.tick_params(axis='both',which='both', direction='in', labelsize=24)
+# 	ax.set_xlabel(r"energy [GeV]", fontsize=24)
+# 	ax.set_ylabel(r"trigger efficiency", fontsize=24)
+# 	# ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
+# 	ax.set_xscale('log')
+# 	ax.grid(True,alpha=0.2)
+# 	ax.legend(fontsize=12)
+# 	plt.savefig(plotFolder+"/trigEfficiency.pdf",transparent=False,bbox_inches='tight')
+# 	plt.close()
+
+# plotTrigEfficiency(hdf5NullList,energyBins,weighting=False)
+
+def plotEffectiveArea(zenChargeList):
+	'''
+	plots trigger efficiency in different zenith bins
+	'''
+	fig = plt.figure(figsize=(8,5))
+	gs = gridspec.GridSpec(nrows=1,ncols=1)
+	ax = fig.add_subplot(gs[0])
+	for nbin, binStart in enumerate(sin2ZenBins[:-1]):
+		zclist = [zc for zc in zenChargeList if (np.square(np.sin(zc.zenith)) >= sin2ZenBins[nbin] and np.square(np.sin(zc.zenith)) < sin2ZenBins[nbin+1])]
+		smtTrigEfficiencyList, globalTrigEfficiencyList = energyEfficiency(energyBins,zclist,"effArea")
+		ax.plot(energyBins[:-1],smtTrigEfficiencyList,".",ls='-',lw = 2.5,label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),alpha=1)
+	ax.tick_params(axis='both',which='both', direction='in', labelsize=24)
+	ax.set_xlabel(r"energy [GeV]", fontsize=24)
+	ax.set_ylabel(r"effective area [$km^{2}$]", fontsize=24)
+	# ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
+	ax.set_xscale('log')
+	ax.grid(True,alpha=0.2)
+	ax.legend(fontsize=12)
+	plt.savefig(plotFolder+"/trigEffectiveArea.pdf",transparent=False,bbox_inches='tight')
+	plt.close()
 
 def rateZen(hdfFileList,zenBins,weighting,suffix):
 	"""

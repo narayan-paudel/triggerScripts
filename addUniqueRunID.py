@@ -20,7 +20,8 @@ from icecube import topeventcleaning, tpx
 outputDir = "/home/enpaudel/icecube/triggerStudy/simFiles/"
 
 # GCD="/data/user/kath/testdata/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz"
-GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz"
+# GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz"
+GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz"
 
 
 import argparse
@@ -74,6 +75,7 @@ tray.AddModule("I3Writer","i3writer",
 	          # filename=str(outputDir)+"/hadronTimeTest/"+str(fileName)+"HadronNonTrigImProperTEvts.i3.gz",
 	          # filename=str(outputDir)+"/dataSetUnique/"+str(fileName)+"Unique.i3.gz",
 	          filename=str(outputDir)+"/dataSetUnique/"+str(fileName)+"Unique.i3.gz",
+	          # filename=str(outputDir)+"/dataSetUniqueSeedSame/"+str(fileName)+"Unique.i3.gz",
 	          streams=[icetray.I3Frame.TrayInfo,icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
 	          # streams=[icetray.I3Frame.TrayInfo,icetray.I3Frame.Geometry,icetray.I3Frame.Calibration,icetray.I3Frame.DetectorStatus,icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
 	          # streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],

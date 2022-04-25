@@ -198,6 +198,7 @@ def plotEffectiveArea(zenChargeList):
 	ax.legend(fontsize=12)
 	plt.savefig(plotFolder+"/trigEffectiveArea.pdf",transparent=False,bbox_inches='tight')
 	plt.close()
+	
 def getCircle(radius):
 	theta = np.linspace(0,2*np.pi,100)
 	return radius*np.cos(theta),radius*np.sin(theta)
