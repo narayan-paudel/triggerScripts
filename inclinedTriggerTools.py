@@ -76,17 +76,53 @@ class CREvent(object):
 		self.ITSTA3_filter = ITSTA3_filter
 	def addDeltaTHLC(self,deltaTHLC):
 		self.deltaTHLC = deltaTHLC
-	def addDeltaTSLC(self,deltaT3SLC,deltaT4SLC,deltaT5SLC):
+	def addDeltaTSLC(self,deltaT3SLC,deltaT4SLC,deltaT5SLC,deltaT6SLC,deltaT7SLC,deltaT8SLC):
 		self.deltaT3SLC = deltaT3SLC
 		self.deltaT4SLC = deltaT4SLC
 		self.deltaT5SLC = deltaT5SLC
-	def addSLCTrigger(self,slc3Trig,slc4Trig,slc5Trig):
+		self.deltaT6SLC = deltaT6SLC
+		self.deltaT7SLC = deltaT7SLC
+		self.deltaT8SLC = deltaT8SLC
+	def addDeltaTSLCSC(self,deltaT3SLCSC,deltaT4SLCSC,deltaT5SLCSC,deltaT6SLCSC,deltaT7SLCSC,deltaT8SLCSC):
+		self.deltaT3SLCSC = deltaT3SLCSC
+		self.deltaT4SLCSC = deltaT4SLCSC
+		self.deltaT5SLCSC = deltaT5SLCSC
+		self.deltaT6SLCSC = deltaT6SLCSC
+		self.deltaT7SLCSC = deltaT7SLCSC
+		self.deltaT8SLCSC = deltaT8SLCSC
+	def addSLCTrigger(self,slc3Trig,slc4Trig,slc5Trig,slc6Trig,slc7Trig,slc8Trig):
 		self.slc3Trig = slc3Trig
 		self.slc4Trig = slc4Trig
 		self.slc5Trig = slc5Trig
+		self.slc6Trig = slc6Trig
+		self.slc7Trig = slc7Trig
+		self.slc8Trig = slc8Trig
+	def addDeltaTTank(self,deltaT3Tank,deltaT4Tank,deltaT5Tank,deltaT6Tank,deltaT7Tank,deltaT8Tank):
+		self.deltaT3Tank = deltaT3Tank
+		self.deltaT4Tank = deltaT4Tank
+		self.deltaT5Tank = deltaT5Tank
+		self.deltaT6Tank = deltaT6Tank
+		self.deltaT7Tank = deltaT7Tank
+		self.deltaT8Tank = deltaT8Tank
+	def addDeltaTTankSC(self,deltaT3TankSC,deltaT4TankSC,deltaT5TankSC,deltaT6TankSC,deltaT7TankSC,deltaT8TankSC):
+		self.deltaT3TankSC = deltaT3TankSC
+		self.deltaT4TankSC = deltaT4TankSC
+		self.deltaT5TankSC = deltaT5TankSC
+		self.deltaT6TankSC = deltaT6TankSC
+		self.deltaT7TankSC = deltaT7TankSC
+		self.deltaT8TankSC = deltaT8TankSC
+	def addTankTrigger(self,tank3Trig,tank4Trig,tank5Trig,tank6Trig,tank7Trig,tank8Trig):
+		self.tank3Trig = tank3Trig
+		self.tank4Trig = tank4Trig
+		self.tank5Trig = tank5Trig
+		self.tank6Trig = tank6Trig
+		self.tank7Trig = tank7Trig
+		self.tank8Trig = tank8Trig
 	def addSLCHLC(self,nSLC,nHLC):
 		self.nSLC = nSLC
 		self.nHLC = nHLC
+
+
 
 def getValue_(hdfFile,key):
 	'''extract value of given key in hdf file 
@@ -122,14 +158,46 @@ def extractEvents_(hdfFile):
 	ITSTA5_filterList = getValue_(hdfFile,key="IceTopSTA5_13_filter")
 	ITSTA3_filterList = getValue_(hdfFile,key="SDST_IceTopSTA3_13_filter")
 	hlcHitList = getValue_(hdfFile,key="OfflineIceTopHLCTankPulsesTotalHit")
-	deltaTSLC3List = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_3SLCduration_t")
-	deltaTSLC4List = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_4SLCduration_t")
-	deltaTSLC5List = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_5SLCduration_t")
-	slc3TrigList = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLC3")
-	slc4TrigList = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLC4")
-	slc5TrigList = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLC5")
+	deltaTSLC3List = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_3SLCTankHit_t")
+	deltaTSLC3ListSC = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_3SLCTankHit_tSC")
+	deltaTSLC4List = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_4SLCTankHit_t")
+	deltaTSLC4ListSC = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_4SLCTankHit_tSC")
+	deltaTSLC5List = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_5SLCTankHit_t")
+	deltaTSLC5ListSC = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_5SLCTankHit_tSC")
+	deltaTSLC6List = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_6SLCTankHit_t")
+	deltaTSLC6ListSC = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_6SLCTankHit_tSC")
+	deltaTSLC7List = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_7SLCTankHit_t")
+	deltaTSLC7ListSC = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_7SLCTankHit_tSC")
+	deltaTSLC8List = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_8SLCTankHit_t")
+	deltaTSLC8ListSC = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_8SLCTankHit_tSC")	
+	slc3TrigList = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank3")
+	slc4TrigList = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank4")
+	slc5TrigList = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank5")
+	slc6TrigList = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank6")
+	slc7TrigList = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank7")
+	slc8TrigList = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank8")
 	nSLC = getValue_(hdfFile,key="OfflineIceTopSLCTankPulsesCleanTimeCleanChargeTotalHit")
 	nHLC = getValue_(hdfFile,key="OfflineIceTopHLCTankPulsesCleanTimeCleanChargeTotalHit")
+	nStations = getValue_(hdfFile,key="HLCSLC_hitStations")
+	nTanks = getValue_(hdfFile,key="HLCSLC_hitTanks")
+	deltaT3List = getValue_(hdfFile,key="HLCSLC_3TankHit_t")
+	deltaT4List = getValue_(hdfFile,key="HLCSLC_4TankHit_t")
+	deltaT5List = getValue_(hdfFile,key="HLCSLC_5TankHit_t")
+	deltaT6List = getValue_(hdfFile,key="HLCSLC_6TankHit_t")
+	deltaT7List = getValue_(hdfFile,key="HLCSLC_7TankHit_t")
+	deltaT8List = getValue_(hdfFile,key="HLCSLC_8TankHit_t")
+	deltaT3ListSC = getValue_(hdfFile,key="HLCSLC_3TankHit_tSC")
+	deltaT4ListSC = getValue_(hdfFile,key="HLCSLC_4TankHit_tSC")
+	deltaT5ListSC = getValue_(hdfFile,key="HLCSLC_5TankHit_tSC")
+	deltaT6ListSC = getValue_(hdfFile,key="HLCSLC_6TankHit_tSC")
+	deltaT7ListSC = getValue_(hdfFile,key="HLCSLC_7TankHit_tSC")
+	deltaT8ListSC = getValue_(hdfFile,key="HLCSLC_8TankHit_tSC")
+	TankHit3 = getValue_(hdfFile,key="HLCSLC_isTank3")
+	TankHit4 = getValue_(hdfFile,key="HLCSLC_isTank4")
+	TankHit5 = getValue_(hdfFile,key="HLCSLC_isTank5")
+	TankHit6 = getValue_(hdfFile,key="HLCSLC_isTank6")
+	TankHit7 = getValue_(hdfFile,key="HLCSLC_isTank7")
+	TankHit8 = getValue_(hdfFile,key="HLCSLC_isTank8")
 	# deltaTHLCList = pd.read_hdf(hdfFile,key="OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_delta_t")["item"].values
 	evtObjList = []
 	for nEvt,evtID in enumerate(eventList):
@@ -140,9 +208,15 @@ def extractEvents_(hdfFile):
 		thisEvt.addTrigger(ITSMTTriggeredList[nEvt],STA1TriggerList[nEvt])
 		thisEvt.addFilter(ITSTA5_filterList[nEvt],ITSTA3_filterList[nEvt])
 		thisEvt.hlcHit = hlcHitList[nEvt]
-		thisEvt.addDeltaTSLC(deltaTSLC3List[nEvt],deltaTSLC4List[nEvt],deltaTSLC5List[nEvt])
-		thisEvt.addSLCTrigger(slc3TrigList[nEvt],slc4TrigList[nEvt],slc5TrigList[nEvt])
+		thisEvt.addDeltaTSLC(deltaTSLC3List[nEvt],deltaTSLC4List[nEvt],deltaTSLC5List[nEvt],deltaTSLC6List[nEvt],deltaTSLC7List[nEvt],deltaTSLC8List[nEvt])
+		thisEvt.addDeltaTSLCSC(deltaTSLC3ListSC[nEvt],deltaTSLC4ListSC[nEvt],deltaTSLC5ListSC[nEvt],deltaTSLC6ListSC[nEvt],deltaTSLC7ListSC[nEvt],deltaTSLC8ListSC[nEvt])
+		thisEvt.addDeltaTTank(deltaT3List[nEvt],deltaT4List[nEvt],deltaT5List[nEvt],deltaT6List[nEvt],deltaT7List[nEvt],deltaT8List[nEvt])
+		thisEvt.addDeltaTTankSC(deltaT3ListSC[nEvt],deltaT4ListSC[nEvt],deltaT5ListSC[nEvt],deltaT6ListSC[nEvt],deltaT7ListSC[nEvt],deltaT8ListSC[nEvt])
+		thisEvt.addSLCTrigger(slc3TrigList[nEvt],slc4TrigList[nEvt],slc5TrigList[nEvt],slc6TrigList[nEvt],slc7TrigList[nEvt],slc8TrigList[nEvt])
+		thisEvt.addTankTrigger(TankHit3[nEvt],TankHit4[nEvt],TankHit5[nEvt],TankHit6[nEvt],TankHit7[nEvt],TankHit8[nEvt])
 		thisEvt.addSLCHLC(nSLC[nEvt],nHLC[nEvt])
+		thisEvt.nStations = nStations[nEvt]
+		thisEvt.nTanks = nTanks[nEvt]
 		# thisEvt.addDeltaTHLC(deltaTHLCList[nEvt])
 		evtObjList.append(thisEvt)
 	return evtObjList
@@ -303,6 +377,17 @@ def selectTriggered(eventList,triggerType):
 	else:
 		triggeredEvts = eventList
 	return triggeredEvts
+
+
+def triggerEfficiency(n_trig,n_total):
+	# print("n_trig,n_total",n_trig,n_total)
+	if n_total != 0:
+		return (n_trig/n_total)
+	else:
+		return 0
+
+def effectiveArea(n_trig,n_total,area):
+	return triggerEfficiency(n_trig,n_total)*area
 
 
 # def addDirectWeights(eventList):
@@ -818,25 +903,26 @@ def plotRadiusEnergy(energyBins):
 # 	# ax.hist(energy,bins=hitBins,histtype="step",lw=2.5,label=r"before weighting",alpha=1)
 # 	ax.step(binCenter,H,"-",where="mid",lw=2.5,label=legendLabel+r", {:.1f} Hz".format(sum(hist)),alpha=1)
 # 	return ax
-# def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel):
-# 	hitBins = np.linspace(14.0,17.0,31)
-# 	energy1 = [ievt.energy for ievt in triggeredEvts1]
-# 	weights1 = [ievt.H4aWeight for ievt in triggeredEvts1]
-# 	weights_direct1 = [ievt.directWeight for ievt in triggeredEvts1]
-# 	energy1 = np.log10(energy1)+9.0
-# 	hist1,binEdge1 = np.histogram(energy1,hitBins,weights=[w for w in weights1])
-# 	energy2 = [ievt.energy for ievt in triggeredEvts2]
-# 	weights2 = [ievt.H4aWeight for ievt in triggeredEvts2]
-# 	weights_direct2 = [ievt.directWeight for ievt in triggeredEvts2]
-# 	energy2 = np.log10(energy2)+9.0
-# 	hist2,binEdge2 = np.histogram(energy2,hitBins,weights=[w for w in weights2])
-# 	print("edge compares",binEdge1,binEdge2)
-# 	histRatio = [0 if abs(j-0) < 0.000000001 else i/j for i,j in zip(hist2,hist1)]
-# 	# binCenter = [(binEdge[i+1]+binEdge[i])/2.0 for i,j in enumerate(binEdge[:-1])]
-# 	binCenter = (binEdge1[:-1]+binEdge1[1:])/2.0
-# 	H = [h for h in histRatio]		
-# 	ax.step(binCenter,H,"-",where="mid",lw=2.5,label=legendLabel,alpha=1)
-# 	return ax
+def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel):
+	hitBins = np.linspace(14.0,17.0,31)
+	energy1 = [ievt.energy for ievt in triggeredEvts1]
+	weights1 = [ievt.H4aWeight for ievt in triggeredEvts1]
+	# weights_direct1 = [ievt.directWeight for ievt in triggeredEvts1]
+	energy1 = np.log10(energy1)+9.0
+	hist1,binEdge1 = np.histogram(energy1,hitBins,weights=[w for w in weights1])
+	energy2 = [ievt.energy for ievt in triggeredEvts2]
+	weights2 = [ievt.H4aWeight for ievt in triggeredEvts2]
+	# weights_direct2 = [ievt.directWeight for ievt in triggeredEvts2]
+	energy2 = np.log10(energy2)+9.0
+	hist2,binEdge2 = np.histogram(energy2,hitBins,weights=[w for w in weights2])
+	print("edge compares",binEdge1,binEdge2)
+	histRatio = [0 if abs(j-0) < 0.000000001 else i/j for i,j in zip(hist2,hist1)]
+	# binCenter = [(binEdge[i+1]+binEdge[i])/2.0 for i,j in enumerate(binEdge[:-1])]
+	binCenter = (binEdge1[:-1]+binEdge1[1:])/2.0
+	H = [h for h in histRatio]		
+	ax.step(binCenter,H,"-",where="mid",lw=2.5,label=legendLabel,alpha=1)
+	return ax
+
 
 # def plotEnergyFlux(eventList,yscale,suffix,energyScale,triggerType,plotTotal=True,sepZenBins=True):
 # 	"""
@@ -1216,15 +1302,7 @@ def plotRadiusEnergy(energyBins):
 # # trigZen(hdf5NullList,[0,10,20,30,40,50,65.1],False,True,"HLCVEM")
 
 
-# def triggerEfficiency(n_trig,n_total):
-# 	# print("n_trig,n_total",n_trig,n_total)
-# 	if n_total != 0:
-# 		return (n_trig/n_total)
-# 	else:
-# 		return 0
 
-# def effectiveArea(n_trig,n_total,area):
-# 	return triggerEfficiency(n_trig,n_total)*area
 
 
 # def plotTrigEfficiency(evtList,energyBins,weighting,triggerType,containment):

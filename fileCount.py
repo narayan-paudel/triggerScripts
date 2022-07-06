@@ -131,4 +131,4 @@ def completedJobs(filePath):
 
 	return lines
 cmpletedLines = completedJobs("../completedJobs.txt")
-print("completed jobs",len([i for i in newList if i in cmpletedLines]),[i for i in newList if i in cmpletedLines])
+print("completed jobs",len([i for i in newList if i in cmpletedLines]),[i for i in newList if i in cmpletedLines],len([i for i in newList if i in cmpletedLines]))

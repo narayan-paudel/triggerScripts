@@ -1,0 +1,23 @@
+########################################
+## submit description file
+########################################
+
+Universe   = vanilla
+Executable = /home/enpaudel/icecube/triggerStudy/triggerScripts/addUniqueRunID.sh
+Log        = /scratch/enpaudel/log/Uniq$(Process).log
+Output     = /data/user/enpaudel/triggerStudy/log/Uniq$(Process).out
+Error      = /data/user/enpaudel/triggerStudy/log/Uniq$(Process).err
+request_cpus = 1
+request_memory = 2GB
+request_disk = 1GB
+#request_gpus = 1
+#should_transfer_files   = IF_NEEDED
+#when_to_transfer_output = ON_EXIT
+#notification = Complete
+#notify_user = <email-address>
+#priority = <integer>
+##long job
+priority = 1100
+#set arguments to executable
+arguments = /home/enpaudel/icecube/triggerStudy/simFiles/dataSet/ODAT000684GenDetFiltProc.i3.bz2 /home/enpaudel/icecube/triggerStudy/simFiles/dataSet/ODAT000685GenDetFiltProc.i3.bz2 /home/enpaudel/icecube/triggerStudy/simFiles/dataSet/ODAT000804GenDetFiltProc.i3.bz2 /home/enpaudel/icecube/triggerStudy/simFiles/dataSet/ODAT000835GenDetFiltProc.i3.bz2 /home/enpaudel/icecube/triggerStudy/simFiles/dataSet/ODAT000895GenDetFiltProc.i3.bz2 /home/enpaudel/icecube/triggerStudy/simFiles/dataSet/ODAT000985GenDetFiltProc.i3.bz2 /home/enpaudel/icecube/triggerStudy/simFiles/dataSet/ODAT001044GenDetFiltProc.i3.bz2 /home/enpaudel/icecube/triggerStudy/simFiles/dataSet/ODAT001045GenDetFiltProc.i3.bz2 /home/enpaudel/icecube/triggerStudy/simFiles/dataSet/ODAT001074GenDetFiltProc.i3.bz2 /home/enpaudel/icecube/triggerStudy/simFiles/dataSet/ODAT001254GenDetFiltProc.i3.bz2 /home/enpaudel/icecube/triggerStudy/simFiles/dataSet/ODAT001344GenDetFiltProc.i3.bz2 /home/enpaudel/icecube/triggerStudy/simFiles/dataSet/ODAT001404GenDetFiltProc.i3.bz2 /home/enpaudel/icecube/triggerStudy/simFiles/dataSet/ODAT001464GenDetFiltProc.i3.bz2 
+queue 1

@@ -261,7 +261,7 @@ def getSPTime(particle,omkey,pulseTime):
 	domgeo = geoFrame["I3Geometry"].omgeo[omkey]
 	pos_sc = radcube.GetShowerFromIC(domgeo.position - particle.pos, particle.dir)
 	t_offset = pos_sc.z/dataclasses.I3Constants.c
-	print("deltaT",pulseTime + t_offset)
+	# print("deltaT",pulseTime + t_offset)
 	return pulseTime + t_offset
 
 def deltaTHLCHit(frame,pulseseriesList):
@@ -279,6 +279,7 @@ def deltaTHLCHit(frame,pulseseriesList):
 		times_listSC = []
 		hit_stations = []
 		hit_omkeys = []
+		domList = []
 		for om,pulses in psm:
 			for pulse in pulses:
 				hit_stations.append(om[0])
@@ -290,10 +291,12 @@ def deltaTHLCHit(frame,pulseseriesList):
 			tanks = [iom for iom in hit_omkeys if (iom[0] == istation and iom[0] not in exceptionTanks_HG.keys()) and (iom[1] == 61 or iom[1]== 63)  or 
 			(iom[0] == istation and iom[0] in [26,39] and (iom[1] == 62 or iom[1]== 63) ) or (iom[0] == istation and iom[0] == 67 and (iom[1] == 61 or iom[1] == 64) )]
 			pulses = [psm[om] for om in tanks]
+			doms = [om for om in tanks]
 			hit_tanks += tanks
+			domList += doms
 			# ipulses = [ipulse for ipulse in pulse for pulse in pulses]
 			hit_times = [pulse[0].time for pulse in pulses]
-			hit_timesSC = [getSPTime(particle,iom,ipulse[0].time) for iom,ipulse in zip(omList,pulseList)]
+			hit_timesSC = [getSPTime(particle,iom,ipulse[0].time) for iom,ipulse in zip(doms,pulses)]
 			# hit_times = [ipulse.time for pulse in pulses for ipulse in pulse]
 			# print("length of hit times",len(hit_times))
 			if len(hit_times)>=2:
@@ -506,7 +509,7 @@ def deltaT3SLCHit(frame,SLCpulseseriesList,HLCpulseseriesList):
 		if not frame.Has(trigStr):
 			frame[trigStr] = dataclasses.I3Double(0)
 
-def getPulses(pulseSeries):
+def getPulses(frame,pulseseries):
 	'''
 	Get pulses from pulse series
 	'''
@@ -533,7 +536,7 @@ def getPulses(pulseSeries):
 		pulsesList += pulses
 		domList += doms
 		hit_tanks += tanks
-	return pulseList,domList,hit_tanks,hit_stations
+	return pulsesList,domList,hit_tanks,hit_stations
 
 def triggerSLCHLCHits(frame,SLCpulseseriesList,HLCpulseseriesList):
 	'''
@@ -542,10 +545,13 @@ def triggerSLCHLCHits(frame,SLCpulseseriesList,HLCpulseseriesList):
 	particle = frame["MCPrimary"]
 	pulseseriesSLC = SLCpulseseriesList[0]
 	pulseseriesHLC = HLCpulseseriesList[0]
-	pulseListSLC,domListSLC,hit_tanksSLC,hit_stationsSLC = getPulses(pulseseriesSLC)
-	pulseListHLC,domListHLC,hit_tanksHLC,hit_stationsHLC = getPulses(pulseseriesHLC)
+	pulseListSLC,domListSLC,hit_tanksSLC,hit_stationsSLC = getPulses(frame,pulseseriesSLC)
+	pulseListHLC,domListHLC,hit_tanksHLC,hit_stationsHLC = getPulses(frame,pulseseriesHLC)
 	pulseList = [*pulseListHLC,*pulseListSLC]
 	domList = [*domListHLC,*domListSLC]
+	hit_tanks = [*hit_tanksHLC,*hit_tanksSLC]
+	hit_stations = [*hit_stationsHLC,*hit_stationsSLC]
+	hit_stations = list(set(hit_stations))
 	domList = [om for om,_ in sorted(zip(domList, pulseList), key=lambda pair: pair[1][0].time)]
 	pulseList.sort(key=lambda x:x[0].time)
 	times_list = [ipulse[0].time for ipulse in pulseList]
@@ -553,38 +559,56 @@ def triggerSLCHLCHits(frame,SLCpulseseriesList,HLCpulseseriesList):
 	frame["HLCSLC_hitTanks"] = dataclasses.I3Double(len(list(set(hit_tanks))))
 	frame["HLCSLC_hitStations"] = dataclasses.I3Double(len(hit_stations))
 	if len(pulseList) > 1:
-		frame[str(pulseseries)+"_2TankHit_t"] = dataclasses.I3VectorFloat(np.diff(times_list))
-		frame[str(pulseseries)+"_2TankHit_tSC"] = dataclasses.I3VectorFloat(np.diff(times_listSC))
+		frame["HLCSLC_2TankHit_t"] = dataclasses.I3VectorFloat(np.diff(times_list))
+		frame["HLCSLC_2TankHit_tSC"] = dataclasses.I3VectorFloat(np.diff(times_listSC))
 		if len(pulseList) > 2:
-			frame[str(pulseseries)+"_3TankHit_t"] = dataclasses.I3Double(pulseList[2][0].time - pulseList[0][0].time)
-			frame[str(pulseseries)+"_3TankHit_tSC"] = dataclasses.I3Double(getSPTime(particle,domList[2],pulseList[2][0].time)\
+			frame["HLCSLC_3TankHit_t"] = dataclasses.I3Double(pulseList[2][0].time - pulseList[0][0].time)
+			frame["HLCSLC_3TankHit_tSC"] = dataclasses.I3Double(getSPTime(particle,domList[2],pulseList[2][0].time)\
 			 - getSPTime(particle,domList[0],pulseList[0][0].time))
-			frame[str(pulseseries)+"_isTank3"] = dataclasses.I3Double(nHitTrigger(particle,domList,pulseList,nHit=3,window=5000,showerPlane=False))
+			frame["HLCSLC_isTank3"] = dataclasses.I3Double(nHitTrigger(particle,domList,pulseList,nHit=3,window=5000,showerPlane=False))
 			if len(pulseList) > 3:
-				frame[str(pulseseries)+"_4TankHit_t"] = dataclasses.I3Double(pulseList[3][0].time - pulseList[0][0].time)
-				frame[str(pulseseries)+"_4TankHit_tSC"] = dataclasses.I3Double(getSPTime(particle,domList[3],pulseList[3][0].time)\
+				frame["HLCSLC_4TankHit_t"] = dataclasses.I3Double(pulseList[3][0].time - pulseList[0][0].time)
+				frame["HLCSLC_4TankHit_tSC"] = dataclasses.I3Double(getSPTime(particle,domList[3],pulseList[3][0].time)\
 				 - getSPTime(particle,domList[0],pulseList[0][0].time))
-				frame[str(pulseseries)+"_isTank4"] = dataclasses.I3Double(nHitTrigger(particle,domList,pulseList,nHit=4,window=5000,showerPlane=False))
+				frame["HLCSLC_isTank4"] = dataclasses.I3Double(nHitTrigger(particle,domList,pulseList,nHit=4,window=5000,showerPlane=False))
 				if len(pulseList) > 4:
-					frame[str(pulseseries)+"_5TankHit_t"] = dataclasses.I3Double(pulseList[4][0].time - pulseList[0][0].time)
-					frame[str(pulseseries)+"_5TankHit_tSC"] = dataclasses.I3Double(getSPTime(particle,domList[4],pulseList[4][0].time)\
+					frame["HLCSLC_5TankHit_t"] = dataclasses.I3Double(pulseList[4][0].time - pulseList[0][0].time)
+					frame["HLCSLC_5TankHit_tSC"] = dataclasses.I3Double(getSPTime(particle,domList[4],pulseList[4][0].time)\
 					 - getSPTime(particle,domList[0],pulseList[0][0].time))
-					frame[str(pulseseries)+"_isTank5"] = dataclasses.I3Double(nHitTrigger(particle,domList,pulseList,nHit=5,window=5000,showerPlane=False))
-for deltaTstr in [str(pulseseries)+"_2TankHit_t",str(pulseseries)+"_3TankHit_t",str(pulseseries)+"_4TankHit_t",str(pulseseries)+"_5TankHit_t",
-str(pulseseries)+"_2TankHit_tSC",str(pulseseries)+"_3TankHit_tSC",str(pulseseries)+"_4TankHit_tSC",str(pulseseries)+"_5TankHit_tSC"]:
-	if not frame.Has(deltaTstr):
-		frame[deltaTstr] = dataclasses.I3Double(-111)
-for trigStr in [str(pulseseries)+"_isTank5",str(pulseseries)+"_isTank4",str(pulseseries)+"_isTank3"]:
-	if not frame.Has(trigStr):
-		frame[trigStr] = dataclasses.I3Double(0)
+					frame["HLCSLC_isTank5"] = dataclasses.I3Double(nHitTrigger(particle,domList,pulseList,nHit=5,window=5000,showerPlane=False))
+					if len(pulseList) > 5:
+						frame["HLCSLC_6TankHit_t"] = dataclasses.I3Double(pulseList[5][0].time - pulseList[0][0].time)
+						frame["HLCSLC_6TankHit_tSC"] = dataclasses.I3Double(getSPTime(particle,domList[5],pulseList[5][0].time)\
+						 - getSPTime(particle,domList[0],pulseList[0][0].time))
+						frame["HLCSLC_isTank6"] = dataclasses.I3Double(nHitTrigger(particle,domList,pulseList,nHit=6,window=5000,showerPlane=False))
+						if len(pulseList) > 6:
+							frame["HLCSLC_7TankHit_t"] = dataclasses.I3Double(pulseList[6][0].time - pulseList[0][0].time)
+							frame["HLCSLC_7TankHit_tSC"] = dataclasses.I3Double(getSPTime(particle,domList[6],pulseList[6][0].time)\
+							 - getSPTime(particle,domList[0],pulseList[0][0].time))
+							frame["HLCSLC_isTank7"] = dataclasses.I3Double(nHitTrigger(particle,domList,pulseList,nHit=7,window=5000,showerPlane=False))
+							if len(pulseList) > 7:
+								frame["HLCSLC_8TankHit_t"] = dataclasses.I3Double(pulseList[7][0].time - pulseList[0][0].time)
+								frame["HLCSLC_8TankHit_tSC"] = dataclasses.I3Double(getSPTime(particle,domList[7],pulseList[7][0].time)\
+								 - getSPTime(particle,domList[0],pulseList[0][0].time))
+								frame["HLCSLC_isTank8"] = dataclasses.I3Double(nHitTrigger(particle,domList,pulseList,nHit=8,window=5000,showerPlane=False))
+	for deltaTstr in ["HLCSLC_2TankHit_t","HLCSLC_2TankHit_tSC"]:
+		if not frame.Has(deltaTstr):
+			frame[deltaTstr] = dataclasses.I3VectorFloat(np.diff(times_list))
+	for deltaTstr in ["HLCSLC_3TankHit_t","HLCSLC_4TankHit_t","HLCSLC_5TankHit_t","HLCSLC_6TankHit_t","HLCSLC_7TankHit_t","HLCSLC_8TankHit_t","HLCSLC_3TankHit_tSC","HLCSLC_4TankHit_tSC",\
+	"HLCSLC_5TankHit_tSC","HLCSLC_6TankHit_tSC","HLCSLC_7TankHit_tSC","HLCSLC_8TankHit_tSC"]:
+		if not frame.Has(deltaTstr):
+			frame[deltaTstr] = dataclasses.I3Double(-111)
+	for trigStr in ["HLCSLC_isTank5","HLCSLC_isTank4","HLCSLC_isTank3","HLCSLC_isTank6","HLCSLC_isTank7","HLCSLC_isTank8"]:
+		if not frame.Has(trigStr):
+			frame[trigStr] = dataclasses.I3Double(0)
 
 def triggerSLCHits(frame,SLCpulseseriesList):
 	'''
 	looks into SLC and HLC hits; keys:[OfflineIceTopHLCTankPulses,OfflineIceTopSLCTankPulses,OfflineIceTopHLCVEMPulses,OfflineIceTopSLCVEMPulses]
 	'''
 	particle = frame["MCPrimary"]
-	pulseseriesSLC = SLCpulseseriesList[0]
-	pulseList,domList,hit_tanks,hit_stations = getPulses(pulseseriesSLC)
+	pulseseries = SLCpulseseriesList[0]
+	pulseList,domList,hit_tanks,hit_stations = getPulses(frame,pulseseries)
 	domList = [om for om,_ in sorted(zip(domList, pulseList), key=lambda pair: pair[1][0].time)]
 	pulseList.sort(key=lambda x:x[0].time)
 	times_list = [ipulse[0].time for ipulse in pulseList]
@@ -609,13 +633,35 @@ def triggerSLCHits(frame,SLCpulseseriesList):
 					frame[str(pulseseries)+"_5SLCTankHit_tSC"] = dataclasses.I3Double(getSPTime(particle,domList[4],pulseList[4][0].time)\
 					 - getSPTime(particle,domList[0],pulseList[0][0].time))
 					frame[str(pulseseries)+"_isSLCTank5"] = dataclasses.I3Double(nHitTrigger(particle,domList,pulseList,nHit=5,window=5000,showerPlane=False))
-for deltaTstr in [str(pulseseries)+"_2SLCTankHit_t",str(pulseseries)+"_3SLCTankHit_t",str(pulseseries)+"_4SLCTankHit_t",str(pulseseries)+"_5SLCTankHit_t",
-str(pulseseries)+"_2SLCTankHit_tSC",str(pulseseries)+"_3SLCTankHit_tSC",str(pulseseries)+"_4SLCTankHit_tSC",str(pulseseries)+"_5SLCTankHit_tSC"]:
-	if not frame.Has(deltaTstr):
-		frame[deltaTstr] = dataclasses.I3Double(-111)
-for trigStr in [str(pulseseries)+"_isSLCTank5",str(pulseseries)+"_isSLCTank4",str(pulseseries)+"_isSLCTank3"]:
-	if not frame.Has(trigStr):
-		frame[trigStr] = dataclasses.I3Double(0)
+					if len(pulseList) > 5:
+						frame[str(pulseseries)+"_6SLCTankHit_t"] = dataclasses.I3Double(pulseList[5][0].time - pulseList[0][0].time)
+						frame[str(pulseseries)+"_6SLCTankHit_tSC"] = dataclasses.I3Double(getSPTime(particle,domList[5],pulseList[5][0].time)\
+						 - getSPTime(particle,domList[0],pulseList[0][0].time))
+						frame[str(pulseseries)+"_isSLCTank6"] = dataclasses.I3Double(nHitTrigger(particle,domList,pulseList,nHit=6,window=5000,showerPlane=False))
+						if len(pulseList) > 6:
+							frame[str(pulseseries)+"_7SLCTankHit_t"] = dataclasses.I3Double(pulseList[6][0].time - pulseList[0][0].time)
+							frame[str(pulseseries)+"_7SLCTankHit_tSC"] = dataclasses.I3Double(getSPTime(particle,domList[6],pulseList[6][0].time)\
+							 - getSPTime(particle,domList[0],pulseList[0][0].time))
+							frame[str(pulseseries)+"_isSLCTank7"] = dataclasses.I3Double(nHitTrigger(particle,domList,pulseList,nHit=7,window=5000,showerPlane=False))
+							if len(pulseList) > 7:
+								frame[str(pulseseries)+"_8SLCTankHit_t"] = dataclasses.I3Double(pulseList[7][0].time - pulseList[0][0].time)
+								frame[str(pulseseries)+"_8SLCTankHit_tSC"] = dataclasses.I3Double(getSPTime(particle,domList[7],pulseList[7][0].time)\
+								 - getSPTime(particle,domList[0],pulseList[0][0].time))
+								frame[str(pulseseries)+"_isSLCTank8"] = dataclasses.I3Double(nHitTrigger(particle,domList,pulseList,nHit=8,window=5000,showerPlane=False))
+
+	for deltaTstr in [str(pulseseries)+"_2TankHit_t",str(pulseseries)+"_2TankHit_tSC"]:
+		if not frame.Has(deltaTstr):
+			frame[deltaTstr] = dataclasses.I3VectorFloat([])
+	for deltaTstr in [str(pulseseries)+"_3SLCTankHit_t",str(pulseseries)+"_4SLCTankHit_t",str(pulseseries)+"_5SLCTankHit_t",
+	str(pulseseries)+"_6SLCTankHit_t",str(pulseseries)+"_7SLCTankHit_t",str(pulseseries)+"_8SLCTankHit_t",
+	str(pulseseries)+"_3SLCTankHit_tSC",str(pulseseries)+"_4SLCTankHit_tSC",str(pulseseries)+"_5SLCTankHit_tSC",
+	str(pulseseries)+"_6SLCTankHit_tSC",str(pulseseries)+"_7SLCTankHit_tSC",str(pulseseries)+"_8SLCTankHit_tSC"]:
+		if not frame.Has(deltaTstr):
+			frame[deltaTstr] = dataclasses.I3Double(-111)
+	for trigStr in [str(pulseseries)+"_isSLCTank5",str(pulseseries)+"_isSLCTank4",str(pulseseries)+"_isSLCTank3"\
+	,str(pulseseries)+"_isSLCTank6",str(pulseseries)+"_isSLCTank7",str(pulseseries)+"_isSLCTank8"]:
+		if not frame.Has(trigStr):
+			frame[trigStr] = dataclasses.I3Double(0)
 
 
 
@@ -802,23 +848,11 @@ tray.AddModule(triggerSLCHLCHits,"deltTSLCHLC",
 	           # pulseseriesList=['OfflineIceTopHLCTankPulses']
 	           	)
 
-tray.AddModule(triggerSLCHLCHits,"deltTSLCHLC",
-	           Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	           # Streams=[icetray.I3Frame.DAQ],
-	           SLCpulseseriesList=['OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge'
-	           ],
-	           HLCpulseseriesList=['OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge'
-	           ]
-	           # pulseseriesList=['OfflineIceTopHLCTankPulses']
-	           	)
-
 tray.AddModule(triggerSLCHits,"deltTSLC",
 	           Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
 	           # Streams=[icetray.I3Frame.DAQ],
 	           SLCpulseseriesList=['OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge'
 	           ],
-	           HLCpulseseriesList=['OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge'
-	           ]
 	           # pulseseriesList=['OfflineIceTopHLCTankPulses']
 	           	)
 
@@ -1082,8 +1116,8 @@ tray.AddModule(icetop_Level3_scripts.modules.CheckContainment,
 
 tray.AddModule("I3Writer","i3writer",
 	          # filename=str(outputDir)+"/hadronTimeTest/"+str(fileName)+"HadronNonTrigImProperTEvts.i3.gz",
-	          filename=str(outputDir)+"/dataSetCleanTestSeedSame/"+str(fileName)+"CleanVEMEvts.i3.gz",
-	          # filename=str(outputDir)+"/dataSetCleanTest/"+str(fileName)+"CleanVEMEvts.i3.gz",
+	          # filename=str(outputDir)+"/dataSetCleanTestSeedSame/"+str(fileName)+"CleanVEMEvts.i3.gz",
+	          filename=str(outputDir)+"/dataSetCleanTest/"+str(fileName)+"CleanVEMEvts.i3.gz",
 	          # filename=str(outputDir)+"/dataSetCleanOfficial/"+str(fileName)+"CleanVEMEvts.i3.gz",
 	          streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
 	          # streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
@@ -1093,8 +1127,8 @@ tray.AddModule("I3Writer","i3writer",
 # tray.AddModule("I3NullSplitter","nullsplitter")
 
 tray.Add(hdfwriter.I3HDFWriter, 'hdfNull',
-    # Output=str(outputDir)+"/dataSetCleanTest/"+str(fileName)+"CleanVEMEvts.hdf5",
-    Output=str(outputDir)+"/dataSetCleanTestSeedSame/"+str(fileName)+"CleanVEMEvts.hdf5",
+    Output=str(outputDir)+"/dataSetCleanTest/"+str(fileName)+"CleanVEMEvts.hdf5",
+    # Output=str(outputDir)+"/dataSetCleanTestSeedSame/"+str(fileName)+"CleanVEMEvts.hdf5",
     # Output=str(outputDir)+"/dataSetCleanOfficial/"+str(fileName)+"CleanVEMEvts.hdf5",
     # Output=str(outputDir)+"/hadronTimeTest/"+str(fileName)+"NullHadronNonTrigImProperTEvts.hdf5",
     CompressionLevel=9,
@@ -1130,9 +1164,21 @@ tray.Add(hdfwriter.I3HDFWriter, 'hdfNull',
     "OfflineIceTopSLCTankPulses_hitTanks","OfflineIceTopHLCTankPulsesCleanTimeCleanCharge_hitStations",
     "OfflineIceTopSLCTankPulsesCleanTimeCleanCharge_hitStations","OfflineIceTopHLCTankPulses_hitStations",
     "OfflineIceTopSLCTankPulses_hitStations",'OfflineIceTopHLCTankPulses_isSTA1','OfflineIceTopHLCTankPulsesCleanTimeCleanCharge_isSTA1',
-    "IceTopSTA5_13_filter","SDST_IceTopSTA3_13_filter","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLC5","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLC4"
-    ,"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLC3","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_5SLCduration_t",
-    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_4SLCduration_t","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_3SLCduration_t"
+    "IceTopSTA5_13_filter","SDST_IceTopSTA3_13_filter","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank6",
+    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank7","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank8",
+    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_6SLCTankHit_t","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_7SLCTankHit_t",
+    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_8SLCTankHit_t","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_6SLCTankHit_tSC",
+    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_7SLCTankHit_tSC","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_8SLCTankHit_tSC",
+    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank5","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank4"
+    ,"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank3","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_5SLCTankHit_t",
+    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_4SLCTankHit_t","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_3SLCTankHit_t",
+    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_2SLCTankHit_t","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_2SLCTankHit_tSC",
+    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_5SLCTankHit_tSC","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_4SLCTankHit_tSC",
+    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_3SLCTankHit_tSC","HLCSLC_2TankHit_t","HLCSLC_2TankHit_tSC","HLCSLC_3TankHit_t",
+    "HLCSLC_3TankHit_tSC","HLCSLC_4TankHit_t","HLCSLC_4TankHit_tSC","HLCSLC_5TankHit_t","HLCSLC_5TankHit_tSC","HLCSLC_6TankHit_t",
+    "HLCSLC_7TankHit_tSC","HLCSLC_8TankHit_t","HLCSLC_6TankHit_tSC","HLCSLC_7TankHit_t","HLCSLC_8TankHit_tSC",
+    "HLCSLC_hitStations","HLCSLC_hitTanks","HLCSLC_isTank3","HLCSLC_isTank4","HLCSLC_isTank5","HLCSLC_isTank6",
+    "HLCSLC_isTank7","HLCSLC_isTank8"
     ]
     )
 

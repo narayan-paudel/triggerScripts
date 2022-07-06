@@ -8,8 +8,8 @@ ABS_PATH_HERE = str(os.path.dirname(os.path.realpath(__file__)))
 # ABS_PATH_HERE = "./"
 ABS_PATH_HERE += "/"
 print("abs path",ABS_PATH_HERE)
-# inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSet/"
 inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSet/"
+# inputPath = "/home/enpaudel/icecube/triggerStudy/simFilesTest/dataSet/"
 inputList = sorted(glob.glob(inputPath+"*DAT*GenDetFiltProc.i3.bz2"))
 
 submitFileName = ABS_PATH_HERE+"tempSubmitUnique.sub"

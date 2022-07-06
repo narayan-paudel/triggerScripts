@@ -9,8 +9,8 @@ ABS_PATH_HERE = str(os.path.dirname(os.path.realpath(__file__)))
 ABS_PATH_HERE += "/"
 print("abs path",ABS_PATH_HERE)
 ############################################################################
-# inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique/"
-inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUniqueSeedSame/"
+inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique/"
+# inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUniqueSeedSame/"
 OinputList = sorted(glob.glob(inputPath+"ODAT*GenDetFiltProcUnique.i3.gz"))
 pinputList = sorted(glob.glob(inputPath+"pDAT*GenDetFiltProcUnique.i3.gz"))
 HeinputList = sorted(glob.glob(inputPath+"HeDAT*GenDetFiltProcUnique.i3.gz"))
@@ -47,7 +47,7 @@ def makeSubFile(fileList):
 	submitFile.write("#notify_user = <email-address>\n")
 	submitFile.write("#priority = <integer>\n")
 	submitFile.write("##long job\n")
-	priority=900
+	priority=9900
 	# submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
 	submitFile.write("priority = {}\n".format(priority))
 	submitFile.write("#set arguments to executable\n")
@@ -66,7 +66,7 @@ def submitToCondorFile(fileList,primary):
 	# print("file list",*fileList[:2])
 	print("corsika id",corsikaID,primary)
 	subprocess.call(["condor_submit tempSubmitClean.sub -batch-name {0}--{1}".format(primary,corsikaID)], shell=True)
-	# subprocess.call(["rm tempSubmit.sub"], shell=True)
+	subprocess.call(["rm tempSubmitClean.sub"], shell=True)
 
 def submitToCondor(fileList,chunk,primary):
 	fileChunks = [fileList[i:i + chunk] for i in range(0, len(fileList), chunk)]
@@ -74,7 +74,7 @@ def submitToCondor(fileList,chunk,primary):
 		print("submitting to condor",ifileList[0])
 		submitToCondorFile(ifileList,primary)
 
-submitToCondor(pinputList,100,"p")
-submitToCondor(HeinputList,100,"He")
-submitToCondor(OinputList,100,"O")
-submitToCondor(FeinputList,100,"Fe")
+submitToCondor(pinputList,500,"p")
+submitToCondor(HeinputList,500,"He")
+submitToCondor(OinputList,500,"O")
+submitToCondor(FeinputList,500,"Fe")

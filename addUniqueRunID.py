@@ -2,6 +2,8 @@
 
 import os
 import sys
+import subprocess
+
 from I3Tray import I3Tray, I3Units
 from icecube.simprod import segments
 from icecube.simprod.util import simprodtray, arguments
@@ -18,6 +20,7 @@ from icecube import topeventcleaning, tpx
 
 
 outputDir = "/home/enpaudel/icecube/triggerStudy/simFiles/"
+# outputDir = "/home/enpaudel/icecube/triggerStudy/simFilesTest/"
 
 # GCD="/data/user/kath/testdata/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz"
 # GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz"
@@ -30,6 +33,9 @@ parser.add_argument('input', type=str, nargs='+', default="/home/enpaudel/icecub
 args = parser.parse_args()
 
 fileName = args.input[0].split("/")[-1]
+fileNameGen = fileName[:-18]+fileName[-7:]
+subprocess.call(["mv {}dataSet/{} {}dataSetGen/".format(outputDir,fileNameGen,outputDir)], shell=True)
+print(fileNameGen)
 fileName = fileName.split(".")[0]
 print(fileName)
 

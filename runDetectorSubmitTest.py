@@ -13,7 +13,15 @@ basePathHelium = "/data/sim/IceTop/2009/generated/CORSIKA-ice-top/11663/"
 basePathOxygen = "/data/sim/IceTop/2009/generated/CORSIKA-ice-top/12605/"
 print("abs path",ABS_PATH_HERE)
 #no of files 10410 = 59997, else 60000
-energyList = ['5.0', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8', '5.9', '6.0', '6.1', '6.2', '6.3', '6.4', '6.5', '6.6', '6.7', '6.8', '6.9', '7.0', '7.1', '7.2', '7.3', '7.4', '7.5', '7.6', '7.7', '7.8', '7.9']
+# energyList = ['5.0']#, '5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8', '5.9', '6.0', '6.1', '6.2', '6.3', '6.4', '6.5', '6.6', '6.7', '6.8', '6.9', '7.0', '7.1', '7.2', '7.3', '7.4', '7.5', '7.6', '7.7', '7.8', '7.9']
+# energyList = ['5.0', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8', '5.9', '6.0', '6.1', '6.2', '6.3', '6.4', '6.5', '6.6', '6.7', '6.8', '6.9']
+# energyList = ['7.0', '7.1', '7.2', '7.3', '7.4','7.5', '7.6', '7.7', '7.8', '7.9']
+# energyList = ['5.0', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8', '5.9', '6.0', '6.1', '6.2', '6.3', '6.4', '6.5', '6.6', '6.7', '6.8', '6.9', '7.0', '7.1', '7.2', '7.3', '7.4', '7.5', '7.6', '7.7', '7.8', '7.9']
+# energyList = ['5.0', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8', '5.9', '6.0', '6.1', '6.2', '6.3', '6.4', '6.5', '6.6', '6.7', '6.8', '6.9', '7.0', '7.1', '7.2', '7.3', '7.4', '7.5', '7.6', '7.7', '7.8', '7.9']
+# energyList = ['7.5', '7.6', '7.7', '7.8', '7.9']
+# energyList = ['7.4','7.5', '7.6', '7.7', '7.8', '7.9']
+# energyList = ['7.1', '7.2']
+energyList = ['7.3']
 
 simFiles = "/home/enpaudel/icecube/triggerStudy/simFiles/"
 
@@ -32,12 +40,12 @@ def makeSubFile(corsikaFile,primary):
 	submitFile.write("## submit description file\n")
 	submitFile.write("########################################\n\n")
 	submitFile.write("Universe   = vanilla\n")
-	submitFile.write("Executable = /home/enpaudel/icecube/triggerStudy/triggerScripts/runDetectorCluster.sh\n")
+	submitFile.write("Executable = /home/enpaudel/icecube/triggerStudy/triggerScripts/runDetectorClusterTest.sh\n")
 	submitFile.write("Log        = /scratch/enpaudel/log/trigStudy{0}{1}.log\n".format(primary,corsikaID))
 	submitFile.write("Output     = /data/user/enpaudel/triggerStudy/log/trigStudy{0}{1}.out\n".format(primary,corsikaID))
 	submitFile.write("Error      = /data/user/enpaudel/triggerStudy/log/trigStudy{0}{1}.err\n".format(primary,corsikaID))
 	submitFile.write("request_cpus = 1\n")
-	submitFile.write("request_memory = 3GB\n")
+	submitFile.write("request_memory = 2GB\n")
 	submitFile.write("request_disk = 1GB\n")
 	submitFile.write("#request_gpus = 1\n")
 	submitFile.write("#should_transfer_files   = IF_NEEDED\n")
@@ -46,20 +54,18 @@ def makeSubFile(corsikaFile,primary):
 	submitFile.write("#notify_user = <email-address>\n")
 	submitFile.write("#priority = <integer>\n")
 	submitFile.write("##long job\n")
-	# priority=100000
-	submitFile.write("+AccountingGroup=\"2_week.$ENV(USER)\" \n\n")
-	# if energyID > 7.7:
+	priority=100000
+	# submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
+	# if energyID > 7.6:
 	# 	# priority=0
-	# 	submitFile.write("+AccountingGroup=\"2_week.$ENV(USER)\" \n\n")		
-	# 	# submitFile.write('+AccountingGroup=\"long.$ENV(USER)\" \n')
-	# 	# submitFile.write('+AccountingGroup = "long.$ENV(USER)" #other options 1_week, 2_week, instead of long\n')
-	# 	# submitFile.write('+AccountingGroup = "1_week.$ENV(USER)" #other options 1_week, 2_week, instead of long\n')
-	# 	# submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
-	# elif energyID > 7.2:
+	# 	submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")		
+		# submitFile.write('+AccountingGroup=\"long.$ENV(USER)\" \n')
+		# submitFile.write('+AccountingGroup = "long.$ENV(USER)" #other options 1_week, 2_week, instead of long\n')
+		# submitFile.write('+AccountingGroup = "1_week.$ENV(USER)" #other options 1_week, 2_week, instead of long\n')
+		# submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
+	# elif energyID > 7.6:
 	# 	submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
-	# elif energyID > 7.0:
-	# 	submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
-	# submitFile.write("priority = {}\n".format(priority))
+	submitFile.write("priority = {}\n".format(priority))
 	submitFile.write("#set arguments to executable\n")
 	submitFile.write("arguments = {0}\n\n".format(corsikaFile))
 	submitFile.write("queue 1\n")
@@ -121,14 +127,8 @@ idleLines = idleJobs("../idleJobs.txt")
 # jobs7 = ["He-59","He-60","Fe-59","Fe-60","O-59","O-60","p-59","p-60","He-89","He-90","Fe-89","Fe-90","O-89","O-90","p-89","p-90"]
 queueJobs = runJobs+idleLines
 # queueJobs = runJobs
-# jobs7 = ["He-357","O-117","O-357","O-387","O-507","O-597","O-596","O-535","Fe-326","Fe-356","Fe-446","Fe-506","Fe-658","Fe-897","Fe-688","Fe-718","Fe-778","Fe-808"]
-# jobs7 = ["Fe-208"]
-# jobs7 = ["p-387","O-3777","O-3807","He-30","He-447","p-1078","p-1168","p-1288","p-1079","p-1229"]
-# jobs7 = ["p-569","p-1289","p-1319","p-1349","p-1379"]
-# jobs7 = ["Fe-30"]
-jobs7 = ["He-928","He-1378"]
-jobs7LargerMemory = ["He-898","He-838"] #6 GB
-# queueJobs = ["Fe-30"]
+# jobs7 = ["He-357","O-117","O-357","O-387","O-507","O-597","O-596","O-535","Fe-326","Fe-356","Fe-446","Fe-506"]
+jobs7 = []
 # queueJobs = []
 
 
@@ -157,11 +157,11 @@ def submitToCondorFile(corsikaFile,primary):
 	simulatedFile = simFiles+"dataSetUnique/"+primary+corsikaID+"GenDetFiltProcUnique.i3.gz"
 	# simulatedFile = simFiles+"dataSetUnique/"+primary+corsikaID+"GenDetFiltProcUnique.i3.gz"
 	# print("simulated file",simulatedFile)
-	if not os.path.exists(simulatedFile):
+	if os.path.exists(simulatedFile):
 		corsikaID = int(''.join(i for i in corsikaID if i.isdigit()))
 		batName = "{0}-{1}".format(primary,corsikaID)
 		if batName not in queueJobs:
-			subprocess.call(["condor_submit tempSubmit.sub -batch-name {0}-{1}".format(primary,corsikaID)], shell=True)
+			subprocess.call(["condor_submit tempSubmit.sub -batch-name {0}----{1}".format(primary,corsikaID)], shell=True)
 			print("batch name",batName)
 			# if batName not in jobs7:
 			if batName in jobs7:
