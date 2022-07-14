@@ -32,7 +32,7 @@ def makeSubFile(corsikaFile,primary):
 	submitFile.write("## submit description file\n")
 	submitFile.write("########################################\n\n")
 	submitFile.write("Universe   = vanilla\n")
-	submitFile.write("Executable = /home/enpaudel/icecube/triggerStudy/triggerScripts/runDetectorCluster.sh\n")
+	submitFile.write("Executable = /home/enpaudel/icecube/triggerStudy/triggerScripts/runDetectorL2Cluster.sh\n")
 	submitFile.write("Log        = /scratch/enpaudel/log/trigStudy{0}{1}.log\n".format(primary,corsikaID))
 	submitFile.write("Output     = /data/user/enpaudel/triggerStudy/log/trigStudy{0}{1}.out\n".format(primary,corsikaID))
 	submitFile.write("Error      = /data/user/enpaudel/triggerStudy/log/trigStudy{0}{1}.err\n".format(primary,corsikaID))
@@ -47,18 +47,18 @@ def makeSubFile(corsikaFile,primary):
 	submitFile.write("#priority = <integer>\n")
 	submitFile.write("##long job\n")
 	# priority=100000
-	# submitFile.write("+AccountingGroup=\"2_week.$ENV(USER)\" \n\n")
-	if energyID > 7.7:
-		# priority=0
-		submitFile.write("+AccountingGroup=\"2_week.$ENV(USER)\" \n\n")		
-		# submitFile.write('+AccountingGroup=\"long.$ENV(USER)\" \n')
-		# submitFile.write('+AccountingGroup = "long.$ENV(USER)" #other options 1_week, 2_week, instead of long\n')
-		# submitFile.write('+AccountingGroup = "1_week.$ENV(USER)" #other options 1_week, 2_week, instead of long\n')
-		# submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
-	elif energyID > 7.2:
-		submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
-	elif energyID > 7.0:
-		submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
+	submitFile.write("+AccountingGroup=\"2_week.$ENV(USER)\" \n\n")
+	# if energyID > 7.7:
+	# 	# priority=0
+	# 	submitFile.write("+AccountingGroup=\"2_week.$ENV(USER)\" \n\n")		
+	# 	# submitFile.write('+AccountingGroup=\"long.$ENV(USER)\" \n')
+	# 	# submitFile.write('+AccountingGroup = "long.$ENV(USER)" #other options 1_week, 2_week, instead of long\n')
+	# 	# submitFile.write('+AccountingGroup = "1_week.$ENV(USER)" #other options 1_week, 2_week, instead of long\n')
+	# 	# submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
+	# elif energyID > 7.2:
+	# 	submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
+	# elif energyID > 7.0:
+	# 	submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
 	# submitFile.write("priority = {}\n".format(priority))
 	submitFile.write("#set arguments to executable\n")
 	submitFile.write("arguments = {0}\n\n".format(corsikaFile))
@@ -119,7 +119,7 @@ idleLines = idleJobs("../idleJobs.txt")
 # jobs7 = ["Fe-88","Fe-118","Fe-148","Fe-208","Fe-237","Fe-238","Fe-268","Fe-298","Fe-326","Fe-327","Fe-328","Fe-387","Fe-417","Fe-506","Fe-536","Fe-596","Fe-597",
 # "p-238","p-420","p-450","p-508","p-538","p-539","He-207","O-3028","O-3058"]
 # jobs7 = ["He-59","He-60","Fe-59","Fe-60","O-59","O-60","p-59","p-60","He-89","He-90","Fe-89","Fe-90","O-89","O-90","p-89","p-90"]
-# queueJobs = runJobs+idleLines
+queueJobs = runJobs+idleLines
 # queueJobs = runJobs
 # jobs7 = ["He-357","O-117","O-357","O-387","O-507","O-597","O-596","O-535","Fe-326","Fe-356","Fe-446","Fe-506","Fe-658","Fe-897","Fe-688","Fe-718","Fe-778","Fe-808"]
 # jobs7 = ["Fe-208"]
@@ -129,7 +129,7 @@ idleLines = idleJobs("../idleJobs.txt")
 jobs7 = ["He-928","He-1378"]
 jobs7LargerMemory = ["He-898","He-838"] #6 GB
 # queueJobs = ["Fe-30"]
-queueJobs = []
+# queueJobs = []
 
 
 def getCORSIKALists(basePath,energyDir):
@@ -145,7 +145,7 @@ def getCorsikaFiles(basePath,energyList):
 		corsikaList=getCORSIKALists(basePath,ienergy)
 		# print("corsikaList",corsikaList)
 		# corsikaFiles.append(corsikaList[:11])
-		corsikaFiles += corsikaList[150:200]
+		corsikaFiles += corsikaList[0:200]
 		# corsikaFiles += corsikaList
 	# print("corsika files",corsikaFiles)
 	return corsikaFiles

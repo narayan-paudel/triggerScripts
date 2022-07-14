@@ -34,7 +34,7 @@ args = parser.parse_args()
 
 fileName = args.input[0].split("/")[-1]
 fileNameGen = fileName[:-18]+fileName[-7:]
-subprocess.call(["mv {}dataSet/{} {}dataSetGen/".format(outputDir,fileNameGen,outputDir)], shell=True)
+# subprocess.call(["mv {}dataSet/{} {}dataSetGen/".format(outputDir,fileNameGen,outputDir)], shell=True)
 print(fileNameGen)
 fileName = fileName.split(".")[0]
 print(fileName)

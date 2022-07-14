@@ -2,11 +2,11 @@
 HERE=$(dirname $(realpath -s $0))
 BASEDIR=$HERE/
 
-# eval `/cvmfs/icecube.opensciencegrid.org/py3-v4.1.1/setup.sh`
+eval `/cvmfs/icecube.opensciencegrid.org/py3-v4.1.1/setup.sh`
 
 PYTHON_SCRIPT=$BASEDIR/addUniqueRunID.py
-# ICETRAY_ENV=/home/enpaudel/icecube/surfaceArray/buildTest/env-shell.sh
-ICETRAY_ENV=/home/enpaudel/icecube/surfaceArray/build/env-shell.sh
+I3BUILD=/data/user/enpaudel/icecube_software/icetray_main/build
+ICETRAY_ENV=$I3BUILD/env-shell.sh
 # libraryAddress="/data/user/enpaudel/polarizationStudy/data/"
 
 fileDir="/home/enpaudel/icecube/triggerStudy/simFiles/dataSet/"

@@ -762,7 +762,7 @@ tray.AddModule(checkFilter,"filterChk",
 				Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
 				)
 
-tray.AddModule('I3HLCTankPulseMerger',
+tray.AddModule('I3TankPulseMerger',
 	           # filenameList=[GCD]+args.input,
 	           InputVEMPulses = 'OfflineIceTopSLCVEMPulses',
 	           OutputTankPulses = 'OfflineIceTopSLCTankPulses',
@@ -777,12 +777,12 @@ tray.AddModule(chargeCleanedPulses,"cleanCharge",
 	keys=['OfflineIceTopSLCVEMPulsesCleanTime','OfflineIceTopHLCVEMPulsesCleanTime',"IceTopPulsesCleanTime"],
 	streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics])
 
-tray.AddModule('I3HLCTankPulseMerger',"slcMerger2",
+tray.AddModule('I3TankPulseMerger',"slcMerger2",
 	           InputVEMPulses ='OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge',
 	           OutputTankPulses = 'OfflineIceTopSLCTankPulsesCleanTimeCleanCharge',
 	           ExcludedTanks  = 'ExcludedSLCTanksAfterCleaning'
 	           )
-tray.AddModule('I3HLCTankPulseMerger',"hlcMerger",
+tray.AddModule('I3TankPulseMerger',"hlcMerger",
 	           InputVEMPulses ='OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge',
 	           OutputTankPulses = 'OfflineIceTopHLCTankPulsesCleanTimeCleanCharge',
 	           ExcludedTanks  = 'ExcludedHLCTanksAfterCleaning'
