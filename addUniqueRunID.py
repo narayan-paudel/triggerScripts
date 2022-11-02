@@ -26,6 +26,10 @@ outputDir = "/home/enpaudel/icecube/triggerStudy/simFiles/"
 # GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz"
 GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz"
 
+# dataSetUnique = "dataSetUnique/"
+# dataSetUnique = "dataSetUniqueFRT/"
+dataSetUnique = "dataSetUniqueWFRT/"
+
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -51,7 +55,7 @@ def addUniqieEvtID(frame):
 			particleID = 3
 		elif "Fe" in particle_type:
 			particleID = 4
-		print("particle type",particle_type)
+		# print("particle type",particle_type)
 	if frame.Has("I3EventHeader"):
 		newHead.start_time = frame["I3EventHeader"].start_time
 		newHead.end_time = frame["I3EventHeader"].end_time
@@ -65,7 +69,7 @@ def addUniqieEvtID(frame):
 		newHead.event_id = newEvtID
 		del frame["I3EventHeader"]
 		frame.Put("I3EventHeader",newHead)
-		print("new event header",frame["I3EventHeader"].event_id)
+		# print("new event header",frame["I3EventHeader"].event_id)
 
 
 tray = I3Tray()
@@ -80,7 +84,7 @@ tray.AddModule(addUniqieEvtID,"uniqEvtID",
 tray.AddModule("I3Writer","i3writer",
 	          # filename=str(outputDir)+"/hadronTimeTest/"+str(fileName)+"HadronNonTrigImProperTEvts.i3.gz",
 	          # filename=str(outputDir)+"/dataSetUnique/"+str(fileName)+"Unique.i3.gz",
-	          filename=str(outputDir)+"/dataSetUnique/"+str(fileName)+"Unique.i3.gz",
+	          filename=str(outputDir)+dataSetUnique+str(fileName)+"Unique.i3.gz",
 	          # filename=str(outputDir)+"/dataSetUniqueSeedSame/"+str(fileName)+"Unique.i3.gz",
 	          streams=[icetray.I3Frame.TrayInfo,icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
 	          # streams=[icetray.I3Frame.TrayInfo,icetray.I3Frame.Geometry,icetray.I3Frame.Calibration,icetray.I3Frame.DetectorStatus,icetray.I3Frame.DAQ,icetray.I3Frame.Physics],

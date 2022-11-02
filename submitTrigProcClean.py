@@ -1,4 +1,4 @@
-#!/bin/env python3
+#!/usr/bin/env python3
 
 import os
 import glob
@@ -9,7 +9,8 @@ ABS_PATH_HERE = str(os.path.dirname(os.path.realpath(__file__)))
 ABS_PATH_HERE += "/"
 print("abs path",ABS_PATH_HERE)
 ############################################################################
-inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique/"
+# inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique/"
+inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUniqueFRT/"
 # inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUniqueSeedSame/"
 OinputList = sorted(glob.glob(inputPath+"ODAT*GenDetFiltProcUnique.i3.gz"))
 pinputList = sorted(glob.glob(inputPath+"pDAT*GenDetFiltProcUnique.i3.gz"))
@@ -47,7 +48,7 @@ def makeSubFile(fileList):
 	submitFile.write("#notify_user = <email-address>\n")
 	submitFile.write("#priority = <integer>\n")
 	submitFile.write("##long job\n")
-	priority=9900
+	priority=9900000
 	# submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
 	submitFile.write("priority = {}\n".format(priority))
 	submitFile.write("#set arguments to executable\n")
@@ -65,7 +66,7 @@ def submitToCondorFile(fileList,primary):
 	corsikaID = int(''.join(i for i in corsikaID if i.isdigit()))
 	# print("file list",*fileList[:2])
 	print("corsika id",corsikaID,primary)
-	subprocess.call(["condor_submit tempSubmitClean.sub -batch-name {0}--{1}".format(primary,corsikaID)], shell=True)
+	subprocess.call(["condor_submit tempSubmitClean.sub -batch-name {0}---{1}".format(primary,corsikaID)], shell=True)
 	subprocess.call(["rm tempSubmitClean.sub"], shell=True)
 
 def submitToCondor(fileList,chunk,primary):
@@ -78,3 +79,4 @@ submitToCondor(pinputList,500,"p")
 submitToCondor(HeinputList,500,"He")
 submitToCondor(OinputList,500,"O")
 submitToCondor(FeinputList,500,"Fe")
+

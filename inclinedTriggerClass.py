@@ -28,7 +28,8 @@ from weighting import GetWeight, ParticleType, PDGCode
 from inclinedTriggerTools import *
 
 # basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetCleanSeedSame/"
-basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/"
+# basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/"
+basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetCleanFRT/"
 # basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetCleanTest/"
 hdf5NullListP = sorted(glob.glob(basePath+"p*Clean*.hdf5"))
 hdf5NullListHe = sorted(glob.glob(basePath+"He*Clean*.hdf5"))
@@ -57,7 +58,7 @@ colorsList = ['#1f77b4','#ff7f0e','#2ca02c','#8c564b','#9467bd', '#e377c2','#bcb
 			'#4477AA', '#332288','#2ca02c', '#6699CC', '#88CCEE', '#44AA99', '#117733','#999933', '#DDCC77', '#661100', '#CC6677',
 			'#AA4466','#882255','#AA4499'"tab:brown","lime",'teal',"navy","darkkhaki","olive","gray", 'sienna','slategray']
 
-colorsCustom = qualitative_colors(10)
+colorsCustom = qualitative_colors(12)
 colorsIter = iter(colorsCustom)
 
 print("proton")
@@ -81,8 +82,8 @@ print("event list before",len(evtList))
 # evtList = removeFirstCore(evtList)
 print("event list after",len(evtList))
 SLCRate(evtList)
-evtList_contained = containedEvents(evtList,640)
-# evtList_contained = containedEvents(evtList,410)
+# evtList_contained = containedEvents(evtList,640)
+evtList_contained = containedEvents(evtList,410)
 total_events = sum([1 for ievt in evtList])
 print("total events",total_events)
 # triggered_events = sum([ievt.ITSMTTriggered for ievt in evtList])
@@ -294,17 +295,17 @@ def plot2dHistCoreGiven(evtList,triggerType,energyLim=[10**6.0,10**6.5],zenLim=[
 	plt.close()
 
 
-plot2dHistCoreGiven(evtList,"none",energyLim=[10**14.0,10**15.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-800,800],ylim=[-800,800])
-plot2dHistCoreGiven(evtList,"none",energyLim=[10**15.0,10**16.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-1100,1100],ylim=[-1100,1100])
-plot2dHistCoreGiven(evtList,"none",energyLim=[10**16.0,10**17.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-1700,1700],ylim=[-1700,1700])
+# plot2dHistCoreGiven(evtList,"none",energyLim=[10**14.0,10**15.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-800,800],ylim=[-800,800])
+# plot2dHistCoreGiven(evtList,"none",energyLim=[10**15.0,10**16.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-1100,1100],ylim=[-1100,1100])
+# plot2dHistCoreGiven(evtList,"none",energyLim=[10**16.0,10**17.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-1700,1700],ylim=[-1700,1700])
 
-plot2dHistCoreGiven(evtList,"sta3",energyLim=[10**14.0,10**15.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-800,800],ylim=[-800,800])
-plot2dHistCoreGiven(evtList,"sta3",energyLim=[10**15.0,10**16.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-1100,1100],ylim=[-1100,1100])
-plot2dHistCoreGiven(evtList,"sta3",energyLim=[10**16.0,10**17.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-1700,1700],ylim=[-1700,1700])
+# plot2dHistCoreGiven(evtList,"sta3",energyLim=[10**14.0,10**15.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-800,800],ylim=[-800,800])
+# plot2dHistCoreGiven(evtList,"sta3",energyLim=[10**15.0,10**16.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-1100,1100],ylim=[-1100,1100])
+# plot2dHistCoreGiven(evtList,"sta3",energyLim=[10**16.0,10**17.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-1700,1700],ylim=[-1700,1700])
 
-plot2dHistCoreGiven(evtList,"sta1",energyLim=[10**14.0,10**15.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-800,800],ylim=[-800,800])
-plot2dHistCoreGiven(evtList,"sta1",energyLim=[10**15.0,10**16.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-1100,1100],ylim=[-1100,1100])
-plot2dHistCoreGiven(evtList,"sta1",energyLim=[10**16.0,10**17.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-1700,1700],ylim=[-1700,1700])
+# plot2dHistCoreGiven(evtList,"sta1",energyLim=[10**14.0,10**15.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-800,800],ylim=[-800,800])
+# plot2dHistCoreGiven(evtList,"sta1",energyLim=[10**15.0,10**16.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-1100,1100],ylim=[-1100,1100])
+# plot2dHistCoreGiven(evtList,"sta1",energyLim=[10**16.0,10**17.0],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],xlim=[-1700,1700],ylim=[-1700,1700])
 
 
 def plotScatterCoreGiven(evtList,triggerType,energyLim=[10**6.0,10**6.5],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],distanceLim=[400,500]):
@@ -396,6 +397,7 @@ def plotEnergyFlux(eventList,yscale,suffix,energyScale,triggerType):
 	fig = plt.figure(figsize=(8,5))
 	gs = gridspec.GridSpec(ncols=1,nrows=1)
 	ax = fig.add_subplot(gs[0])
+	colorIter = iter(colorsCustom+colorsCustom)
 	hitBins = np.linspace(14.0,17.0,31)
 	totalRate = 0
 	for nbin, binStart in enumerate(sin2ZenBins[:-1]):
@@ -405,13 +407,15 @@ def plotEnergyFlux(eventList,yscale,suffix,energyScale,triggerType):
 		energyList = []
 		neventList = []
 		# ax = plotSteps(evtZenBin,ax,"{}".format("total"),energyScale)
-		ax,histSum = plotSteps(evtZenBin,ax,r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),energyScale)
+		ncolor = next(colorIter)
+		ax,histSum = plotSteps(evtZenBin,ax,r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),energyScale,ncolor=ncolor)
 		totalRate += histSum
 	# ax.hist(energy,bins=hitBins,histtype="step",weights=weights,lw=2.5,label="after weighting",alpha=1)
 	# ax.hist(energy,bins=hitBins,histtype="step",weights=adjWeights,lw=2.5,label="after adj weighting",alpha=1)
 	ax.tick_params(axis='both',which='both', direction='in', labelsize=20)
 	ax.set_xlabel(r"log10 (E [eV])", fontsize=22)
-	ax.set_ylabel(r"$E^{{{0:.1f}}}$ rate [Hz]".format(energyScale), fontsize=20)
+	# ax.set_ylabel(r"$E^{{{0:.1f}}}$ rate [Hz]".format(energyScale), fontsize=20))
+	ax.set_ylabel(r"rate [Hz]".format(energyScale), fontsize=20)
 	ax.set_yscale(yscale)	
 	ax.set_ylim(10**-5,10**1)
 	# ax.set_xscale('log')
@@ -423,7 +427,7 @@ def plotEnergyFlux(eventList,yscale,suffix,energyScale,triggerType):
 	plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+".pdf",transparent=False,bbox_inches='tight')
 	plt.close()
 
-def plotSteps(triggeredEvts,ax,legendLabel,energyScale):
+def plotSteps(triggeredEvts,ax,legendLabel,energyScale,ncolor):
 	hitBins = np.linspace(14.0,17.0,31)
 	energy = [ievt.energy for ievt in triggeredEvts]
 	weights = [ievt.H4aWeight for ievt in triggeredEvts]
@@ -442,11 +446,12 @@ def plotSteps(triggeredEvts,ax,legendLabel,energyScale):
 	else:
 		H = [h*(10**E)**energyScale for h,E in zip(hist,binCenter)]
 	# ax.hist(energy,bins=hitBins,histtype="step",lw=2.5,label=r"before weighting",alpha=1)
-	ax.step(binCenter,H,"-",where="mid",lw=2.5,label=legendLabel+r", {:.1f} Hz".format(sum(hist)),alpha=1)
+	ax.step(binCenter,H,"-",where="mid",lw=2.5,label=legendLabel+r", {:.1f} Hz".format(sum(hist)),color=ncolor,alpha=1)
 	return ax,sum(hist)
 
 
 
+plotEnergyFlux([ievt for ievt in evtList if abs(ievt.tank1Trig-1)<0.01],"log","fluxLog",0.0,triggerType="tank1")
 plotEnergyFlux([ievt for ievt in evtList if abs(ievt.tank3Trig-1)<0.01],"log","fluxLog",0.0,triggerType="tank3")
 plotEnergyFlux([ievt for ievt in evtList if abs(ievt.tank4Trig-1)<0.01],"log","fluxLog",0.0,triggerType="tank4")
 plotEnergyFlux([ievt for ievt in evtList if abs(ievt.tank5Trig-1)<0.01],"log","fluxLog",0.0,triggerType="tank5")
@@ -463,7 +468,7 @@ plotEnergyFlux([ievt for ievt in evtList if abs(ievt.slc7Trig-1)<0.01],"log","fl
 plotEnergyFlux([ievt for ievt in evtList if abs(ievt.slc8Trig-1)<0.01],"log","fluxLog",0.0,triggerType="slc8")
 
 plotEnergyFlux([ievt for ievt in evtList if abs(ievt.STA1Trigger-1)<0.01],"log","fluxLog",0.0,triggerType="sta1")
-plotEnergyFlux([ievt for ievt in evtList if abs(ievt.ITSMTTriggered-1)<0.01],"log","fluxLog",0.0,triggerType="sta3")
+plotEnergyFlux([ievt for ievt in evtList if abs(ievt.ITSMTTriggered-1)<0.01],"log","fluxLog",0.0,triggerType="IceTopSMT")
 
 
 # plotEnergyFlux([ievt for ievt in evtList if abs(ievt.tank3Trig-1)<0.01 and ievt.nStations >= 3],"log","fluxLog",0.0,triggerType="gt_tank3Sta3")
@@ -533,6 +538,7 @@ def plotEnergyFluxRatio(eventList1,eventList2,yscale,suffix,triggerType):
 	fig = plt.figure(figsize=(8,5))
 	gs = gridspec.GridSpec(ncols=1,nrows=1)
 	ax = fig.add_subplot(gs[0])
+	colorIter = iter(colorsCustom+colorsCustom)
 	hitBins = np.linspace(14.0,17.0,31)
 	for nbin, binStart in enumerate(sin2ZenBins[:-1]):
 		lowEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin]))
@@ -541,15 +547,16 @@ def plotEnergyFluxRatio(eventList1,eventList2,yscale,suffix,triggerType):
 		evtZenBin2 = [ievt for ievt in eventList2 if lowEdge <= ievt.zenith < highEdge]
 		energyList = []
 		neventList = []
+		ncolor = next(colorIter)
 		# ax = plotSteps(evtZenBin,ax,"{}".format("total"),energyScale)
-		ax = plotRatioSteps(evtZenBin1,evtZenBin2,ax,r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi))
+		ax = plotRatioSteps(evtZenBin1,evtZenBin2,ax,r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),ncolor=ncolor)
 	# ax.hist(energy,bins=hitBins,histtype="step",weights=weights,lw=2.5,label="after weighting",alpha=1)
 	# ax.hist(energy,bins=hitBins,histtype="step",weights=adjWeights,lw=2.5,label="after adj weighting",alpha=1)
 	ax.tick_params(axis='both',which='both', direction='in', labelsize=20)
 	ax.set_xlabel(r"log10 (E [eV])", fontsize=22)
-	ax.set_ylabel(r"rate $\frac{{{0}}}{{{1}}}$".format(triggerType,"sta3"), fontsize=20)
+	ax.set_ylabel(r"$\rm \frac{{N_{{{0}}}}}{{N_{{{1}}}}}$".format(triggerType,"IceTopSMT"), fontsize=20)
 	ax.set_yscale(yscale)	
-	ax.set_ylim(0.01,10**3)
+	ax.set_ylim(10**(-0.5),10**1.8)
 	# ax.set_xscale('log')
 	ax.grid(True,alpha=0.6)
 	# ax.set_title(key,fontsize=16)
@@ -557,7 +564,8 @@ def plotEnergyFluxRatio(eventList1,eventList2,yscale,suffix,triggerType):
 	plt.savefig(plotFolder+"/energySpecRatioTrig"+str(triggerType)+str(suffix)+".pdf",transparent=False,bbox_inches='tight')
 	plt.close()
 
-
+plotEnergyFluxRatio([ievt for ievt in evtList if abs(ievt.ITSMTTriggered-1)<0.01],[ievt for ievt in evtList if abs(ievt.tank1Trig-1)<0.01 ]
+	,"log","fluxLog",triggerType="tank1")
 plotEnergyFluxRatio([ievt for ievt in evtList if abs(ievt.ITSMTTriggered-1)<0.01],[ievt for ievt in evtList if abs(ievt.tank3Trig-1)<0.01 ]
 	,"log","fluxLog",triggerType="tank3")
 plotEnergyFluxRatio([ievt for ievt in evtList if abs(ievt.ITSMTTriggered-1)<0.01],[ievt for ievt in evtList if abs(ievt.tank4Trig-1)<0.01 ],
@@ -636,12 +644,13 @@ def plotTrigEfficiency(evtList,energyBins,triggerType,containment):
 	'''
 	print("plotting trigger efficiency for ",triggerType)
 	if containment == True:
-		evtList = containedEvents(evtList,640)
+		# evtList = containedEvents(evtList,640)
+		evtList = containedEvents(evtList,410)
 	fig = plt.figure(figsize=(8,5))
 	gs = gridspec.GridSpec(nrows=1,ncols=1)
 	ax = fig.add_subplot(gs[0])
-	# colorIter = iter(colorsCustom)
-	colorIter = iter(colorsList)
+	colorIter = iter(colorsCustom+colorsCustom)
+	# colorIter = iter(colorsList)
 	for nbin, binStart in enumerate(sin2ZenBins[:-1]):
 		lowEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin]))
 		highEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))
@@ -656,10 +665,12 @@ def plotTrigEfficiency(evtList,energyBins,triggerType,containment):
 			weights = [ievt.H4aWeight for ievt in evtEBin]
 			totalEvts = len(evtEBin)
 			# sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
-			if triggerType == "sta3":
+			if triggerType == "IceTopSMT":
 				triggerList = [ievt for ievt in evtEBin if abs(ievt.ITSMTTriggered-1)<0.01]
 			elif triggerType == "sta1":
 				triggerList = [ievt for ievt in evtEBin if abs(ievt.STA1Trigger-1)<0.01]
+			elif triggerType == "tank1":
+				triggerList = [ievt for ievt in evtEBin if abs(ievt.tank1Trig-1)<0.01]
 			elif triggerType == "tank3":
 				triggerList = [ievt for ievt in evtEBin if abs(ievt.tank3Trig-1)<0.01]
 			elif triggerType == "tank4":
@@ -717,25 +728,31 @@ def plotTrigEfficiency(evtList,energyBins,triggerType,containment):
 			trigEff = triggerEfficiency(len(triggerList),totalEvts)
 			efficiencyList.append(trigEff)
 			energyList.append(np.log10((lowEdge_E+highEdge_E)/2.0*10**9))		
-		ax.plot(energyList,efficiencyList,".",ls='-',lw = 2.5,c=next(colorIter),label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),alpha=1)
+		ax.plot(energyList,efficiencyList,".",ls='-',lw = 2.5,c=next(colorIter),label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),color=next(colorIter),alpha=1)
 	ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
 	ax.set_xlabel(r"log10 (E [eV])", fontsize=22)
 	ax.set_ylabel(r"trigger efficiency", fontsize=22)
 	# ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
-	ax.text(0.78,0.1,s=r"trig {0} ".format(triggerType),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+	ax.text(0.78,0.1,s=r"trig:{0}".format(triggerType),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
 	# ax.set_xscale('log')
+	ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
 	ax.set_ylim(0,1.01)
 	ax.set_xlim(14,17)
 	# ax.yaxis.set_minor_locator(MultipleLocator(100))
 	ax.xaxis.set_minor_locator(MultipleLocator(0.1))
 	ax.grid(True,alpha=0.5)
-	ax.legend(fontsize=12)
+	l1=ax.legend(loc="upper left",fontsize=12)
+	point_dash = mlines.Line2D([], [], linestyle='--',lw=2.0,color='black', marker='',markersize=5, label=r"0.98")
+	# l2 = ax.legend(handles=[point_dash],loc="upper left",fontsize=20,framealpha=0.1,handlelength=1.4,handletextpad=0.5)
+	# ax.add_artist(l1)
+	# ax.add_artist(l2)
 	plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"Efficiency.pdf",transparent=False,bbox_inches='tight')
 	plt.close()
 
 
+plotTrigEfficiency(evtList,energyBins,triggerType="tank1",containment=True)
 plotTrigEfficiency(evtList,energyBins,triggerType="sta1",containment=True)
-plotTrigEfficiency(evtList,energyBins,triggerType="sta3",containment=True)
+plotTrigEfficiency(evtList,energyBins,triggerType="IceTopSMT",containment=True)
 
 plotTrigEfficiency(evtList,energyBins,triggerType="tank3",containment=True)
 plotTrigEfficiency(evtList,energyBins,triggerType="tank4",containment=True)

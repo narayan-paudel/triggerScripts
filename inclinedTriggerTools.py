@@ -111,7 +111,8 @@ class CREvent(object):
 		self.deltaT6TankSC = deltaT6TankSC
 		self.deltaT7TankSC = deltaT7TankSC
 		self.deltaT8TankSC = deltaT8TankSC
-	def addTankTrigger(self,tank3Trig,tank4Trig,tank5Trig,tank6Trig,tank7Trig,tank8Trig):
+	def addTankTrigger(self,tank1Trig,tank3Trig,tank4Trig,tank5Trig,tank6Trig,tank7Trig,tank8Trig):
+		self.tank1Trig = tank1Trig
 		self.tank3Trig = tank3Trig
 		self.tank4Trig = tank4Trig
 		self.tank5Trig = tank5Trig
@@ -192,6 +193,7 @@ def extractEvents_(hdfFile):
 	deltaT6ListSC = getValue_(hdfFile,key="HLCSLC_6TankHit_tSC")
 	deltaT7ListSC = getValue_(hdfFile,key="HLCSLC_7TankHit_tSC")
 	deltaT8ListSC = getValue_(hdfFile,key="HLCSLC_8TankHit_tSC")
+	TankHit1 = getValue_(hdfFile,key="HLCSLC_isTank1")
 	TankHit3 = getValue_(hdfFile,key="HLCSLC_isTank3")
 	TankHit4 = getValue_(hdfFile,key="HLCSLC_isTank4")
 	TankHit5 = getValue_(hdfFile,key="HLCSLC_isTank5")
@@ -213,7 +215,7 @@ def extractEvents_(hdfFile):
 		thisEvt.addDeltaTTank(deltaT3List[nEvt],deltaT4List[nEvt],deltaT5List[nEvt],deltaT6List[nEvt],deltaT7List[nEvt],deltaT8List[nEvt])
 		thisEvt.addDeltaTTankSC(deltaT3ListSC[nEvt],deltaT4ListSC[nEvt],deltaT5ListSC[nEvt],deltaT6ListSC[nEvt],deltaT7ListSC[nEvt],deltaT8ListSC[nEvt])
 		thisEvt.addSLCTrigger(slc3TrigList[nEvt],slc4TrigList[nEvt],slc5TrigList[nEvt],slc6TrigList[nEvt],slc7TrigList[nEvt],slc8TrigList[nEvt])
-		thisEvt.addTankTrigger(TankHit3[nEvt],TankHit4[nEvt],TankHit5[nEvt],TankHit6[nEvt],TankHit7[nEvt],TankHit8[nEvt])
+		thisEvt.addTankTrigger(TankHit1[nEvt],TankHit3[nEvt],TankHit4[nEvt],TankHit5[nEvt],TankHit6[nEvt],TankHit7[nEvt],TankHit8[nEvt])
 		thisEvt.addSLCHLC(nSLC[nEvt],nHLC[nEvt])
 		thisEvt.nStations = nStations[nEvt]
 		thisEvt.nTanks = nTanks[nEvt]
@@ -359,6 +361,11 @@ def weightCalc(hdfFileList):
 		else:
 			adjustedWeights.append(iweight)
 	return adjustedWeights
+
+def selectEnergyEvents(evtList,energy,tolerance):
+	"tolerance in log10E, energy in eV"
+	return [ievt for ievt in evtList if (np.log10(energy)-tolerance) <= np.log10(ievt.energy)+9 < (np.log10(energy)+tolerance)]
+
 
 def selectTriggered(eventList,triggerType):
 	"""
@@ -903,7 +910,7 @@ def plotRadiusEnergy(energyBins):
 # 	# ax.hist(energy,bins=hitBins,histtype="step",lw=2.5,label=r"before weighting",alpha=1)
 # 	ax.step(binCenter,H,"-",where="mid",lw=2.5,label=legendLabel+r", {:.1f} Hz".format(sum(hist)),alpha=1)
 # 	return ax
-def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel):
+def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel,ncolor):
 	hitBins = np.linspace(14.0,17.0,31)
 	energy1 = [ievt.energy for ievt in triggeredEvts1]
 	weights1 = [ievt.H4aWeight for ievt in triggeredEvts1]
@@ -920,7 +927,7 @@ def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel):
 	# binCenter = [(binEdge[i+1]+binEdge[i])/2.0 for i,j in enumerate(binEdge[:-1])]
 	binCenter = (binEdge1[:-1]+binEdge1[1:])/2.0
 	H = [h for h in histRatio]		
-	ax.step(binCenter,H,"-",where="mid",lw=2.5,label=legendLabel,alpha=1)
+	ax.step(binCenter,H,"-",where="mid",lw=2.5,label=legendLabel,color=ncolor,alpha=1)
 	return ax
 
 

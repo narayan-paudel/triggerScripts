@@ -48,15 +48,15 @@ def makeSubFile(corsikaFile,primary):
 	submitFile.write("##long job\n")
 	# priority=100000
 	# submitFile.write("+AccountingGroup=\"2_week.$ENV(USER)\" \n\n")
-	if energyID > 7.7:
+	if energyID > 7.6:
 		# priority=0
 		submitFile.write("+AccountingGroup=\"2_week.$ENV(USER)\" \n\n")		
 		# submitFile.write('+AccountingGroup=\"long.$ENV(USER)\" \n')
 		# submitFile.write('+AccountingGroup = "long.$ENV(USER)" #other options 1_week, 2_week, instead of long\n')
 		# submitFile.write('+AccountingGroup = "1_week.$ENV(USER)" #other options 1_week, 2_week, instead of long\n')
 		# submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
-	elif energyID > 7.2:
-		submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
+	elif energyID > 7.5:
+		submitFile.write("+AccountingGroup=\"2_week.$ENV(USER)\" \n\n")
 	elif energyID > 7.0:
 		submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
 	# submitFile.write("priority = {}\n".format(priority))
@@ -126,7 +126,15 @@ idleLines = idleJobs("../idleJobs.txt")
 # jobs7 = ["p-387","O-3777","O-3807","He-30","He-447","p-1078","p-1168","p-1288","p-1079","p-1229"]
 # jobs7 = ["p-569","p-1289","p-1319","p-1349","p-1379"]
 # jobs7 = ["Fe-30"]
-jobs7 = ["He-928","He-1378"]
+# jobs7 = ["He-928","He-1378"]
+# jobs7 = ["O-28", "O-58", "O-118", "O-148", "Fe-236", "Fe-237", "Fe-267", "Fe-297", "Fe-208", "Fe-238", "Fe-268", "Fe-298", "He-178", "He-208", "He-238", "He-268", "He-298", "O-297", "O-238", "O-268", "O-298", "Fe-596", "Fe-776", "Fe-806", "Fe-866", "Fe-956", "Fe-1046", "Fe-1286", "Fe-1406", "Fe-1496", "Fe-387", "Fe-417", "Fe-567", "Fe-597", "Fe-627", "Fe-687", "Fe-747", "Fe-807", "Fe-837", "Fe-867", "Fe-927", "Fe-1047"]
+# jobs7 = ["Fe-1107","p-358","p-448","p-778","O-298", "p-1168", "p-1288", "p-1408", "p-1498", "He-777", "He-897", "He-957", "He-628", "He-658", "He-808", "He-838", "He-868", "He-928", "He-1048", "He-1078", "He-1198", "He-1228", "He-1288", "He-1318", "He-1378", "He-1498",]
+# jobs14 = ["Fe-29", "Fe-59", "Fe-119", "Fe-149", "Fe-30", "Fe-60", "Fe-90",]
+# jobs14 = ["O-117","Fe-147","O-1227","O-1257","Fe-2127"]
+jobs14 = ["Fe-1046","Fe-956","Fe-806","Fe-776","Fe-596"]
+# jobs14 = ["Fe-1"]
+jobs21 = ["Fe-29","Fe-59","Fe-30","Fe-60"]
+
 jobs7LargerMemory = ["He-898","He-838"] #6 GB
 # queueJobs = ["Fe-30"]
 queueJobs = []
@@ -145,7 +153,7 @@ def getCorsikaFiles(basePath,energyList):
 		corsikaList=getCORSIKALists(basePath,ienergy)
 		# print("corsikaList",corsikaList)
 		# corsikaFiles.append(corsikaList[:11])
-		corsikaFiles += corsikaList[150:200]
+		corsikaFiles += corsikaList[0:200]
 		# corsikaFiles += corsikaList
 	# print("corsika files",corsikaFiles)
 	return corsikaFiles
@@ -165,7 +173,7 @@ def submitToCondorFile(corsikaFile,primary):
 			subprocess.call(["condor_submit tempSubmit.sub -batch-name {0}-{1}".format(primary,corsikaID)], shell=True)
 			print("batch name",batName)
 			# if batName not in jobs7:
-			if batName in jobs7:
+			if batName in jobs14:
 				print("longer")
 				# subprocess.call(["condor_submit tempSubmit.sub -batch-name {0}-{1}".format(primary,corsikaID)], shell=True)
 			print('primary',primary,corsikaID)
