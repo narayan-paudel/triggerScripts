@@ -5,9 +5,9 @@ from icecube import icetray, dataclasses, dataio
 from icecube.icetray import I3Units
 import os
 
-def changeDFrame(dframe):
+def changeDFrame(frame):
 	outframe  = icetray.I3Frame(icetray.I3Frame.DetectorStatus)
-	for ikey in dframe.keys():
+	for ikey in frame.keys():
 		if ikey != "I3DetectorStatus":
 			outframe[ikey] = frame[ikey]
 		else:
