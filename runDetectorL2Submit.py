@@ -18,9 +18,9 @@ energyList = ['5.0', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8', '5.
 
 simFiles = "/home/enpaudel/icecube/triggerStudy/simFiles/"
 #need corresponding change of dataSetUnique folder in runDetectorL2Cluster, addUniqueRunID.py and DetectorSim.py
-# dataSetUnique = "dataSetUnique/"
+dataSetUnique = "dataSetUnique/"
 # dataSetUnique = "dataSetUniqueFRT/"
-dataSetUnique = "dataSetUniqueWFRT/"
+# dataSetUnique = "dataSetUniqueWFRT/"
 
 print("energy list",energyList)
 submitFileName = ABS_PATH_HERE+"tempSubmitL2.sub"
@@ -107,14 +107,14 @@ def submitToCondor(corsikaFiles,primary):
 
 # # print("submitting proton files: ", basePathProton)
 # print("submitting Iron files from: ", basePathIron)
-# ironCorsikaFiles = getCorsikaFiles(basePathIron,energyList)
-# submitToCondor(ironCorsikaFiles,"Fe")
+ironCorsikaFiles = getCorsikaFiles(basePathIron,energyList)
+submitToCondor(ironCorsikaFiles,"Fe")
 
-# protonCorsikaFiles = getCorsikaFiles(basePathProton,energyList)
-# submitToCondor(protonCorsikaFiles,"p")
+protonCorsikaFiles = getCorsikaFiles(basePathProton,energyList)
+submitToCondor(protonCorsikaFiles,"p")
 
-# heliumCorsikaFiles = getCorsikaFiles(basePathHelium,energyList)
-# submitToCondor(heliumCorsikaFiles,"He")
+heliumCorsikaFiles = getCorsikaFiles(basePathHelium,energyList)
+submitToCondor(heliumCorsikaFiles,"He")
 
 oxygenCorsikaFiles = getCorsikaFiles(basePathOxygen,energyList)
 submitToCondor(oxygenCorsikaFiles,"O")

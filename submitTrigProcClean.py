@@ -9,8 +9,8 @@ ABS_PATH_HERE = str(os.path.dirname(os.path.realpath(__file__)))
 ABS_PATH_HERE += "/"
 print("abs path",ABS_PATH_HERE)
 ############################################################################
-# inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique/"
-inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUniqueFRT/"
+inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique/"
+# inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique.FRT/"
 # inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUniqueSeedSame/"
 OinputList = sorted(glob.glob(inputPath+"ODAT*GenDetFiltProcUnique.i3.gz"))
 pinputList = sorted(glob.glob(inputPath+"pDAT*GenDetFiltProcUnique.i3.gz"))

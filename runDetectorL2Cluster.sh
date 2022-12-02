@@ -28,7 +28,8 @@ ICETRAY_ENV=$I3BUILD/env-shell.sh
 ######################################################################################
 # GCD=/home/acoleman/work/datasets/gcd-files/GCD-Survey-AntITScint_2020.02.24.i3.gz
 # GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz
-GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz
+# GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz
+GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz
 ######################################################################################
 
 
@@ -92,8 +93,8 @@ nSamples=100
 echo nSamples $nSamples
 
 OUTPUT_FOLDER=/home/enpaudel/icecube/triggerStudy/simFiles/
-DATASETUNIQUE=dataSetUniqueWFRT
-# DATASETUNIQUE=dataSetUnique
+# DATASETUNIQUE=dataSetUniqueWFRT
+DATASETUNIQUE=dataSetUnique
 # DATASETUNIQUE=dataSetUniqueFRT
 start_time=$SECONDS
 

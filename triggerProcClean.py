@@ -7,7 +7,8 @@ from I3Tray import I3Tray, I3Units
 from icecube.simprod import segments
 from icecube.simprod.util import simprodtray, arguments
 from icecube.simprod.util import ReadI3Summary, WriteI3Summary
-from icecube import icetray, dataclasses, dataio, icetop_Level3_scripts, radcube
+from icecube import icetray, dataclasses, dataio, icetop_Level3_scripts
+# from icecube import radcube
 from icecube.simprod.util.simprodtray import RunI3Tray
 import argparse
 import icecube.icetray
@@ -15,7 +16,8 @@ import math
 from icecube import phys_services, sim_services
 from icecube import tableio, hdfwriter
 from icecube.simprod.util import PrintContext
-from icecube import topeventcleaning, tpx, top_background_simulator
+from icecube import topeventcleaning, tpx
+# from icecube import top_background_simulator
 
 
 import numpy as np
@@ -32,25 +34,35 @@ weight_file = "/home/enpaudel/icecube/triggerStudy/simFiles/dataset_info200Uneve
 exceptionTanks_HG = {39:62,26:62,67:64}
 exceptionTanks_LG = {26:61,67:63}
 
+ConfigIDMap = {102:(6,5000,"HLC6"),
+103:(6,5000,"tank6"),104:(7,5000,"tank7"),105:(8,5000,"tank8"),106:(9,5000,"tank9"),107:(10,5000,"tank10"),
+113:(6,4000,"tank6"),114:(7,4000,"tank7"),115:(8,4000,"tank8"),116:(9,4000,"tank9"),117:(10,4000,"tank10"),
+123:(6,3000,"tank6"),124:(7,3000,"tank7"),125:(8,3000,"tank8"),126:(9,3000,"tank9"),127:(10,3000,"tank10"),
+133:(6,2000,"tank6"),134:(7,2000,"tank7"),135:(8,2000,"tank8"),136:(9,2000,"tank9"),137:(10,2000,"tank10")}
+#config id mapped with threshold,timewindow and label
+print("keys",ConfigIDMap.keys())
+
 
 CORSIKA_ID = "DAT059871"
 # outputDir = "/home/enpaudel/icecube/triggerStudy/simFiles/"
 outputDir = "/home/enpaudel/icecube/triggerStudy/simFiles/"
-# dataSetClean = "/dataSetClean/"
+dataSetClean = "/dataSetClean/"
 # dataSetClean = "/dataSetCleanWFRT/"
-dataSetClean = "/dataSetCleanFRT/"
+# dataSetClean = "/dataSetCleanFRT/"
 
 # GCD="/data/user/kath/testdata/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz"
 # GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz"
-GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz"
+# GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz"
+GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz"
 
 f = dataio.I3File(GCD)
 geoFrame = f.pop_frame()
 while f.more() and not "I3Geometry" in geoFrame:
-    geoFrame = f.pop_frame()
+		geoFrame = f.pop_frame()
 
 charge_threshold = 10**-3 #threshold for charges of afterpulse in units of vem
 time_threshold = 10.0**6.0 #in units of ns
+
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -76,6 +88,24 @@ class TriggerCheck(icetray.I3Module):
 		self.GlobalUntriggered = 0
 		self.totalEvents = 0
 
+
+
+	def checkTriggers(self,frame,triggerHierarchy,config_id):
+		trigLabel = ConfigIDMap[config_id][2]+"_"+str(ConfigIDMap[config_id][1])
+		if len(triggerHierarchy) == 0:
+			frame[trigLabel] = dataclasses.I3Double(0)
+		else:
+			SMTTriggers = [t for t in triggerHierarchy if (t.key.config_id == config_id and t.fired)]
+			if len(SMTTriggers) != 0:
+				frame[trigLabel] = dataclasses.I3Double(1)
+			else:
+				frame[trigLabel] = dataclasses.I3Double(0)
+		return frame
+
+
+
+
+
 	def DAQ(self,frame):
 		"""what if there is only one trigger in trigger hierarchy
 		"""
@@ -87,26 +117,8 @@ class TriggerCheck(icetray.I3Module):
 		# print(frame.keys())
 		self.totalEvents += 1
 		print("total no of events",self.totalEvents)
-		if len(triggerHierarchy) == 0:
-			frame["ITSMTTriggered"] = dataclasses.I3Double(0)
-			frame["ITGlobalTriggered"] = dataclasses.I3Double(0)
-			self.GlobalUntriggered+=1
-			self.SMTUntriggered+=1
-		else:
-			SMTTriggers = [t for t in triggerHierarchy if (t.key.config_id == 102 and t.fired)]
-			GlobalTriggers = [t for t in triggerHierarchy if t.key.config_id == None and t.fired]
-			if len(SMTTriggers) != 0:
-				frame["ITSMTTriggered"] = dataclasses.I3Double(1)
-				self.SMTTriggered+=1
-			else:
-				frame["ITSMTTriggered"] = dataclasses.I3Double(0)
-				self.SMTUntriggered+=1
-			if len(GlobalTriggers) != 0:
-				frame["ITGlobalTriggered"] = dataclasses.I3Double(1)
-				self.GlobalTriggered+=1
-			else:
-				frame["ITGlobalTriggered"] = dataclasses.I3Double(0)
-				self.GlobalUntriggered+=1
+		for ikey in ConfigIDMap.keys():
+			frame = self.checkTriggers(frame,triggerHierarchy, ikey)
 		self.PushFrame(frame)
 
 	def Finish(self):
@@ -151,7 +163,7 @@ def timeCleanedPulses(frame,keys):
 						ps.append(pulse)
 				if len(ps) > 0:
 					psmClean[omkey] = dataclasses.I3RecoPulseSeries(sorted(ps,
-	            key=lambda pulse: pulse.time))
+							key=lambda pulse: pulse.time))
 			frame[ikey+"CleanTime"] = psmClean
 
 def chargeCleanedPulses(frame,keys):
@@ -168,7 +180,7 @@ def chargeCleanedPulses(frame,keys):
 						ps.append(pulse)
 				if len(ps) > 0:
 					psmClean[omkey] = dataclasses.I3RecoPulseSeries(sorted(ps,
-	            key=lambda pulse: pulse.time))
+							key=lambda pulse: pulse.time))
 			frame[ikey+"CleanCharge"] = psmClean
 
 def AddTotalCharge(frame,keys):
@@ -263,10 +275,11 @@ def getSPTime(particle,omkey,pulseTime):
 	returns a shower plane time.
 	'''
 	domgeo = geoFrame["I3Geometry"].omgeo[omkey]
-	pos_sc = radcube.GetShowerFromIC(domgeo.position - particle.pos, particle.dir)
-	t_offset = pos_sc.z/dataclasses.I3Constants.c
+	# pos_sc = radcube.GetShowerFromIC(domgeo.position - particle.pos, particle.dir)
+	# t_offset = pos_sc.z/dataclasses.I3Constants.c
 	# print("deltaT",pulseTime + t_offset)
-	return pulseTime + t_offset
+	# return pulseTime + t_offset
+	return pulseTime
 
 def deltaTHLCHit(frame,pulseseriesList):
 	'''calculates duration of HLC hits and also puts trigger condition it will pass;
@@ -765,10 +778,10 @@ name = ""
 
 tray = I3Tray()
 tray.AddModule("I3Reader","reader",
-	           filenameList=[GCD]+args.input,
-	           # streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	           # streams=[icetray.I3Frame.Geometry,icetray.I3Frame.Calibration, icetray.I3Frame.DetectorStatus]
-	          )
+						 filenameList=[GCD]+args.input,
+						 # streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+						 # streams=[icetray.I3Frame.Geometry,icetray.I3Frame.Calibration, icetray.I3Frame.DetectorStatus]
+						)
 tray.AddModule(TriggerCheck, "trigChk",
 				# Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
 				)
@@ -778,11 +791,11 @@ tray.AddModule(checkFilter,"filterChk",
 				)
 
 tray.AddModule('I3TankPulseMerger',
-	           # filenameList=[GCD]+args.input,
-	           InputVEMPulses = 'OfflineIceTopSLCVEMPulses',
-	           OutputTankPulses = 'OfflineIceTopSLCTankPulses',
-	           ExcludedTanks  = 'ExcludedSLCTanks'
-	           )
+						 # filenameList=[GCD]+args.input,
+						 InputVEMPulses = 'OfflineIceTopSLCVEMPulses',
+						 OutputTankPulses = 'OfflineIceTopSLCTankPulses',
+						 ExcludedTanks  = 'ExcludedSLCTanks'
+						 )
 
 tray.AddModule(timeCleanedPulses,"cleanTime",
 	keys=['OfflineIceTopSLCVEMPulses','OfflineIceTopHLCVEMPulses',"IceTopPulses"],
@@ -793,52 +806,52 @@ tray.AddModule(chargeCleanedPulses,"cleanCharge",
 	streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics])
 
 tray.AddModule('I3TankPulseMerger',"slcMerger2",
-	           InputVEMPulses ='OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge',
-	           OutputTankPulses = 'OfflineIceTopSLCTankPulsesCleanTimeCleanCharge',
-	           ExcludedTanks  = 'ExcludedSLCTanksAfterCleaning'
-	           )
+						 InputVEMPulses ='OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge',
+						 OutputTankPulses = 'OfflineIceTopSLCTankPulsesCleanTimeCleanCharge',
+						 ExcludedTanks  = 'ExcludedSLCTanksAfterCleaning'
+						 )
 tray.AddModule('I3TankPulseMerger',"hlcMerger",
-	           InputVEMPulses ='OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge',
-	           OutputTankPulses = 'OfflineIceTopHLCTankPulsesCleanTimeCleanCharge',
-	           ExcludedTanks  = 'ExcludedHLCTanksAfterCleaning'
-	           )
+						 InputVEMPulses ='OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge',
+						 OutputTankPulses = 'OfflineIceTopHLCTankPulsesCleanTimeCleanCharge',
+						 ExcludedTanks  = 'ExcludedHLCTanksAfterCleaning'
+						 )
 
-tray.AddModule('TopBackgroundSimulator', name + '_noisesim',
-		       NoiseRate=1500.,#1424.
-		       HLCTankPulses='OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge',
-		       SLCTankPulses='OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge'
-		       )
+# tray.AddModule('TopBackgroundSimulator', name + '_noisesim',
+# 					 NoiseRate=1500.,#1424.
+# 					 HLCTankPulses='OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge',
+# 					 SLCTankPulses='OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge'
+# 					 )
 
 tray.AddModule(AddTotalCharge,"addCharge",
-	           Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	           keys=['OfflineIceTopSLCTankPulses','OfflineIceTopHLCTankPulses','OfflineIceTopSLCVEMPulses','OfflineIceTopHLCVEMPulses',
-	           		'OfflineIceTopSLCTankPulsesCleanTimeCleanCharge','OfflineIceTopHLCTankPulsesCleanTimeCleanCharge',
-	           		'OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge','OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge']
-	           	)
+						 Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+						 keys=['OfflineIceTopSLCTankPulses','OfflineIceTopHLCTankPulses','OfflineIceTopSLCVEMPulses','OfflineIceTopHLCVEMPulses',
+								'OfflineIceTopSLCTankPulsesCleanTimeCleanCharge','OfflineIceTopHLCTankPulsesCleanTimeCleanCharge',
+								'OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge','OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge']
+							)
 tray.AddModule(AddTotalTankHit,"addHit",
-	           Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	           pulseseriesList=['OfflineIceTopSLCTankPulses','OfflineIceTopHLCTankPulses','OfflineIceTopSLCVEMPulses','OfflineIceTopHLCVEMPulses',
-	           		'OfflineIceTopSLCTankPulsesCleanTimeCleanCharge','OfflineIceTopHLCTankPulsesCleanTimeCleanCharge',
-	           		'OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge','OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge'
-	           		]
-	           # pulseseriesList=['OfflineIceTopHLCTankPulses']
-	           	)
+						 Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+						 pulseseriesList=['OfflineIceTopSLCTankPulses','OfflineIceTopHLCTankPulses','OfflineIceTopSLCVEMPulses','OfflineIceTopHLCVEMPulses',
+								'OfflineIceTopSLCTankPulsesCleanTimeCleanCharge','OfflineIceTopHLCTankPulsesCleanTimeCleanCharge',
+								'OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge','OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge'
+								]
+						 # pulseseriesList=['OfflineIceTopHLCTankPulses']
+							)
 tray.AddModule(AddTimeSLCHLCTankHit,"addTime",
-	           Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	           pulseseriesList=['OfflineIceTopSLCTankPulses','OfflineIceTopHLCTankPulses','OfflineIceTopSLCTankPulsesCleanTimeCleanCharge',
-	           'OfflineIceTopHLCTankPulsesCleanTimeCleanCharge','OfflineIceTopSLCVEMPulses','OfflineIceTopHLCVEMPulses','OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge',
-	           'OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge']
-	           # pulseseriesList=['OfflineIceTopHLCTankPulses']
-	           	)
+						 Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+						 pulseseriesList=['OfflineIceTopSLCTankPulses','OfflineIceTopHLCTankPulses','OfflineIceTopSLCTankPulsesCleanTimeCleanCharge',
+						 'OfflineIceTopHLCTankPulsesCleanTimeCleanCharge','OfflineIceTopSLCVEMPulses','OfflineIceTopHLCVEMPulses','OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge',
+						 'OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge']
+						 # pulseseriesList=['OfflineIceTopHLCTankPulses']
+							)
 
 tray.AddModule(deltaTHLCHit,"deltT",
-	           Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	           # Streams=[icetray.I3Frame.DAQ],
-	           pulseseriesList=['OfflineIceTopHLCVEMPulses','OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge','OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_NoBackground',
-	           'OfflineIceTopHLCTankPulses','OfflineIceTopHLCTankPulsesCleanTimeCleanCharge'
-	           ]
-	           # pulseseriesList=['OfflineIceTopHLCTankPulses']
-	           	)
+						 Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+						 # Streams=[icetray.I3Frame.DAQ],
+						 pulseseriesList=['OfflineIceTopHLCVEMPulses','OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge',
+						 'OfflineIceTopHLCTankPulses','OfflineIceTopHLCTankPulsesCleanTimeCleanCharge'
+						 ]
+						 # pulseseriesList=['OfflineIceTopHLCTankPulses']
+							)
 # tray.AddModule(deltaTSLCHit,"deltTSLC",
 # 	           Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
 # 	           # Streams=[icetray.I3Frame.DAQ],
@@ -860,13 +873,13 @@ tray.AddModule(deltaTHLCHit,"deltT",
 
 
 tray.AddModule(triggerSLCHLCHits,"deltTSLCHLC",
-	           Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	           # Streams=[icetray.I3Frame.DAQ],
-	           SLCpulseseriesList=['OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge'],
-	           HLCpulseseriesList=['OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge'],
-	           # pulseseriesList=['OfflineIceTopHLCTankPulses'],
-	           suffix=""
-	           	)
+						 Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+						 # Streams=[icetray.I3Frame.DAQ],
+						 SLCpulseseriesList=['OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge'],
+						 HLCpulseseriesList=['OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge'],
+						 # pulseseriesList=['OfflineIceTopHLCTankPulses'],
+						 suffix=""
+							)
 # tray.AddModule(triggerSLCHLCHits,"deltTSLCHLC",
 # 	           Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
 # 	           # Streams=[icetray.I3Frame.DAQ],
@@ -879,12 +892,12 @@ tray.AddModule(triggerSLCHLCHits,"deltTSLCHLC",
 
 
 tray.AddModule(triggerSLCHits,"deltTSLC",
-	           Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	           # Streams=[icetray.I3Frame.DAQ],
-	           SLCpulseseriesList=['OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge'
-	           ],
-	           # pulseseriesList=['OfflineIceTopHLCTankPulses']
-	           	)
+						 Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+						 # Streams=[icetray.I3Frame.DAQ],
+						 SLCpulseseriesList=['OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge'
+						 ],
+						 # pulseseriesList=['OfflineIceTopHLCTankPulses']
+							)
 
 
 # keep_list = ["BeaconLaunches","I3Triggers","MCPrimary","ClusterCleaningExcludedTanks","OfflineIceTopHLCTankPulses",
@@ -1133,86 +1146,89 @@ def eventFilter(frame):
 # 				)
 # tray.AddModule(onlyProperTimeEvents,"propTime",
 # 				streams=[icetray.I3Frame.DAQ]
- 				# )
+				# )
 # tray.AddModule(eventFilter,"evtFilter",
 # 				streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
 #  				)
 tray.AddModule(calcWeight,"calcWeight",
 				streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
- 				)
+				)
 tray.AddModule(icetop_Level3_scripts.modules.CheckContainment,
-               'MCPrimaryCheckContainment', Particles=["MCPrimary"], Detector="IC86.2019")
+							 'MCPrimaryCheckContainment', Particles=["MCPrimary"], Detector="IC86.2019")
 
 
 tray.AddModule("I3Writer","i3writer",
-	          # filename=str(outputDir)+"/hadronTimeTest/"+str(fileName)+"HadronNonTrigImProperTEvts.i3.gz",
-	          # filename=str(outputDir)+"/dataSetCleanTestSeedSame/"+str(fileName)+"CleanVEMEvts.i3.gz",
-	          filename=str(outputDir)+dataSetClean+str(fileName)+"CleanVEMEvts.i3.gz",
-	          # filename=str(outputDir)+"/dataSetCleanOfficial/"+str(fileName)+"CleanVEMEvts.i3.gz",
-	          streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	          # streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	          # streams=[icetray.I3Frame.Geometry,icetray.I3Frame.Calibration, icetray.I3Frame.DetectorStatus]
-	          )
+						# filename=str(outputDir)+"/hadronTimeTest/"+str(fileName)+"HadronNonTrigImProperTEvts.i3.gz",
+						# filename=str(outputDir)+"/dataSetCleanTestSeedSame/"+str(fileName)+"CleanVEMEvts.i3.gz",
+						filename=str(outputDir)+dataSetClean+str(fileName)+"CleanVEMEvts.i3.gz",
+						# filename=str(outputDir)+"/dataSetCleanOfficial/"+str(fileName)+"CleanVEMEvts.i3.gz",
+						streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+						# streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+						# streams=[icetray.I3Frame.Geometry,icetray.I3Frame.Calibration, icetray.I3Frame.DetectorStatus]
+						)
 
 # tray.AddModule("I3NullSplitter","nullsplitter")
 
 tray.Add(hdfwriter.I3HDFWriter, 'hdfNull',
-    Output=str(outputDir)+dataSetClean+str(fileName)+"CleanVEMEvts.hdf5",
-    # Output=str(outputDir)+"/dataSetCleanTestSeedSame/"+str(fileName)+"CleanVEMEvts.hdf5",
-    # Output=str(outputDir)+"/dataSetCleanOfficial/"+str(fileName)+"CleanVEMEvts.hdf5",
-    # Output=str(outputDir)+"/hadronTimeTest/"+str(fileName)+"NullHadronNonTrigImProperTEvts.hdf5",
-    CompressionLevel=9,
-    # SubEventStreams=['IceTopSplit'],
-    SubEventStreams=['NullSplit'],
-    # SubEventStreams=["nullsplitter",'IceTopSplit',"nullsplitter",'NullSplit',]
-    # SubEventStreams=["ice_top"],
-    # Streams=[icetray.I3Frame.DAQ],
-    keys = [
-    "MCPrimary","I3EventHeader","ITSMTTriggered","ITGlobalTriggered","OfflineIceTopHLCTankPulses","OfflineIceTopSLCTankPulses",
-    "OfflineIceTopSLCTankPulsesTotalCharge","OfflineIceTopHLCTankPulsesTotalCharge","OfflineIceTopHLCTankPulsesTotalHit",
-    "OfflineIceTopSLCTankPulsesTotalHit","OfflineIceTopHLCVEMPulses","OfflineIceTopSLCVEMPulses","OfflineIceTopSLCVEMPulsesTotalCharge",
-    "OfflineIceTopHLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalHit","OfflineIceTopSLCVEMPulsesTotalHit",
-    "OfflineIceTopSLCTankPulsesHitTimeDuration","OfflineIceTopHLCTankPulsesHitTimeDuration","IceTopPulses",
-    "IceTopPulsesCleanTime","IceTopPulsesCleanTimeCleanCharge",'OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge','OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge',
-    'OfflineIceTopSLCTankPulsesCleanTimeCleanCharge','OfflineIceTopHLCTankPulsesCleanTimeCleanCharge',"OfflineIceTopHLCTankPulsesCleanTimeCleanChargeTotalCharge",
-    "OfflineIceTopSLCTankPulsesCleanTimeCleanChargeTotalCharge","OfflineIceTopHLCVEMPulsesCleanTimeCleanChargeTotalCharge",
-    "OfflineIceTopSLCVEMPulsesCleanTimeCleanChargeTotalCharge","OfflineIceTopSLCTankPulsesCleanTimeCleanChargeTotalHit",
-    "OfflineIceTopHLCTankPulsesCleanTimeCleanChargeTotalHit",'OfflineIceTopSLCTankPulsesCleanTimeCleanChargeHitTimeDuration',
-    'OfflineIceTopHLCTankPulsesCleanTimeCleanChargeHitTimeDuration',"OfflineIceTopSLCVEMPulsesCleanTimeCleanChargeTotalHit",
-    "OfflineIceTopHLCVEMPulsesCleanTimeCleanChargeTotalHit",'OfflineIceTopSLCVEMPulsesCleanTimeCleanChargeHitTimeDuration',
-    'OfflineIceTopHLCVEMPulsesCleanTimeCleanChargeHitTimeDuration',"OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_delta_t",
-    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_delta_t","OfflineIceTopHLCVEMPulses_delta_t",
-    "OfflineIceTopSLCVEMPulses_delta_t","OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_hitTanks",
-    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_hitTanks","OfflineIceTopHLCVEMPulses_hitTanks",
-    "OfflineIceTopSLCVEMPulses_hitTanks","OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_hitStations",
-    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_hitStations","OfflineIceTopHLCVEMPulses_hitStations",
-    "OfflineIceTopSLCVEMPulses_hitStations",'OfflineIceTopHLCVEMPulses_isSTA1','OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_isSTA1',"H4aWeight",
-    "OfflineIceTopHLCTankPulsesCleanTimeCleanCharge_delta_t",
-    "OfflineIceTopSLCTankPulsesCleanTimeCleanCharge_delta_t","OfflineIceTopHLCTankPulses_delta_t",
-    "OfflineIceTopSLCTankPulses_delta_t","OfflineIceTopHLCTankPulsesCleanTimeCleanCharge_hitTanks",
-    "OfflineIceTopSLCTankPulsesCleanTimeCleanCharge_hitTanks","OfflineIceTopHLCTankPulses_hitTanks",
-    "OfflineIceTopSLCTankPulses_hitTanks","OfflineIceTopHLCTankPulsesCleanTimeCleanCharge_hitStations",
-    "OfflineIceTopSLCTankPulsesCleanTimeCleanCharge_hitStations","OfflineIceTopHLCTankPulses_hitStations",
-    "OfflineIceTopSLCTankPulses_hitStations",'OfflineIceTopHLCTankPulses_isSTA1','OfflineIceTopHLCTankPulsesCleanTimeCleanCharge_isSTA1',
-    "IceTopSTA5_13_filter","SDST_IceTopSTA3_13_filter","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank6",
-    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank7","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank8",
-    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_6SLCTankHit_t","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_7SLCTankHit_t",
-    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_8SLCTankHit_t","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_6SLCTankHit_tSC",
-    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_7SLCTankHit_tSC","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_8SLCTankHit_tSC",
-    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank5","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank4"
-    ,"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank3","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_5SLCTankHit_t",
-    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_4SLCTankHit_t","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_3SLCTankHit_t",
-    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_2SLCTankHit_t","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_2SLCTankHit_tSC",
-    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_5SLCTankHit_tSC","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_4SLCTankHit_tSC",
-    "OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_3SLCTankHit_tSC","HLCSLC_2TankHit_t","HLCSLC_2TankHit_tSC","HLCSLC_3TankHit_t",
-    "HLCSLC_3TankHit_tSC","HLCSLC_4TankHit_t","HLCSLC_4TankHit_tSC","HLCSLC_5TankHit_t","HLCSLC_5TankHit_tSC","HLCSLC_6TankHit_t",
-    "HLCSLC_7TankHit_tSC","HLCSLC_8TankHit_t","HLCSLC_6TankHit_tSC","HLCSLC_7TankHit_t","HLCSLC_8TankHit_tSC",
-    "HLCSLC_hitStations","HLCSLC_hitTanks","HLCSLC_isTank1","HLCSLC_isTank2","HLCSLC_isTank3","HLCSLC_isTank4","HLCSLC_isTank5","HLCSLC_isTank6",
-    "HLCSLC_isTank7","HLCSLC_isTank8","OfflineIceTopSLCTankPulsesCleanTimeCleanCharge_NoBackground","OfflineIceTopHLCTankPulsesCleanTimeCleanCharge_NoBackground",
-    "OfflineIceTopHLCVEMPulses_isSTA2","OfflineIceTopHLCVEMPulses_isSTA3","OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_NoBackground_isSTA1",
-    "OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_NoBackground_isSTA2","OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_NoBackground_isSTA3",
-    ]
-    )
+		Output=str(outputDir)+dataSetClean+str(fileName)+"CleanVEMEvts.hdf5",
+		# Output=str(outputDir)+"/dataSetCleanTestSeedSame/"+str(fileName)+"CleanVEMEvts.hdf5",
+		# Output=str(outputDir)+"/dataSetCleanOfficial/"+str(fileName)+"CleanVEMEvts.hdf5",
+		# Output=str(outputDir)+"/hadronTimeTest/"+str(fileName)+"NullHadronNonTrigImProperTEvts.hdf5",
+		CompressionLevel=9,
+		# SubEventStreams=['IceTopSplit'],
+		SubEventStreams=['NullSplit'],
+		# SubEventStreams=["nullsplitter",'IceTopSplit',"nullsplitter",'NullSplit',]
+		# SubEventStreams=["ice_top"],
+		# Streams=[icetray.I3Frame.DAQ],
+		keys = [
+		"MCPrimary","I3EventHeader","HLC6_5000","tank6_5000","tank6_4000","tank6_3000","tank6_2000",
+		"tank7_5000","tank7_4000","tank7_3000","tank7_2000","tank8_5000","tank8_4000","tank8_3000","tank8_2000",
+		"tank9_5000","tank9_4000","tank9_3000","tank9_2000","tank10_5000","tank10_4000","tank10_3000","tank10_2000",
+		"OfflineIceTopHLCTankPulses","OfflineIceTopSLCTankPulses",
+		"OfflineIceTopSLCTankPulsesTotalCharge","OfflineIceTopHLCTankPulsesTotalCharge","OfflineIceTopHLCTankPulsesTotalHit",
+		"OfflineIceTopSLCTankPulsesTotalHit","OfflineIceTopHLCVEMPulses","OfflineIceTopSLCVEMPulses","OfflineIceTopSLCVEMPulsesTotalCharge",
+		"OfflineIceTopHLCVEMPulsesTotalCharge","OfflineIceTopHLCVEMPulsesTotalHit","OfflineIceTopSLCVEMPulsesTotalHit",
+		"OfflineIceTopSLCTankPulsesHitTimeDuration","OfflineIceTopHLCTankPulsesHitTimeDuration","IceTopPulses",
+		"IceTopPulsesCleanTime","IceTopPulsesCleanTimeCleanCharge",'OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge','OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge',
+		'OfflineIceTopSLCTankPulsesCleanTimeCleanCharge','OfflineIceTopHLCTankPulsesCleanTimeCleanCharge',"OfflineIceTopHLCTankPulsesCleanTimeCleanChargeTotalCharge",
+		"OfflineIceTopSLCTankPulsesCleanTimeCleanChargeTotalCharge","OfflineIceTopHLCVEMPulsesCleanTimeCleanChargeTotalCharge",
+		"OfflineIceTopSLCVEMPulsesCleanTimeCleanChargeTotalCharge","OfflineIceTopSLCTankPulsesCleanTimeCleanChargeTotalHit",
+		"OfflineIceTopHLCTankPulsesCleanTimeCleanChargeTotalHit",'OfflineIceTopSLCTankPulsesCleanTimeCleanChargeHitTimeDuration',
+		'OfflineIceTopHLCTankPulsesCleanTimeCleanChargeHitTimeDuration',"OfflineIceTopSLCVEMPulsesCleanTimeCleanChargeTotalHit",
+		"OfflineIceTopHLCVEMPulsesCleanTimeCleanChargeTotalHit",'OfflineIceTopSLCVEMPulsesCleanTimeCleanChargeHitTimeDuration',
+		'OfflineIceTopHLCVEMPulsesCleanTimeCleanChargeHitTimeDuration',"OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_delta_t",
+		"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_delta_t","OfflineIceTopHLCVEMPulses_delta_t",
+		"OfflineIceTopSLCVEMPulses_delta_t","OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_hitTanks",
+		"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_hitTanks","OfflineIceTopHLCVEMPulses_hitTanks",
+		"OfflineIceTopSLCVEMPulses_hitTanks","OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_hitStations",
+		"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_hitStations","OfflineIceTopHLCVEMPulses_hitStations",
+		"OfflineIceTopSLCVEMPulses_hitStations",'OfflineIceTopHLCVEMPulses_isSTA1','OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_isSTA1',"H4aWeight",
+		"OfflineIceTopHLCTankPulsesCleanTimeCleanCharge_delta_t",
+		"OfflineIceTopSLCTankPulsesCleanTimeCleanCharge_delta_t","OfflineIceTopHLCTankPulses_delta_t",
+		"OfflineIceTopSLCTankPulses_delta_t","OfflineIceTopHLCTankPulsesCleanTimeCleanCharge_hitTanks",
+		"OfflineIceTopSLCTankPulsesCleanTimeCleanCharge_hitTanks","OfflineIceTopHLCTankPulses_hitTanks",
+		"OfflineIceTopSLCTankPulses_hitTanks","OfflineIceTopHLCTankPulsesCleanTimeCleanCharge_hitStations",
+		"OfflineIceTopSLCTankPulsesCleanTimeCleanCharge_hitStations","OfflineIceTopHLCTankPulses_hitStations",
+		"OfflineIceTopSLCTankPulses_hitStations",'OfflineIceTopHLCTankPulses_isSTA1','OfflineIceTopHLCTankPulsesCleanTimeCleanCharge_isSTA1',
+		"IceTopSTA5_13_filter","SDST_IceTopSTA3_13_filter","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank6",
+		"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank7","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank8",
+		"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_6SLCTankHit_t","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_7SLCTankHit_t",
+		"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_8SLCTankHit_t","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_6SLCTankHit_tSC",
+		"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_7SLCTankHit_tSC","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_8SLCTankHit_tSC",
+		"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank5","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank4"
+		,"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank3","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_5SLCTankHit_t",
+		"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_4SLCTankHit_t","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_3SLCTankHit_t",
+		"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_2SLCTankHit_t","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_2SLCTankHit_tSC",
+		"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_5SLCTankHit_tSC","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_4SLCTankHit_tSC",
+		"OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_3SLCTankHit_tSC","HLCSLC_2TankHit_t","HLCSLC_2TankHit_tSC","HLCSLC_3TankHit_t",
+		"HLCSLC_3TankHit_tSC","HLCSLC_4TankHit_t","HLCSLC_4TankHit_tSC","HLCSLC_5TankHit_t","HLCSLC_5TankHit_tSC","HLCSLC_6TankHit_t",
+		"HLCSLC_7TankHit_tSC","HLCSLC_8TankHit_t","HLCSLC_6TankHit_tSC","HLCSLC_7TankHit_t","HLCSLC_8TankHit_tSC",
+		"HLCSLC_hitStations","HLCSLC_hitTanks","HLCSLC_isTank1","HLCSLC_isTank2","HLCSLC_isTank3","HLCSLC_isTank4","HLCSLC_isTank5","HLCSLC_isTank6",
+		"HLCSLC_isTank7","HLCSLC_isTank8","OfflineIceTopSLCTankPulsesCleanTimeCleanCharge_NoBackground","OfflineIceTopHLCTankPulsesCleanTimeCleanCharge_NoBackground",
+		"OfflineIceTopHLCVEMPulses_isSTA2","OfflineIceTopHLCVEMPulses_isSTA3","OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_NoBackground_isSTA1",
+		"OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_NoBackground_isSTA2","OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_NoBackground_isSTA3",
+		]
+		)
 
 # tray.Add(hdfwriter.I3HDFWriter, 'hdfIce',
 #     Output=str(outputDir)+"/hadronTimeTest/"+str(fileName)+"IceTopNonHadronNonTrigImProperTEvts.hdf5",

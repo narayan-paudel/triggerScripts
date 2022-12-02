@@ -24,11 +24,12 @@ outputDir = "/home/enpaudel/icecube/triggerStudy/simFiles/"
 
 # GCD="/data/user/kath/testdata/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz"
 # GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz"
-GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz"
+# GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz"
+GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz"
 
-# dataSetUnique = "dataSetUnique/"
+dataSetUnique = "dataSetUnique/"
 # dataSetUnique = "dataSetUniqueFRT/"
-dataSetUnique = "dataSetUniqueWFRT/"
+# dataSetUnique = "dataSetUniqueWFRT/"
 
 
 import argparse
