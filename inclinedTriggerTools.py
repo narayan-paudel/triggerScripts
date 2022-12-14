@@ -67,8 +67,8 @@ class CREvent(object):
 	def addWeight(self,H4aWeight):
 		self.H4aWeight = H4aWeight
 
-	def addTrigger(self,ITSMTTriggered,STA1Trigger):
-		self.ITSMTTriggered = ITSMTTriggered
+	def addTrigger(self,HLC6_5000,STA1Trigger):
+		self.HLC6_5000 = HLC6_5000
 		self.STA1Trigger = STA1Trigger
 
 	def addFilter(self,ITSTA5_filter,ITSTA3_filter):
@@ -111,14 +111,30 @@ class CREvent(object):
 		self.deltaT6TankSC = deltaT6TankSC
 		self.deltaT7TankSC = deltaT7TankSC
 		self.deltaT8TankSC = deltaT8TankSC
-	def addTankTrigger(self,tank1Trig,tank3Trig,tank4Trig,tank5Trig,tank6Trig,tank7Trig,tank8Trig):
-		self.tank1Trig = tank1Trig
-		self.tank3Trig = tank3Trig
-		self.tank4Trig = tank4Trig
-		self.tank5Trig = tank5Trig
-		self.tank6Trig = tank6Trig
-		self.tank7Trig = tank7Trig
-		self.tank8Trig = tank8Trig
+
+	def addTankTrigger(self,tank6_5000,tank6_4000,tank6_3000,tank6_2000,tank7_5000,tank7_4000,
+		tank7_3000,tank7_2000,tank8_5000,tank8_4000,tank8_3000,tank8_2000,tank9_5000,tank9_4000,tank9_3000,
+		tank9_2000,tank10_5000,tank10_4000,tank10_3000,tank10_2000):
+		self.tank6_5000 = tank6_5000
+		self.tank6_4000 = tank6_4000
+		self.tank6_3000 = tank6_3000
+		self.tank6_2000 = tank6_2000
+		self.tank7_5000 = tank7_5000
+		self.tank7_4000 = tank7_4000
+		self.tank7_3000 = tank7_3000
+		self.tank7_2000 = tank7_2000
+		self.tank8_5000 = tank8_5000
+		self.tank8_4000 = tank8_4000
+		self.tank8_3000 = tank8_3000
+		self.tank8_2000 = tank8_2000
+		self.tank9_5000 = tank9_5000
+		self.tank9_4000 = tank9_4000
+		self.tank9_3000 = tank9_3000
+		self.tank9_2000 = tank9_2000
+		self.tank10_5000 = tank10_5000
+		self.tank10_4000 = tank10_4000
+		self.tank10_3000 = tank10_3000
+		self.tank10_2000 = tank10_2000
 	def addSLCHLC(self,nSLC,nHLC):
 		self.nSLC = nSLC
 		self.nHLC = nHLC
@@ -154,7 +170,27 @@ def extractEvents_(hdfFile):
 	coreXList = mcPrim_df["x"].values
 	coreYList = mcPrim_df["y"].values
 	H4aWeightList = getValue_(hdfFile,key="H4aWeight")
-	ITSMTTriggeredList = getValue_(hdfFile,key="ITSMTTriggered")
+	HLC6_5000List = getValue_(hdfFile,key="HLC6_5000")
+	tank6_5000List = getValue_(hdfFile,key="tank6_5000")
+	tank6_4000List = getValue_(hdfFile,key="tank6_4000")
+	tank6_3000List = getValue_(hdfFile,key="tank6_3000")
+	tank6_2000List = getValue_(hdfFile,key="tank6_2000")
+	tank7_5000List = getValue_(hdfFile,key="tank7_5000")
+	tank7_4000List = getValue_(hdfFile,key="tank7_4000")
+	tank7_3000List = getValue_(hdfFile,key="tank7_3000")
+	tank7_2000List = getValue_(hdfFile,key="tank7_2000")
+	tank8_5000List = getValue_(hdfFile,key="tank8_5000")
+	tank8_4000List = getValue_(hdfFile,key="tank8_4000")
+	tank8_3000List = getValue_(hdfFile,key="tank8_3000")
+	tank8_2000List = getValue_(hdfFile,key="tank8_2000")
+	tank9_5000List = getValue_(hdfFile,key="tank9_5000")
+	tank9_4000List = getValue_(hdfFile,key="tank9_4000")
+	tank9_3000List = getValue_(hdfFile,key="tank9_3000")
+	tank9_2000List = getValue_(hdfFile,key="tank9_2000")
+	tank10_5000List = getValue_(hdfFile,key="tank10_5000")
+	tank10_4000List = getValue_(hdfFile,key="tank10_4000")
+	tank10_3000List = getValue_(hdfFile,key="tank10_3000")
+	tank10_2000List = getValue_(hdfFile,key="tank10_2000")
 	STA1TriggerList = getValue_(hdfFile,key="OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_isSTA1")
 	ITSTA5_filterList = getValue_(hdfFile,key="IceTopSTA5_13_filter")
 	ITSTA3_filterList = getValue_(hdfFile,key="SDST_IceTopSTA3_13_filter")
@@ -204,10 +240,10 @@ def extractEvents_(hdfFile):
 	evtObjList = []
 	for nEvt,evtID in enumerate(eventList):
 		# if STA1TriggerList[nEvt] > 0:
-			# print("primary,runID,eventID,STA1,STA3,STA5",primaryList[nEvt],runList[nEvt],evtID,ITSMTTriggeredList[nEvt],STA1TriggerList[nEvt],ITSTA3_filterList[nEvt],ITSTA5_filterList[nEvt])
+			# print("primary,runID,eventID,STA1,STA3,STA5",primaryList[nEvt],runList[nEvt],evtID,HLC6_5000List[nEvt],STA1TriggerList[nEvt],ITSTA3_filterList[nEvt],ITSTA5_filterList[nEvt])
 		thisEvt = CREvent(runList[nEvt],evtID,primaryList[nEvt],energyList[nEvt],zenithList[nEvt],coreXList[nEvt],coreYList[nEvt])
 		thisEvt.addWeight(H4aWeightList[nEvt])
-		thisEvt.addTrigger(ITSMTTriggeredList[nEvt],STA1TriggerList[nEvt])
+		thisEvt.addTrigger(HLC6_5000List[nEvt],STA1TriggerList[nEvt])
 		thisEvt.addFilter(ITSTA5_filterList[nEvt],ITSTA3_filterList[nEvt])
 		thisEvt.hlcHit = hlcHitList[nEvt]
 		thisEvt.addDeltaTSLC(deltaTSLC3List[nEvt],deltaTSLC4List[nEvt],deltaTSLC5List[nEvt],deltaTSLC6List[nEvt],deltaTSLC7List[nEvt],deltaTSLC8List[nEvt])
@@ -215,7 +251,11 @@ def extractEvents_(hdfFile):
 		thisEvt.addDeltaTTank(deltaT3List[nEvt],deltaT4List[nEvt],deltaT5List[nEvt],deltaT6List[nEvt],deltaT7List[nEvt],deltaT8List[nEvt])
 		thisEvt.addDeltaTTankSC(deltaT3ListSC[nEvt],deltaT4ListSC[nEvt],deltaT5ListSC[nEvt],deltaT6ListSC[nEvt],deltaT7ListSC[nEvt],deltaT8ListSC[nEvt])
 		thisEvt.addSLCTrigger(slc3TrigList[nEvt],slc4TrigList[nEvt],slc5TrigList[nEvt],slc6TrigList[nEvt],slc7TrigList[nEvt],slc8TrigList[nEvt])
-		thisEvt.addTankTrigger(TankHit1[nEvt],TankHit3[nEvt],TankHit4[nEvt],TankHit5[nEvt],TankHit6[nEvt],TankHit7[nEvt],TankHit8[nEvt])
+		thisEvt.addTankTrigger(tank6_5000List[nEvt],tank6_4000List[nEvt],tank6_3000List[nEvt],tank6_2000List[nEvt],
+			tank7_5000List[nEvt],tank7_4000List[nEvt],tank7_3000List[nEvt],tank7_2000List[nEvt],tank8_5000List[nEvt],
+			tank8_4000List[nEvt],tank8_3000List[nEvt],tank8_2000List[nEvt],tank9_5000List[nEvt],tank9_4000List[nEvt],
+			tank9_3000List[nEvt],tank9_2000List[nEvt],tank10_5000List[nEvt],tank10_4000List[nEvt],tank10_3000List[nEvt],
+			tank10_2000List[nEvt])
 		thisEvt.addSLCHLC(nSLC[nEvt],nHLC[nEvt])
 		thisEvt.nStations = nStations[nEvt]
 		thisEvt.nTanks = nTanks[nEvt]
@@ -247,7 +287,7 @@ def extractEventsOfficial_(hdfFile):
 	coreXList = mcPrim_df["x"].values
 	coreYList = mcPrim_df["y"].values
 	H4aWeightList = getValue_(hdfFile,key="H4aWeight")
-	# ITSMTTriggeredList = getValue_(hdfFile,key="ITSMTTriggered")
+	# HLC6_5000List = getValue_(hdfFile,key="HLC6_5000")
 	# STA1TriggerList = getValue_(hdfFile,key="OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_isSTA1")
 	ITSTA5_filterList = getValue_(hdfFile,key="IceTopSTA5_12_filter")
 	ITSTA3_filterList = getValue_(hdfFile,key="SDST_IceTopSTA3_12_filter")
@@ -255,10 +295,10 @@ def extractEventsOfficial_(hdfFile):
 	evtObjList = []
 	for nEvt,evtID in enumerate(eventList):
 		# if STA1TriggerList[nEvt] > 0:
-			# print("primary,runID,eventID,STA1,STA3,STA5",primaryList[nEvt],runList[nEvt],evtID,ITSMTTriggeredList[nEvt],STA1TriggerList[nEvt],ITSTA3_filterList[nEvt],ITSTA5_filterList[nEvt])
+			# print("primary,runID,eventID,STA1,STA3,STA5",primaryList[nEvt],runList[nEvt],evtID,HLC6_5000List[nEvt],STA1TriggerList[nEvt],ITSTA3_filterList[nEvt],ITSTA5_filterList[nEvt])
 		thisEvt = CREvent(runList[nEvt],evtID,primaryList[nEvt],energyList[nEvt],zenithList[nEvt],coreXList[nEvt],coreYList[nEvt])
 		thisEvt.addWeight(H4aWeightList[nEvt])
-		# thisEvt.addTrigger(ITSMTTriggeredList[nEvt],STA1TriggerList[nEvt])
+		# thisEvt.addTrigger(HLC6_5000List[nEvt],STA1TriggerList[nEvt])
 		thisEvt.addFilter(ITSTA5_filterList[nEvt],ITSTA3_filterList[nEvt])
 		thisEvt.hlcHit = hlcHitList[nEvt]
 		evtObjList.append(thisEvt)
@@ -374,7 +414,7 @@ def selectTriggered(eventList,triggerType):
 	if triggerType == "sta1":
 		triggeredEvts =[ievt for ievt in eventList if abs(ievt.STA1Trigger-1)<0.01]
 	elif triggerType == "sta3":
-		triggeredEvts =[ievt for ievt in eventList if abs(ievt.ITSMTTriggered-1)<0.01]
+		triggeredEvts =[ievt for ievt in eventList if abs(ievt.HLC6_5000-1)<0.01]
 	elif triggerType == "slc3":
 		triggeredEvts =[ievt for ievt in eventList if abs(ievt.slc3Trig-1)<0.01]
 	elif triggerType == "slc4":
@@ -699,7 +739,7 @@ def plotRadiusEnergy(energyBins):
 # 	if triggerType == "sta1":
 # 		triggeredEvts =[ievt for ievt in eventList if abs(ievt.STA1Trigger-1)<0.01]
 # 	elif triggerType == "sta3":
-# 		triggeredEvts =[ievt for ievt in eventList if abs(ievt.ITSMTTriggered-1)<0.01]
+# 		triggeredEvts =[ievt for ievt in eventList if abs(ievt.HLC6_5000-1)<0.01]
 # 	elif triggerType == "slc3":
 # 		triggeredEvts =[ievt for ievt in eventList if abs(ievt.slc3Trig-1)<0.01]
 # 	elif triggerType == "slc4":
@@ -832,7 +872,7 @@ def plotRadiusEnergy(energyBins):
 # 	# triggeredEvts = [ievt.ITSTA3_filter for ievt in eventList]
 # 	# print("triggers",triggeredEvts)
 # 	if triggerType == "sta3":
-# 		triggeredEvts =[ievt for ievt in eventList if abs(ievt.ITSMTTriggered-1)<0.01]
+# 		triggeredEvts =[ievt for ievt in eventList if abs(ievt.HLC6_5000-1)<0.01]
 # 	elif triggerType == "sta1":
 # 		triggeredEvts =[ievt for ievt in eventList if abs(ievt.STA1Trigger-1)<0.01]
 # 	elif triggerType == "slc3":
@@ -943,7 +983,7 @@ def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel,ncolor):
 # 	hitBins = np.linspace(14.0,17.0,31)
 # 	if sepZenBins == False:
 # 		if triggerType == "sta3":
-# 			triggeredEvts =[ievt for ievt in eventList if abs(ievt.ITSMTTriggered-1)<0.01]
+# 			triggeredEvts =[ievt for ievt in eventList if abs(ievt.HLC6_5000-1)<0.01]
 # 		elif triggerType == "sta1":
 # 			triggeredEvts =[ievt for ievt in eventList if abs(ievt.STA1Trigger-1)<0.01]
 # 		elif triggerType == "slc3":
@@ -964,7 +1004,7 @@ def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel,ncolor):
 # 			energyList = []
 # 			neventList = []
 # 			if triggerType == "sta3":
-# 				triggeredEvts =[ievt for ievt in evtZenBin if abs(ievt.ITSMTTriggered-1)<0.01]
+# 				triggeredEvts =[ievt for ievt in evtZenBin if abs(ievt.HLC6_5000-1)<0.01]
 # 			elif triggerType == "sta1":
 # 				triggeredEvts =[ievt for ievt in evtZenBin if abs(ievt.STA1Trigger-1)<0.01]
 # 			elif triggerType == "slc3":
@@ -1036,7 +1076,7 @@ def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel,ncolor):
 # 		evtZenBin = [ievt for ievt in eventList if lowEdge <= ievt.zenith < highEdge]
 # 		energyList = []
 # 		neventList = []
-# 		triggeredEvts1 =[ievt for ievt in evtZenBin if abs(ievt.ITSMTTriggered-1)<0.01]
+# 		triggeredEvts1 =[ievt for ievt in evtZenBin if abs(ievt.HLC6_5000-1)<0.01]
 # 		if triggerType == "sta1":
 # 			triggeredEvts2 =[ievt for ievt in evtZenBin if abs(ievt.STA1Trigger-1)<0.01]
 # 		elif triggerType == "slc3":
@@ -1198,7 +1238,7 @@ def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel,ncolor):
 # 	returns total events sta1 and sta3 trigered events
 # 	"""
 # 	STA1Trigger_df = pd.read_hdf(hdfFile,key="OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_isSTA1")	
-# 	STA3Trigger_df = pd.read_hdf(hdfFile,key="ITSMTTriggered")
+# 	STA3Trigger_df = pd.read_hdf(hdfFile,key="HLC6_5000")
 # 	# selEvents = getEventsZenith_(hdfFile,zenLim)
 # 	selEvents = getEventsZenithEnergy_(hdfFile,zenLim,energyLim)
 # 	eventList = STA1Trigger_df["Event"].values
@@ -1336,9 +1376,9 @@ def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel,ncolor):
 # 			# totalEvts = len(evtEBin)
 # 			weights = [ievt.H4aWeight for ievt in evtEBin]
 # 			totalEvts = len(evtEBin)
-# 			# sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
+# 			# sta3 = [ievt.HLC6_5000*ievt.H4aWeight for ievt in evtEBin]
 # 			if triggerType == "sta3":
-# 				triggerList = [ievt.ITSMTTriggered for ievt in evtEBin]
+# 				triggerList = [ievt.HLC6_5000 for ievt in evtEBin]
 # 			elif triggerType == "sta1":
 # 				triggerList = [ievt.STA1Trigger for ievt in evtEBin]
 # 			elif triggerType == "slc3":
@@ -1401,8 +1441,8 @@ def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel,ncolor):
 # 			weights = [ievt.H4aWeight for ievt in evtEBin]
 # 			# totalEvts = np.sum(weights)
 # 			totalEvts = len(evtEBin)
-# 			# sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
-# 			sta3 = [ievt.ITSMTTriggered for ievt in evtEBin]
+# 			# sta3 = [ievt.HLC6_5000*ievt.H4aWeight for ievt in evtEBin]
+# 			sta3 = [ievt.HLC6_5000 for ievt in evtEBin]
 # 			# sta3 = [ievt.ITSTA5_filter for ievt in evtEBin]
 # 			sta1 = [ievt.STA1Trigger for ievt in evtEBin]
 # 			sta3_trigEff = effectiveArea(sum(sta3),totalEvts,showerArea(np.log10(lowEdge_E)))
@@ -1451,7 +1491,7 @@ def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel,ncolor):
 # 			# weights = [ievt.H4aWeight for ievt in evtEBin]
 # 			weights = [ievt.directWeight for ievt in evtEBin]
 # 			totalEvts = np.sum(weights)
-# 			sta3_flux = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
+# 			sta3_flux = [ievt.HLC6_5000*ievt.H4aWeight for ievt in evtEBin]
 # 			sta1_flux = [ievt.STA1Trigger*ievt.H4aWeight for ievt in evtEBin]
 # 			# sta3_fluxList.append(sum(sta3_flux))
 # 			sta3_fluxList.append(sum(sta3_flux)/totalEvts*100.0)
@@ -1501,7 +1541,7 @@ def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel,ncolor):
 # 			# totalEvts = len(evtEBin)
 # 			weights = [ievt.H4aWeight for ievt in evtEBin]
 # 			totalEvts = np.sum(weights)
-# 			sta3_flux = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
+# 			sta3_flux = [ievt.HLC6_5000*ievt.H4aWeight for ievt in evtEBin]
 # 			sta3_fluxList.append(sum(sta3_flux)*((lowEdge_E+highEdge_E)/2.0)**1.8)
 # 			totalEvts_list.append(totalEvts*((lowEdge_E+highEdge_E)/2.0)**1.8)
 # 			energyList.append((lowEdge_E+highEdge_E)/2.0)		
@@ -1581,9 +1621,9 @@ def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel,ncolor):
 # 			# totalEvts = len(evtEBin)
 # 			weights = [ievt.H4aWeight for ievt in evtEBin]
 # 			totalEvts = len(evtEBin)
-# 			# sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
+# 			# sta3 = [ievt.HLC6_5000*ievt.H4aWeight for ievt in evtEBin]
 # 			if triggerType == "sta3":
-# 				triggerList = [ievt.ITSMTTriggered for ievt in evtEBin]
+# 				triggerList = [ievt.HLC6_5000 for ievt in evtEBin]
 # 			elif triggerType == "sta1":
 # 				triggerList = [ievt.STA1Trigger for ievt in evtEBin]
 # 			elif triggerType == "slc3":
@@ -1851,7 +1891,7 @@ def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel,ncolor):
 #     ax.grid(True,alpha=0.2)
 #     plt.savefig(plotFolder+"/scatterChargeTime"+str(suffix)+".png",transparent=False,bbox_inches='tight')
 #     plt.close()
-    
+		
 
 
 # def scatter_hist_(x, y, ax, ax_histx, ax_histy):
@@ -2017,7 +2057,7 @@ def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel,ncolor):
 # def stationRate(hdfFileList,key,prefix,hitBins,xlabel):
 # 	stationHits = getValue(hdfFileList,key)
 # 	weights = getValue(hdfFileList,"H4aWeight")
-# 	triggerSTA3 = getValue(hdfFileList,"ITSMTTriggered")
+# 	triggerSTA3 = getValue(hdfFileList,"HLC6_5000")
 # 	fig = plt.figure(figsize=(8,5))
 # 	gs = gridspec.GridSpec(ncols=1,nrows=1)
 # 	ax = fig.add_subplot(gs[0])
@@ -2057,7 +2097,7 @@ def plotRatioSteps(triggeredEvts1,triggeredEvts2,ax,legendLabel,ncolor):
 # def chargeRate(hdfFileList,key,prefix,hitBins,xlabel):
 # 	Qtot = np.log10(getValue(hdfFileList,key))
 # 	weights = getValue(hdfFileList,"H4aWeight")
-# 	triggerSTA3 = getValue(hdfFileList,"ITSMTTriggered")
+# 	triggerSTA3 = getValue(hdfFileList,"HLC6_5000")
 # 	fig = plt.figure(figsize=(8,5))
 # 	gs = gridspec.GridSpec(ncols=1,nrows=1)
 # 	ax = fig.add_subplot(gs[0])
@@ -2093,11 +2133,11 @@ def SLCRate(evtList):
 	# print([ievt.zenith for ievt in evtList if 0<np.rad2deg(ievt.zenith)<60][:100])
 	evtList = [ievt for ievt in evtList if 60<np.rad2deg(ievt.zenith)<65]
 	nSLCList = [ievt.nSLC for ievt in evtList]
-	nSLCList_sta3 = [ievt.nSLC for ievt in evtList if abs(ievt.ITSMTTriggered-1)<0.01]
-	nSLCList_notsta3 = [ievt.nSLC for ievt in evtList if abs(ievt.ITSMTTriggered-1)>0.01]
+	nSLCList_sta3 = [ievt.nSLC for ievt in evtList if abs(ievt.HLC6_5000-1)<0.01]
+	nSLCList_notsta3 = [ievt.nSLC for ievt in evtList if abs(ievt.HLC6_5000-1)>0.01]
 	weights = [ievt.H4aWeight for ievt in evtList]
-	weights_sta3 = [ievt.H4aWeight for ievt in evtList if abs(ievt.ITSMTTriggered-1)<0.01]
-	weights_notsta3 = [ievt.H4aWeight for ievt in evtList if abs(ievt.ITSMTTriggered-1)>0.01]
+	weights_sta3 = [ievt.H4aWeight for ievt in evtList if abs(ievt.HLC6_5000-1)<0.01]
+	weights_notsta3 = [ievt.H4aWeight for ievt in evtList if abs(ievt.HLC6_5000-1)>0.01]
 	fig = plt.figure(figsize=(8,5))
 	gs = gridspec.GridSpec(ncols=1,nrows=1)
 	ax = fig.add_subplot(gs[0])

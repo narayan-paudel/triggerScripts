@@ -8,6 +8,12 @@ ABS_PATH_HERE = str(os.path.dirname(os.path.realpath(__file__)))
 # ABS_PATH_HERE = "./"
 ABS_PATH_HERE += "/"
 print("abs path",ABS_PATH_HERE)
+
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('inputPath', type=str, default="/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique/", help='Source folder for input files.')
+parser.add_argument('outputPath', type=str, default="/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/", help='Destination folder for output files.')
+args = parser.parse_args()
 ############################################################################
 inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique/"
 # inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique.FRT/"
@@ -24,6 +30,8 @@ FeinputList = sorted(glob.glob(inputPath+"FeDAT*GenDetFiltProcUnique.i3.gz"))
 # FeinputList = sorted(glob.glob(inputPath+"12362/"+"Level3_IC86.2012_12362_*.i3.gz"))[:3000]
 #############################################################################
 print("inputList",pinputList)
+
+
 
 submitFileName = ABS_PATH_HERE+"tempSubmitClean.sub"
 
