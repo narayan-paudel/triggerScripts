@@ -13,21 +13,21 @@ I3BUILD=$I3BASE/build
 ICETRAY_ENV=$I3BUILD/env-shell.sh
 
 
-# GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz
-GCD=/data/user/enpaudel/triggerStudy/simFiles/modified_GCD/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz
-SEED=101
+GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz
+# GCD=/data/user/enpaudel/triggerStudy/simFiles/modified_GCD/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz
+SEED=111
 
 OUTPUT_FOLDER=/home/enpaudel/icecube/triggerStudy/simFilesTest/
 
 
-# PRIMARY_NAME=Fe
-# CORSIKA_ID=DAT002095
+PRIMARY_NAME=Fe
+CORSIKA_ID=DAT002095
 
 # PRIMARY_NAME=p
 # CORSIKA_ID=DAT001164
 
-PRIMARY_NAME=Fe
-CORSIKA_ID=DAT000559
+# PRIMARY_NAME=Fe
+# CORSIKA_ID=DAT000559
 
 
 DETECTOR_PY=$I3SRC/simprod-scripts/resources/scripts/detector.py

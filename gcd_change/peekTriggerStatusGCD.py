@@ -87,7 +87,8 @@ def checkTankTrigger(frame):
       # print("trigStatus",trigger,trigger.trigger_settings.get('timeWindow', 'N/A'))
       # print("trigStatus",trigger,trigger.trigger_settings.get('domSet', 'N/A'))
 
-GCDTankTrig = dataio.I3File("/data/user/enpaudel/triggerStudy/simFiles/modified_GCD/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz", "w")
+# GCDTankTrig = dataio.I3File("/data/user/enpaudel/triggerStudy/simFiles/modified_GCD/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz", "w")
+GCDTankTrig = dataio.I3File("/data/user/enpaudel/triggerStudy/simFiles/modified_GCD/../GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz", "w")
 for frame in dataio.I3File(GCD,'r'):
   if frame.Stop == icetray.I3Frame.DetectorStatus:
     outframe=addTankTrigger(frame)
@@ -96,6 +97,7 @@ for frame in dataio.I3File(GCD,'r'):
     GCDTankTrig.push(frame)
 GCDTankTrig.close()
 
-for frame in dataio.I3File("/data/user/enpaudel/triggerStudy/simFiles/modified_GCD/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz", "r"):
+# for frame in dataio.I3File("/data/user/enpaudel/triggerStudy/simFiles/modified_GCD/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz", "r"):
+for frame in dataio.I3File("/data/user/enpaudel/triggerStudy/simFiles/modified_GCD/../GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz", "r"):
   if frame.Stop == icetray.I3Frame.DetectorStatus:
     checkTankTrigger(frame)

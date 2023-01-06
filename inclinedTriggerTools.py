@@ -18,13 +18,16 @@ from matplotlib.colors import ListedColormap
 
 from customColors import qualitative_colors
 
+from icecube.weighting.fluxes import GaisserH4a_IT
+from icecube.weighting.weighting import icetop_mc_weights
+
 import numpy as np
 
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["mathtext.fontset"] = "dejavuserif"
 plt.rcParams.update({'font.size': 20})
 
-from weighting import GetWeight, ParticleType, PDGCode
+from weighting import GetWeight, ParticleType, PDGCode, getWeight
 
 
 plotFolder = "/home/enpaudel/icecube/triggerStudy/plots/"
@@ -52,6 +55,9 @@ trigWindow = 10**(-6) # in ns
 sin2ZenBins = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.822]
 # sin2ZenBins = [0.0,0.822]
 
+weight_file = "/home/enpaudel/icecube/triggerStudy/simFiles/dataset_info200Uneven.json"
+
+
 class CREvent(object):
 	"""docstring for CREvent"""
 	def __init__(self,runID,eventID,CRType,energy,zenith,coreX,coreY):
@@ -63,6 +69,27 @@ class CREvent(object):
 		self.zenith = zenith
 		self.coreX = coreX
 		self.coreY = coreY
+		# self.calcWeight()
+
+	def calcWeight(self):
+		flux = GaisserH4a_IT()
+		p_energy = self.energy 
+		p_type = self.CRType
+		p_zenith = self.zenith
+		# print("trying to debug",p_energy,type(p_energy),p_type,p_zenith)
+		print("ptype",p_type)
+		if str(p_type) == str(2212):
+			dset = 12360
+		elif str(p_type) == str(1000020040):
+			dset = 12630
+		elif str(p_type) == str(1000080160):
+			dset = 12631
+		elif str(p_type) == str(1000260560):
+			dset = 12362
+		# print("dset",dset,weight_file)
+		generator = icetop_mc_weights(dset,dataset_file=weight_file)
+		p_weights = flux(p_energy,p_type)/generator(p_energy,p_type,np.cos(p_zenith))
+		self.H4aWeight2=p_weights
 
 	def addWeight(self,H4aWeight):
 		self.H4aWeight = H4aWeight
@@ -392,15 +419,23 @@ def weightCalc(hdfFileList):
 	returns weights for the events in list.
 	'''
 	zen,ptype,energy = getZenithTypeEnergy(hdfFileList)
-	weights = GetWeight().getWeight(nfilesP,nfilesHe,nfilesO,nfilesFe,zen,energy,ptype)
-	adjustedWeights = []
-	for iweight,ienergy in zip(weights,energy):
-		if ienergy >= 10**7:
-			adjustedWeights.append(iweight)
-			# adjustedWeights.append(iweight*10)
-		else:
-			adjustedWeights.append(iweight)
-	return adjustedWeights
+	# return GetWeight().getWeight(nfilesP,nfilesHe,nfilesO,nfilesFe,zen,energy,ptype)
+	return getWeight(zen,energy,ptype)
+
+def weightCalc1(hdfFileList,nfilesP,nfilesHe,nfilesO,nfilesFe):
+	'''
+	returns weights for the events in list.
+	'''
+	zen,ptype,energy = getZenithTypeEnergy(hdfFileList)
+	return GetWeight().getWeight(nfilesP,nfilesHe,nfilesO,nfilesFe,zen,energy,ptype)
+
+def pureWeightCalc(hdfFileList):
+	'''
+	returns weights for the events in list.
+	'''
+	zen,ptype,energy = getZenithTypeEnergy(hdfFileList)
+	# return GetWeight().getWeight(nfilesP,nfilesHe,nfilesO,nfilesFe,zen,energy,ptype)
+	return getPureWeight(zen,energy,ptype)
 
 def selectEnergyEvents(evtList,energy,tolerance):
 	"tolerance in log10E, energy in eV"

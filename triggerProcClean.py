@@ -44,9 +44,9 @@ print("keys",ConfigIDMap.keys())
 
 
 CORSIKA_ID = "DAT059871"
-# outputDir = "/home/enpaudel/icecube/triggerStudy/simFiles/"
 outputDir = "/home/enpaudel/icecube/triggerStudy/simFiles/"
 dataSetClean = "/dataSetClean/"
+# dataSetClean = "/dataSetCleanTest/"
 # dataSetClean = "/dataSetCleanWFRT/"
 # dataSetClean = "/dataSetCleanFRT/"
 
@@ -1160,6 +1160,7 @@ tray.AddModule(icetop_Level3_scripts.modules.CheckContainment,
 tray.AddModule("I3Writer","i3writer",
 						# filename=str(outputDir)+"/hadronTimeTest/"+str(fileName)+"HadronNonTrigImProperTEvts.i3.gz",
 						# filename=str(outputDir)+"/dataSetCleanTestSeedSame/"+str(fileName)+"CleanVEMEvts.i3.gz",
+						# filename=str(outputDir)+dataSetClean+str(fileName)+"CleanVEMEvts.i3.gz",
 						filename=str(outputDir)+dataSetClean+str(fileName)+"CleanVEMEvts.i3.gz",
 						# filename=str(outputDir)+"/dataSetCleanOfficial/"+str(fileName)+"CleanVEMEvts.i3.gz",
 						streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
@@ -1170,6 +1171,7 @@ tray.AddModule("I3Writer","i3writer",
 # tray.AddModule("I3NullSplitter","nullsplitter")
 
 tray.Add(hdfwriter.I3HDFWriter, 'hdfNull',
+		# Output=str(outputDir)+dataSetClean+str(fileName)+"CleanVEMEvts.hdf5",
 		Output=str(outputDir)+dataSetClean+str(fileName)+"CleanVEMEvts.hdf5",
 		# Output=str(outputDir)+"/dataSetCleanTestSeedSame/"+str(fileName)+"CleanVEMEvts.hdf5",
 		# Output=str(outputDir)+"/dataSetCleanOfficial/"+str(fileName)+"CleanVEMEvts.hdf5",
