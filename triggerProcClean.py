@@ -16,7 +16,7 @@ import math
 from icecube import phys_services, sim_services
 from icecube import tableio, hdfwriter
 from icecube.simprod.util import PrintContext
-from icecube import topeventcleaning, tpx
+from icecube import topeventcleaning, tpx,toprec
 # from icecube import top_background_simulator
 
 
@@ -776,6 +776,21 @@ def calcWeight(frame):
 name = ""
 
 
+
+def inclinationFilter(frame,zenithThreshold):  
+  if frame.Stop == icetray.I3Frame.Physics:
+    zenith_true = frame["MCPrimary"].dir.zenith
+    zenith_reco = frame["ShowerPlane"].dir.zenith
+    if not np.isnan(zenith_reco):
+      if zenith_reco*180.0/np.pi >= zenithThreshold:
+        frame["inclinedFilter"] = dataclasses.I3Double(1)
+      elif zenith_reco*180.0/np.pi < zenithThreshold:
+        frame["inclinedFilter"] = dataclasses.I3Double(0)
+    else:
+      frame["inclinedFilter"] = dataclasses.I3Double(-1000)
+
+
+
 tray = I3Tray()
 tray.AddModule("I3Reader","reader",
 						 filenameList=[GCD]+args.input,
@@ -1156,6 +1171,43 @@ tray.AddModule(calcWeight,"calcWeight",
 tray.AddModule(icetop_Level3_scripts.modules.CheckContainment,
 							 'MCPrimaryCheckContainment', Particles=["MCPrimary"], Detector="IC86.2019")
 
+tray.AddModule("Delete",
+  Keys = ["ShowerCOG","ShowerPlane","ShowerPlaneParams",'ClusterCleaningExcludedTanks',"ClusterCleaningExcludedTanksSLC"]
+  )
+
+def Unify(frame, Keys, Output):
+  """
+  Simple utility to merge RecoPulseSerieses into a single Union.
+  """
+  extants = [k for k in Keys if k in frame]
+  union = dataclasses.I3RecoPulseSeriesMapUnion(frame, extants)
+  frame[Output] = union
+
+tray.Add(Unify,"UnionHLCSLC",
+  Keys=["OfflineIceTopHLCTankPulsesCleanTimeCleanCharge","OfflineIceTopSLCTankPulsesCleanTimeCleanCharge"],
+  Output='IceTopTankPulses'
+  )
+
+tray.Add('I3TopRecoCore',
+  DataReadout     = 'IceTopTankPulses',
+  NTanks          = 7,
+  ShowerCore      = 'ShowerCOG',
+  Verbose         = False,
+  Weighting_Power = 0.5,
+  If              = lambda frame: 'IceTopTankPulses' in frame
+  )
+
+tray.Add('I3TopRecoPlane',
+  DataReadout = 'IceTopTankPulses',
+  ShowerPlane = 'ShowerPlane',
+  Trigger     = 3,
+  Verbose     = False,
+  If          = lambda frame: 'IceTopTankPulses' in frame
+)
+
+tray.Add(inclinationFilter,"inclFilt",
+  zenithThreshold = 20)
+
 
 tray.AddModule("I3Writer","i3writer",
 						# filename=str(outputDir)+"/hadronTimeTest/"+str(fileName)+"HadronNonTrigImProperTEvts.i3.gz",
@@ -1228,7 +1280,8 @@ tray.Add(hdfwriter.I3HDFWriter, 'hdfNull',
 		"HLCSLC_hitStations","HLCSLC_hitTanks","HLCSLC_isTank1","HLCSLC_isTank2","HLCSLC_isTank3","HLCSLC_isTank4","HLCSLC_isTank5","HLCSLC_isTank6",
 		"HLCSLC_isTank7","HLCSLC_isTank8","OfflineIceTopSLCTankPulsesCleanTimeCleanCharge_NoBackground","OfflineIceTopHLCTankPulsesCleanTimeCleanCharge_NoBackground",
 		"OfflineIceTopHLCVEMPulses_isSTA2","OfflineIceTopHLCVEMPulses_isSTA3","OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_NoBackground_isSTA1",
-		"OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_NoBackground_isSTA2","OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_NoBackground_isSTA3",
+		"OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_NoBackground_isSTA2","OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_NoBackground_isSTA3",'IceTopTankPulses',
+    "ShowerCOG","ShowerPlane","ShowerPlaneParams","MCPrimary","inclinedFilter"
 		]
 		)
 

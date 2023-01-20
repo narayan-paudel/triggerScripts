@@ -106,7 +106,8 @@ hdf5NullListHe = sorted(glob.glob(basePath+"He*Clean*.hdf5"))
 hdf5NullListO = sorted(glob.glob(basePath+"O*Clean*.hdf5"))
 hdf5NullListFe = sorted(glob.glob(basePath+"Fe*Clean*.hdf5"))
 # hdf5NullList = np.concatenate((hdf5NullListP,hdf5NullListHe,hdf5NullListO,hdf5NullListFe))
-hdf5NullList = np.concatenate((hdf5NullListP,hdf5NullListHe,hdf5NullListO,hdf5NullListFe))
+# hdf5NullList = np.concatenate((hdf5NullListP,hdf5NullListHe,hdf5NullListO,hdf5NullListFe))
+hdf5NullList = hdf5NullListFe
 plotFolder = "/home/enpaudel/icecube/triggerStudy/plots/"
 
 # colorsList = ['#9467bd', '#e377c2','#1f77b4','#2ca02c','#bcbd22','#ff7f0e','#8c564b','#7f7f7f','#17becf','#d62728',
@@ -155,6 +156,13 @@ evtList_contained = containedEvents(evtList,410)
 total_events = sum([1 for ievt in evtList])
 plotFolder = "/home/enpaudel/icecube/triggerStudy/plots/"
 
+vertEvents = [ievt.eventID for ievt in evtList_contained if (abs(getattr(ievt,"HLC6_5000")-1)<0.01 and 0.0 <= ievt.zenith < 0.2 and abs(np.log10(getattr(ievt,"energy"))-7.0)<=0.05)]
+inclEvents = [ievt.eventID for ievt in evtList_contained if (abs(getattr(ievt,"tank7_3000")-1)<0.01 and 0.95 <= ievt.zenith < 1.0 and abs(np.log10(getattr(ievt,"energy"))-7.0)<=0.05)]
+inclEventsNoHLC6 = [ievt.eventID for ievt in evtList_contained if (abs(getattr(ievt,"tank7_3000")-1)<0.01 and abs(getattr(ievt,"HLC6_5000")-0)<0.01 and 0.95 <= ievt.zenith < 1.0 and abs(np.log10(getattr(ievt,"energy"))-7.0)<=0.05)]
+
+print("vertical events",vertEvents)
+print("incl events",inclEvents)
+print("incl events No HLC",inclEventsNoHLC6)
 
 
 
@@ -253,7 +261,11 @@ def plotTank7Events(evtList,energyBins,triggerType1,triggerType2,containment):
   trigEff2 = triggerEfficiency(len(triggerList2),totalEvts)
   # print("triggerEfficiency",triggerType1,len(triggerList1),trigEff1,triggerType2,len(triggerList2),trigEff2)
   # print("eventID runID",[(ievt.runID,ievt.eventID,ievt.CRType) for ievt in evtEBin if (abs(getattr(ievt,triggerType2)-1)<0.01 and abs(getattr(ievt,triggerType1)-0)<0.01 and abs(np.log10(getattr(ievt,"energy"))-7.45)<=0.05)])
-  print("eventID runID both triggers",[(ievt.runID,ievt.eventID,ievt.CRType) for ievt in evtEBin if (abs(getattr(ievt,triggerType2)-1)<0.01 and abs(getattr(ievt,triggerType1)-1)<0.01 and abs(np.log10(getattr(ievt,"energy"))-7.45)<=0.05)])
+  # print("eventID runID both triggers",[(ievt.runID,ievt.eventID,ievt.CRType) for ievt in evtEBin if (abs(getattr(ievt,triggerType2)-1)<0.01 and abs(getattr(ievt,triggerType1)-1)<0.01 and abs(np.log10(getattr(ievt,"energy"))-7.45)<=0.05)])
+  # print("eventID runID both triggers tank 7",[(ievt.runID,ievt.eventID,ievt.CRType) for ievt in evtEBin if (abs(getattr(ievt,triggerType2)-1)<0.01 and abs(np.log10(getattr(ievt,"energy"))-7.45)<=0.05)])
+  print("eventID runID both triggers HLC6",[(ievt.runID,ievt.eventID,ievt.CRType) for ievt in evtEBin if (abs(getattr(ievt,triggerType1)-1)<0.01 and abs(np.log10(getattr(ievt,"energy"))-7.45)<=0.05)])
+  print("eventID runID both triggers HLC6  and tank7",[(ievt.runID,ievt.eventID,ievt.CRType) for ievt in evtEBin if (abs(getattr(ievt,triggerType2)-1)<0.01 and abs(getattr(ievt,triggerType1)-1)<0.01 and abs(np.log10(getattr(ievt,"energy"))-7.45)<=0.05)])
+  print("eventID runID both triggers HLC6  or tank7",[(ievt.runID,ievt.eventID,ievt.CRType) for ievt in evtEBin if ((abs(getattr(ievt,triggerType2)-1)<0.01 or abs(getattr(ievt,triggerType1)-1)<0.01) and abs(np.log10(getattr(ievt,"energy"))-7.45)<=0.05)])
   # print("crtype",[ievt.CRType for ievt in evtEBin if (abs(getattr(ievt,triggerType2)-1)<0.01 and abs(getattr(ievt,triggerType1)-0)<0.01)])
   # print("energy",[ievt.energy for ievt in evtEBin if (abs(getattr(ievt,triggerType2)-1)<0.01 and abs(getattr(ievt,triggerType1)-0)<0.01)])
   # print("zenith",[ievt.zenith for ievt in evtEBin if (abs(getattr(ievt,triggerType2)-1)<0.01 and abs(getattr(ievt,triggerType1)-0)<0.01)])

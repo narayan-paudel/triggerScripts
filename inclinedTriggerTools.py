@@ -162,9 +162,23 @@ class CREvent(object):
 		self.tank10_4000 = tank10_4000
 		self.tank10_3000 = tank10_3000
 		self.tank10_2000 = tank10_2000
-	def addSLCHLC(self,nSLC,nHLC):
-		self.nSLC = nSLC
-		self.nHLC = nHLC
+	def addSLCHLC(self,nSLCTank,nHLCTank,nSLCVEM,nHLCVEM):
+		self.nSLCTank = nSLCTank
+		self.nHLCTank = nHLCTank
+		self.nSLCVEM = nSLCVEM
+		self.nHLCVEM = nHLCVEM
+
+	def addSLCHLCQtot(self,QtotSLCTank,QtotHLCTank,QtotSLCVEM,QtotHLCVEM):
+		self.QtotSLCTank = QtotSLCTank
+		self.QtotHLCTank = QtotHLCTank
+		self.QtotSLCVEM = QtotSLCVEM
+		self.QtotHLCVEM = QtotHLCVEM
+
+	def addReco(self,zenithReco,coreXReco,coreYReco,inclinedFilter):
+		self.zenithReco = zenithReco
+		self.coreXReco = coreXReco
+		self.coreYReco = coreYReco
+		self.inclinedFilter = inclinedFilter
 
 
 
@@ -196,6 +210,12 @@ def extractEvents_(hdfFile):
 	zenithList = mcPrim_df["zenith"].values
 	coreXList = mcPrim_df["x"].values
 	coreYList = mcPrim_df["y"].values
+	cog_df = pd.read_hdf(hdfFile,key="ShowerCOG")
+	plane_df = pd.read_hdf(hdfFile,key="ShowerPlane")
+	zenithRecoList = plane_df["zenith"].values
+	coreXRecoList = cog_df["x"].values
+	coreYRecoList = cog_df["y"].values
+	inclinedFilterList = getValue_(hdfFile,key="inclinedFilter")
 	H4aWeightList = getValue_(hdfFile,key="H4aWeight")
 	HLC6_5000List = getValue_(hdfFile,key="HLC6_5000")
 	tank6_5000List = getValue_(hdfFile,key="tank6_5000")
@@ -242,6 +262,12 @@ def extractEvents_(hdfFile):
 	slc8TrigList = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_isSLCTank8")
 	nSLC = getValue_(hdfFile,key="OfflineIceTopSLCTankPulsesCleanTimeCleanChargeTotalHit")
 	nHLC = getValue_(hdfFile,key="OfflineIceTopHLCTankPulsesCleanTimeCleanChargeTotalHit")
+	nSLCVEM = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanChargeTotalHit")
+	nHLCVEM = getValue_(hdfFile,key="OfflineIceTopHLCVEMPulsesCleanTimeCleanChargeTotalHit")
+	QtotSLCTank = getValue_(hdfFile,key="OfflineIceTopSLCTankPulsesCleanTimeCleanChargeTotalCharge")
+	QtotHLCTank = getValue_(hdfFile,key="OfflineIceTopHLCTankPulsesCleanTimeCleanChargeTotalCharge")
+	QtotSLCVEM = getValue_(hdfFile,key="OfflineIceTopSLCVEMPulsesCleanTimeCleanChargeTotalCharge")
+	QtotHLCVEM = getValue_(hdfFile,key="OfflineIceTopHLCVEMPulsesCleanTimeCleanChargeTotalCharge")
 	nStations = getValue_(hdfFile,key="HLCSLC_hitStations")
 	nTanks = getValue_(hdfFile,key="HLCSLC_hitTanks")
 	deltaT3List = getValue_(hdfFile,key="HLCSLC_3TankHit_t")
@@ -283,13 +309,14 @@ def extractEvents_(hdfFile):
 			tank8_4000List[nEvt],tank8_3000List[nEvt],tank8_2000List[nEvt],tank9_5000List[nEvt],tank9_4000List[nEvt],
 			tank9_3000List[nEvt],tank9_2000List[nEvt],tank10_5000List[nEvt],tank10_4000List[nEvt],tank10_3000List[nEvt],
 			tank10_2000List[nEvt])
-		thisEvt.addSLCHLC(nSLC[nEvt],nHLC[nEvt])
+		thisEvt.addSLCHLC(nSLC[nEvt],nHLC[nEvt],nSLCVEM[nEvt],nHLCVEM[nEvt])
+		thisEvt.addSLCHLCQtot(QtotSLCTank[nEvt],QtotHLCTank[nEvt],QtotSLCVEM[nEvt],QtotHLCVEM[nEvt])
+		thisEvt.addReco(zenithRecoList[nEvt],coreXRecoList[nEvt],coreYRecoList[nEvt],inclinedFilterList[nEvt])
 		thisEvt.nStations = nStations[nEvt]
 		thisEvt.nTanks = nTanks[nEvt]
 		# thisEvt.addDeltaTHLC(deltaTHLCList[nEvt])
 		evtObjList.append(thisEvt)
 	return evtObjList
-
 
 def extractEvents(hdf5List):
 	evtList = []
@@ -468,8 +495,56 @@ def triggerEfficiency(n_trig,n_total):
 	else:
 		return 0
 
+def recoEfficiency(n_reco,n_trig):
+	# print("n_reco,n_trig",n_reco,n_trig)
+	if n_trig != 0:
+		return (n_reco/n_trig)
+	else:
+		return 0
+
 def effectiveArea(n_trig,n_total,area):
 	return triggerEfficiency(n_trig,n_total)*area
+
+
+class recoObj(object):
+	"""docstring for recoObj"""
+	def __init__(self, eventID,zenithReco,coreXReco,coreYReco,inclinedFilter):
+		super(recoObj, self).__init__()
+		self.eventID = eventID
+		self.zenithReco = zenithReco
+		self.coreXReco = coreXReco
+		self.coreYReco = coreYReco
+		self.inclinedFilter = inclinedFilter
+		
+
+def extractReco(hdfFile):
+	mcPrim_df = pd.read_hdf(hdfFile,key="MCPrimary")
+	evtHead_df = pd.read_hdf(hdfFile,key="I3EventHeader")
+	eventList = evtHead_df["Event"].values
+	cog_df = pd.read_hdf(hdfFile,key="ShowerCOG")
+	plane_df = pd.read_hdf(hdfFile,key="ShowerPlane")
+	zenithRecoList = plane_df["zenith"].values
+	coreXRecoList = cog_df["x"].values
+	coreYRecoList = cog_df["y"].values
+	inclinedFilterList = getValue_(hdfFile,key="inclinedFilter")
+	recoObjList = []
+	for nEvt,evtID in enumerate(eventList):
+		print("eventId",evtID)
+		thisEvt = recoObj(evtID,zenithRecoList[nEvt],coreXRecoList[nEvt],coreYRecoList[nEvt],inclinedFilterList[nEvt])
+		recoObjList.append(thisEvt)
+	return recoObjList
+
+def addReco(evtList,recoObjList):
+	evtListWithReco = []
+	for ievt in evtList:
+		iReco = [irecoObj for irecoObj in recoObjList if irecoObj.eventID == ievt.eventID][0]
+		# ievt.eventID = iReco.eventID
+		print("adding reco",ievt.eventID)
+		ievt.zenithReco = iReco.zenithReco
+		ievt.coreXReco = iReco.coreXReco
+		ievt.coreYReco = iReco.coreYReco
+		ievt.inclinedFilter = iReco.inclinedFilter
+	return evtList
 
 
 # def addDirectWeights(eventList):

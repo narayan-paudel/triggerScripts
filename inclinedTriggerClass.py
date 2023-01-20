@@ -20,6 +20,7 @@ from matplotlib.colors import ListedColormap
 from customColors import qualitative_colors
 
 import numpy as np
+import pickle
 
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["mathtext.fontset"] = "dejavuserif"
@@ -35,22 +36,20 @@ basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/"
 # basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetCleanFRT/"
 # basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetCleanTest/"
 
-hdf5NullListP = sorted(glob.glob(basePath+"p*Clean*.hdf5"))
-hdf5NullListHe = sorted(glob.glob(basePath+"He*Clean*.hdf5"))
-hdf5NullListO = sorted(glob.glob(basePath+"O*Clean*.hdf5"))
-hdf5NullListFe = sorted(glob.glob(basePath+"Fe*Clean*.hdf5"))
-# hdf5NullList = np.concatenate((hdf5NullListP,hdf5NullListHe,hdf5NullListO,hdf5NullListFe))
-hdf5NullList = np.concatenate((hdf5NullListP,hdf5NullListHe,hdf5NullListO,hdf5NullListFe))[:1]
+
 plotFolder = "/home/enpaudel/icecube/triggerStudy/plots/"
 
-#level 2
-basePathOfficial = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetCleanOfficialL2/"
-hdf5NullListPOfficial = sorted(glob.glob(basePathOfficial+"010410*.hdf5"))
-hdf5NullListHeOfficial = sorted(glob.glob(basePathOfficial+"011663*.hdf5"))
-hdf5NullListOOfficial = sorted(glob.glob(basePathOfficial+"012605*.hdf5"))
-hdf5NullListFeOfficial = sorted(glob.glob(basePathOfficial+"012362*.hdf5"))
+pickleFilesPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetPickle/"
+pickleFiles = sorted(glob.glob(pickleFilesPath+"*GenDetFiltProcUniqueCleanVEMEvts.pkl"))
 
-hdf5NullListOfficial = np.concatenate((hdf5NullListPOfficial,hdf5NullListHeOfficial,hdf5NullListOOfficial,hdf5NullListFeOfficial))
+
+evtList = []
+for ipickle in pickleFiles:
+  with open(ipickle,"rb") as f:
+    ievtList = pickle.load(f)
+    evtList += ievtList
+
+
 
 # colorsList = ['#9467bd', '#e377c2','#1f77b4','#2ca02c','#bcbd22','#ff7f0e','#8c564b','#7f7f7f','#17becf','#d62728',
 # 			'#4477AA', '#332288', '#6699CC', '#88CCEE', '#44AA99', '#117733','#999933', '#DDCC77', '#661100', '#CC6677',
@@ -75,25 +74,15 @@ triggerList = ["HLC6_5000","tank6_5000","tank6_4000","tank6_3000","tank6_2000",
 triggerList7 = ["HLC6_5000","tank7_5000","tank7_4000","tank7_3000","tank7_2000"]
 triggerListSelect = ["HLC6_5000","tank6_3000","tank7_3000","tank8_3000"]
 
-print("proton")
-nfilesP = nCorFiles(hdf5NullListP)
-print("helium")
-nfilesHe = nCorFiles(hdf5NullListHe)
-print("Oxygen")
-nfilesO = nCorFiles(hdf5NullListO)
-print("Fe")
-nfilesFe = nCorFiles(hdf5NullListFe)
-print("no of files p He O Fe",nfilesP,nfilesHe,nfilesO,nfilesFe)
-# print("no of files  He",nfilesHe)
 
 trigWindow = 10**(-6) # in ns
 
 sin2ZenBins = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.822]
 # sin2ZenBins = [0.0,0.822]
 
-evtList = extractEvents(hdf5NullList)
-evtListFe = extractEvents(hdf5NullListFe)
-evtListP = extractEvents(hdf5NullListP)
+# evtList = extractEvents(hdf5NullList)
+# evtListFe = extractEvents(hdf5NullListFe)
+# evtListP = extractEvents(hdf5NullListP)
 # print("event list before",len(evtList))
 # evtList = removeFirstCore(evtList)
 # print("event list after",len(evtList))
@@ -206,8 +195,53 @@ def plotTrigEfficiencyPure(eventListP,eventListFe,energyBins,triggerType,contain
 	plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"PureEfficiency.pdf",transparent=False,bbox_inches='tight')
 	plt.close()
 
-for itrigger in triggerList:
-	plotTrigEfficiencyPure(evtListP,evtListFe,energyBins,triggerType=itrigger,containment=True)
+# for itrigger in triggerList:
+# 	plotTrigEfficiencyPure(evtListP,evtListFe,energyBins,triggerType=itrigger,containment=True)
+
+
+def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
+  if containment == True:
+    # evtList = containedEvents(evtList,640)
+    eventList = containedEvents(eventList,410)
+  nHits = [getattr(ievt,hitType) for ievt in eventList if abs(getattr(ievt,triggerType)-1)<0.01]
+  meanHit = np.mean(nHits)
+  fig = plt.figure(figsize=(8,5))
+  gs = gridspec.GridSpec(nrows=1,ncols=1)
+  ax = fig.add_subplot(gs[0])
+  bins = np.linspace(-1,max(nHits),max(nHits)+2)
+  ax.hist(nHits,bins=bins,histtype="step",label="total",lw=1.5)
+  ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
+  ax.set_xlabel("n_hits per event", fontsize=22)
+  ax.set_ylabel("count", fontsize=22)
+  ax.set_yscale("log")
+  ax.grid(True,alpha=0.4)
+  pulseDict = {"nSLC":"SLC tank","nHLC":"HLC tank","nHLCVEM":"HLC VEM","nSLCVEM":"SLC VEM"}
+  ax.text(0.82,0.88,s="mean {0} hits\n{1:.1f} per event".format(pulseDict[hitType],meanHit),size=15,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+  # ax.legend(loc="upper left",fontsize=12)
+  # ax.legend(fontsize=12)
+  # ax.hist(weightspy3,histtype="step")
+  plt.savefig(plotFolder+"/hits"+str(hitType)+str(triggerType)+str(containment)+".pdf",transparent=False,bbox_inches='tight')
+  plt.close()
+
+# nHitsPerEvent(evtList,bins=np.linspace(-1,200,202),hitType="nHLCVEM",triggerType="tank7_3000",containment=True)
+# nHitsPerEvent(evtList,bins=np.linspace(-1,60,62),hitType="nSLCVEM",triggerType="tank7_3000",containment=True)
+# nHitsPerEvent(evtList,bins=np.linspace(-1,200,202),hitType="nHLC",triggerType="tank7_3000",containment=True)
+# nHitsPerEvent(evtList,bins=np.linspace(-1,60,62),hitType="nSLC",triggerType="tank7_3000",containment=True)
+# nHitsPerEvent(evtList,bins=np.linspace(-1,200,202),hitType="nHLCVEM",triggerType="tank7_3000",containment=False)
+# nHitsPerEvent(evtList,bins=np.linspace(-1,60,62),hitType="nSLCVEM",triggerType="tank7_3000",containment=False)
+# nHitsPerEvent(evtList,bins=np.linspace(-1,200,202),hitType="nHLC",triggerType="tank7_3000",containment=False)
+# nHitsPerEvent(evtList,bins=np.linspace(-1,60,62),hitType="nSLC",triggerType="tank7_3000",containment=False)
+
+# nHitsPerEvent(evtList,bins=np.linspace(-1,200,202),hitType="nHLCVEM",triggerType="HLC6_5000",containment=True)
+# nHitsPerEvent(evtList,bins=np.linspace(-1,60,62),hitType="nSLCVEM",triggerType="HLC6_5000",containment=True)
+# nHitsPerEvent(evtList,bins=np.linspace(-1,200,202),hitType="nHLC",triggerType="HLC6_5000",containment=True)
+# nHitsPerEvent(evtList,bins=np.linspace(-1,60,62),hitType="nSLC",triggerType="HLC6_5000",containment=True)
+# nHitsPerEvent(evtList,bins=np.linspace(-1,200,202),hitType="nHLCVEM",triggerType="HLC6_5000",containment=False)
+# nHitsPerEvent(evtList,bins=np.linspace(-1,60,62),hitType="nSLCVEM",triggerType="HLC6_5000",containment=False)
+# nHitsPerEvent(evtList,bins=np.linspace(-1,200,202),hitType="nHLC",triggerType="HLC6_5000",containment=False)
+# nHitsPerEvent(evtList,bins=np.linspace(-1,60,62),hitType="nSLC",triggerType="HLC6_5000",containment=False)
+
+
 
 # plotRadiusEnergy(energyBinslgE)
 

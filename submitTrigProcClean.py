@@ -9,11 +9,11 @@ ABS_PATH_HERE = str(os.path.dirname(os.path.realpath(__file__)))
 ABS_PATH_HERE += "/"
 print("abs path",ABS_PATH_HERE)
 
-import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument('inputPath', type=str, default="/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique/", help='Source folder for input files.')
-parser.add_argument('outputPath', type=str, default="/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/", help='Destination folder for output files.')
-args = parser.parse_args()
+# import argparse
+# parser = argparse.ArgumentParser()
+# parser.add_argument('inputPath', type=str, default="/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique/", help='Source folder for input files.')
+# parser.add_argument('outputPath', type=str, default="/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/", help='Destination folder for output files.')
+# args = parser.parse_args()
 ############################################################################
 inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique/"
 # inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique.FRT/"
@@ -47,7 +47,7 @@ def makeSubFile(fileList):
 	submitFile.write("Output     = /data/user/enpaudel/triggerStudy/log/cleanTrig$(Process).out\n")
 	submitFile.write("Error      = /data/user/enpaudel/triggerStudy/log/cleanTrig$(Process).err\n")
 	submitFile.write("request_cpus = 1\n")
-	submitFile.write("request_memory = 2GB\n")
+	submitFile.write("request_memory = 4GB\n")
 	submitFile.write("request_disk = 1GB\n")
 	submitFile.write("#request_gpus = 1\n")
 	submitFile.write("#should_transfer_files   = IF_NEEDED\n")
@@ -83,8 +83,8 @@ def submitToCondor(fileList,chunk,primary):
 		print("submitting to condor",ifileList[0])
 		submitToCondorFile(ifileList,primary)
 
-submitToCondor(pinputList,500,"p")
-submitToCondor(HeinputList,500,"He")
-submitToCondor(OinputList,500,"O")
-submitToCondor(FeinputList,500,"Fe")
+submitToCondor(pinputList,100,"p")
+submitToCondor(HeinputList,100,"He")
+submitToCondor(OinputList,100,"O")
+submitToCondor(FeinputList,100,"Fe")
 

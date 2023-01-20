@@ -157,7 +157,7 @@ $ICETRAY_ENV ${PROCESS_PY} $FLAGS4
 time_proc=$(($SECONDS - $start_time))
 # echo $time_diff
 # printf "$ENERGY $time_zip $time_gen $time_det $time_filt $time_proc \n" >> $BASEDIR/../energyTimeMulti.txt  
-printf "$ENERGY $time_proc \n" >> $BASEDIR/../energyTimeMultiStudyProper.txt
+# printf "$ENERGY $time_proc \n" >> $BASEDIR/../energyTimeMultiStudyProper.txt
 
 UNIQUE_PY=$BASEDIR/addUniqueRunID.py
 INPUT_FILE=$OUTPUT_FOLDER/${DATASETUNIQUE}/${PRIMARY_NAME}${CORSIKA_ID}GenDetFiltProc.i3.bz2

@@ -6,11 +6,13 @@ import matplotlib.pyplot as plt
 import glob
 
 from icecube import dataio,dataclasses, icetray, topeventcleaning, toprec
+from icecube import tableio, hdfwriter
+
 from I3Tray import I3Tray
 
 inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/"
 
-inputFiles = sorted(glob.glob(inputPath+"/*GenDetFiltProcUniqueCleanVEMEvts.i3.gz"))[:1]
+inputFiles = sorted(glob.glob(inputPath+"/*GenDetFiltProcUniqueCleanVEMEvts.i3.gz"))
 print("input files",inputFiles)
 outputFolder = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetInclFilt/"
 
@@ -18,20 +20,15 @@ GCD = "/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run
 
 def inclinationFilter(frame,zenithThreshold):  
   if frame.Stop == icetray.I3Frame.Physics:
-    if frame["I3EventHeader"].sub_event_stream in ['IceTopSplit']:
-      zenith_true = frame["MCPrimary"].dir.zenith
-      zenith_reco = frame["ShowerPlane"].dir.zenith
-      if not np.isnan(zenith_reco):
-        zenith_diff = zenith_reco - zenith_true
-        if zenith_diff*180.0/np.pi >= zenithThreshold:
-          frame["inclinedFilter"] = dataclasses.I3Double(1)
-        elif zenith_diff*180.0/np.pi >= zenithThreshold:
-          frame["inclinedFilter"] = dataclasses.I3Double(0)
-      else:
-        frame["inclinedFilter"] = dataclasses.I3Double(-1000)
-
-
-
+    zenith_true = frame["MCPrimary"].dir.zenith
+    zenith_reco = frame["ShowerPlane"].dir.zenith
+    if not np.isnan(zenith_reco):
+      if zenith_reco*180.0/np.pi >= zenithThreshold:
+        frame["inclinedFilter"] = dataclasses.I3Double(1)
+      elif zenith_reco*180.0/np.pi < zenithThreshold:
+        frame["inclinedFilter"] = dataclasses.I3Double(0)
+    else:
+      frame["inclinedFilter"] = dataclasses.I3Double(-1000)
 
 tray = I3Tray()
 
@@ -52,7 +49,7 @@ def Unify(frame, Keys, Output):
   frame[Output] = union
 
 tray.Add(Unify,"UnionHLCSLC",
-  Keys=["OfflineIceTopSLCTankPulses","OfflineIceTopSLCTankPulses"],
+  Keys=["OfflineIceTopHLCTankPulses","OfflineIceTopSLCTankPulses"],
   Output='IceTopTankPulses'
   )
 
@@ -73,11 +70,11 @@ tray.Add('I3TopRecoPlane',
   If          = lambda frame: 'IceTopTankPulses' in frame
 )
 
-# tray.Add(inclinationFilter,"inclFilt",
-#   zenithThreshold = 20)
+tray.Add(inclinationFilter,"inclFilt",
+  zenithThreshold = 20)
 
-keep_all = ["H4aWeight","HLC6_5000","tank7_3000","I3EventHeader","OfflineIceTopSLCTankPulses","OfflineIceTopSLCTankPulses",
-'IceTopTankPulses',"ShowerCOG","ShowerPlane","ShowerPlaneParams","MCPrimary"]
+keep_all = ["H4aWeight","HLC6_5000","tank7_3000","I3EventHeader","OfflineIceTopHLCTankPulses","OfflineIceTopSLCTankPulses",
+'IceTopTankPulses',"ShowerCOG","ShowerPlane","ShowerPlaneParams","MCPrimary","inclinedFilter"]
 # def keep(frame):
 
 tray.AddModule( "Keep", "CleanUpKeys",
@@ -86,20 +83,20 @@ tray.AddModule( "Keep", "CleanUpKeys",
 
 
 tray.Add('I3Writer',
-  Filename = outputFolder+"showerInclinedFilter.i3.gz",
+  Filename = outputFolder+"showerInclinedFilter7Week.i3.gz",
   Streams  = [icetray.I3Frame.DAQ,
         icetray.I3Frame.Physics]
   )
 tray.Add(hdfwriter.I3HDFWriter, 'hdfNull',
-    Output=outputFolder+"showerInclinedFilter.hdf5",
+    Output=outputFolder+"showerInclinedFilter7Week.hdf5",
     CompressionLevel=9,
     # SubEventStreams=['IceTopSplit'],
     SubEventStreams=['NullSplit'],
     # SubEventStreams=["nullsplitter",'IceTopSplit',"nullsplitter",'NullSplit',]
     # SubEventStreams=["ice_top"],
     # Streams=[icetray.I3Frame.DAQ],
-    keys = ["H4aWeight","HLC6_5000","tank7_3000","I3EventHeader","OfflineIceTopSLCTankPulses","OfflineIceTopSLCTankPulses",
-'IceTopTankPulses',"ShowerCOG","ShowerPlane","ShowerPlaneParams","MCPrimary"
+    keys = ["H4aWeight","HLC6_5000","tank7_3000","I3EventHeader","OfflineIceTopHLCTankPulses","OfflineIceTopSLCTankPulses",
+'IceTopTankPulses',"ShowerCOG","ShowerPlane","ShowerPlaneParams","MCPrimary","inclinedFilter"
     ]
     )
 

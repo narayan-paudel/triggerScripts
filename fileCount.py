@@ -2,11 +2,11 @@ import numpy as np
 import re
 import subprocess
 
-import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument('lcol', type=int, default=0, help="starting columns for counting")
-parser.add_argument('hcol', type=int, default=30, help="upper columns for counting")
-args = parser.parse_args()
+# import argparse
+# parser = argparse.ArgumentParser()
+# parser.add_argument('lcol', type=int, default=0, help="starting columns for counting")
+# parser.add_argument('hcol', type=int, default=30, help="upper columns for counting")
+# args = parser.parse_args()
 
 def readTxt(filePath):
 	with open(filePath,"r") as f:
@@ -90,15 +90,9 @@ def delJobs(idleJobs):
 ################################################3
 # counting completed jobs
 ################################################
-longList = np.linspace(1,5971,200)
-longList = [int(n) for n in longList]
+
 # print(longList)
-newList = []
-for i in range(args.lcol,args.hcol):
-	incrementList = [x+i for x in longList]
-	# print(incrementList)
-	newList += incrementList
-newList=sorted(newList)
+
 ###############################################
 ##############################################
 # longList = np.linspace(1,5971,200)
@@ -113,7 +107,7 @@ newList=sorted(newList)
 # newList=sorted(newList)
 # print("longList",newList)
 
-def completedJobs(filePath):
+def completedJobs(filePath,newList):
 	with open(filePath,"r") as f:
 		# next(f)
 		# next(f)
@@ -124,11 +118,30 @@ def completedJobs(filePath):
 	lines = [iline.split(".")[0] for iline in lines ]
 	regex = re.compile(r"\d+")
 	lines = [int(x) for iline in lines for x in regex.findall(iline)]
-	print("lines",lines)
+	# print("lines",lines)
 	remainElt = [x for x in newList if x not in lines]
-	print("remainElt",remainElt)
+	# print("remainElt",remainElt)
 	# print("lines",lines)
 
 	return lines
-cmpletedLines = completedJobs("../completedJobs.txt")
-print("completed jobs",len([i for i in newList if i in cmpletedLines]),[i for i in newList if i in cmpletedLines],len([i for i in newList if i in cmpletedLines]))
+
+
+def checkCompletedFiles(lcol,hcol):
+  longList = np.linspace(1,5971,200)
+  longList = [int(n) for n in longList]
+  newList = []
+  for i in range(lcol,hcol):
+    incrementList = [x+i for x in longList]
+    # print(incrementList)
+    newList += incrementList
+  newList=sorted(newList)
+  cmpletedLines = completedJobs("../completedJobs.txt",newList)
+  # print("completed jobs",len([i for i in newList if i in cmpletedLines]),[i for i in newList if i in cmpletedLines],len([i for i in newList if i in cmpletedLines]))
+  print("completed jobs",lcol,len([i for i in newList if i in cmpletedLines]),len([i for i in newList if i in cmpletedLines]))
+
+
+
+for i in range(0,30):
+  checkCompletedFiles(i,i+1)
+
+checkCompletedFiles(0,30)
