@@ -21,6 +21,11 @@ from customColors import qualitative_colors
 
 import numpy as np
 import pickle
+from scipy.optimize import curve_fit
+
+from astropy.stats import binom_conf_interval
+# from statsmodels.stats.proportion import proportion_confint
+
 
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["mathtext.fontset"] = "dejavuserif"
@@ -45,9 +50,9 @@ pickleFiles = sorted(glob.glob(pickleFilesPath+"*GenDetFiltProcUniqueCleanVEMEvt
 
 evtList = []
 for ipickle in pickleFiles:
-  with open(ipickle,"rb") as f:
-    ievtList = pickle.load(f)
-    evtList += ievtList
+	with open(ipickle,"rb") as f:
+		ievtList = pickle.load(f)
+		evtList += ievtList
 
 
 
@@ -130,22 +135,140 @@ energyBinCenter = [5.1,6.1,7.1,8.1]
 print("energy bins",energyBins)
 
 
+def sigmoid(x, a,b,c):
+	"""returns a sigmoid function """
+	# return [1 / (1 + np.exp(-b*(ix-a)))+c for ix in x]
+	x = np.asarray(x)
+	return 1 / (1 + np.exp(-b*(x-a)))+c
 
-def plotTrigEfficiencyPure(eventListP,eventListFe,energyBins,triggerType,containment):
+
+
+# def sigmoid(x, a,b):
+# 	"""returns a sigmoid function """
+# 	# return [1 / (1 + np.exp(-b*(ix-a)))+c for ix in x]
+# 	x = np.asarray(x)
+# 	# print("debug",x)
+# 	print("debug a",a)
+# 	print("debug b",b)
+# 	return 1 / (1 + np.exp(-b*(x-a)))
+
+def poissonError(n):
+	return np.sqrt(n)
+
+def binomial_proportion(nsel, ntot, coverage=0.68):
+		"""
+		Calculate a binomial proportion (e.g. efficiency of a selection) and its confidence interval.
+
+		Parameters
+		----------
+		nsel: array-like
+			Number of selected events.
+		ntot: array-like
+			Total number of events.
+		coverage: float (optional)
+			Requested fractional coverage of interval (default: 0.68).
+
+		Returns
+		-------
+		p: array of dtype float
+			Binomial fraction.
+		dpl: array of dtype float
+			Lower uncertainty delta (p - pLow).
+		dpu: array of dtype float
+			Upper uncertainty delta (pUp - p).
+		"""
+
+		from scipy.stats import norm
+
+		z = norm().ppf(0.5 + 0.5 * coverage)
+		z2 = z * z
+		p = np.asarray(nsel, dtype=np.float) / ntot
+		div = 1.0 + z2 / ntot
+		pm = (p + z2 / (2 * ntot))
+		dp = z * np.sqrt(p * (1.0 - p) / ntot + z2 / (4 * ntot * ntot))
+		pl = (pm - dp) / div
+		pu = (pm + dp) / div
+
+		return p, p - pl, pu - p
+
+
+
+from iminuit import Minuit
+
+class MinuitFit(object):
+	"""docstring for MinuitFit"""
+	def __init__(self,x,y,yerr,fitFunc):
+		super(MinuitFit, self).__init__()
+		self.x = x
+		self.y = y
+		self.yerr = yerr
+		self.fitFunc = fitFunc
+
+	def AccuracyMetric(self,expected,observed,error,n_parameter):
+		# return np.sum(((expected - observed)/error)**2) / (len(observed)-n_parameter)
+		sum_metric = 0
+		for e,o,er in zip(expected,observed,error):
+			if er > 0:
+				sum_metric += ((e - o)/er)**2 / len(observed)
+			else:
+				sum_metric += ((e - o)/0.00001)**2 / len(observed)
+		return sum_metric
+
+	def LossFcn(self,a,b,c):
+		# expected = self.fitFunc(self.x,*par)
+		expected = np.asarray(self.fitFunc(self.x,a,b,c))
+		observed = np.asarray(self.y)
+		error = []
+		if len(np.asarray(self.yerr).shape) == 1:
+			error = self.yerr
+		elif len(np.asarray(self.yerr).shape) == 2:
+			for ielt in range(len(self.x)):
+				if expected[ielt] >= observed[ielt]:
+					error.append(self.yerr[1][ielt])
+				else:
+					error.append(self.yerr[0][ielt])
+		n_parameter = 3
+		error = np.asarray(error)
+		return self.AccuracyMetric(expected,observed,error,n_parameter)
+
+	def minimization(self):
+		# m = Minuit(self.LossFcn,a=14.0,error_a = 0.2,b=0.5,error_b = 0.2,limit_a=(1.0,18.0),limit_b=(0.01,0.99)
+		# 	,c=0.1,error_c=0.2,limit_c=(-100.0,100.0),errordef=1,pedantic=False)
+		m = Minuit(self.LossFcn,a=14.0,error_a = 0.2,b=7.0,error_b = 0.2,c=0.1,error_c=0.2,
+			limit_a=(14.0,18.0),limit_b=(4.0,12.0),errordef=1,pedantic=False)
+		# m.limits['a'] = (13.0,14.0)
+		# m.limits['b'] = (0.1,0.9)
+		# ,c=0.0,error_c = 0.2
+		# m = Minuit.from_array_func(self.LossFcn,init = [14.0,0.5,0.1],limit=[[13.0,15.0],[0.1,0.9]], name=["a","b"], error=[0.01,0.01], errordef=1.,pedantic=False)
+		# m = Minuit.from_array_func(self.LossFcn,init = [14.0,0.5,0.1],name=["a","b","c"],errordef=1.,pedantic=False)
+		# m = Minuit(self.LossFcn,name=name,errordef=1.,pedantic=False)
+		m.migrad() #find minimum of loss function
+		# loss = self.fitFunc(m.np_values())
+		loss = None
+		print("parameters",m.parameters,m.np_values())
+		print("covariance", m.np_covariance())
+		return m, loss
+
+
+
+
+
+def plotTrigEfficiencyPure(eventList,energyBins,triggerType,containment,sigFit,errorType):
 	'''
 	plots trigger efficiency in different zenith bins
 	'''
 	print("plotting trigger efficiency for ",triggerType)
-
+	eventListP = [ievt for ievt in eventList if str(ievt.CRType) == str(2212)]
+	eventListFe = [ievt for ievt in eventList if str(ievt.CRType) == str(1000260560)]
 	fig = plt.figure(figsize=(8,5))
 	gs = gridspec.GridSpec(nrows=1,ncols=1)
 	ax = fig.add_subplot(gs[0])
 	colorIter = iter(colorsCustom+colorsCustom)
 	# colorIter = iter(colorsList)
 	# sin2ZenBins = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.822]
-	sin2ZenBins = [0.0,0.822]
+	sin2ZenBins = [0.0,0.5,0.6,0.7,0.822]
 	# sin2ZenBins = sin2ZenBins[-4:]
-	colorListp = ["maroon","indianred","lightcoral","mistyrose"]
+	colorListp = ["maroon","firebrick","indianred","lightcoral"]
 	colorListFe = ["darkslategray","teal","darkturquoise","skyblue"]
 	pMap = {"p":eventListP,"Fe":eventListFe}
 	cMap = {"p":colorListp,"Fe":colorListFe}
@@ -160,6 +283,8 @@ def plotTrigEfficiencyPure(eventListP,eventListFe,energyBins,triggerType,contain
 			evtZenBin = [ievt for ievt in eventList if lowEdge <= ievt.zenith < highEdge]
 			energyList = []
 			efficiencyList = []
+			errorListLow = []
+			errorListHigh = []
 			ncolor = cMap[iprimary][nbin]
 			for ebin, ebinStart in enumerate(energyBins[:-1]):
 				lowEdge_E = energyBins[ebin]
@@ -172,9 +297,46 @@ def plotTrigEfficiencyPure(eventListP,eventListFe,energyBins,triggerType,contain
 				triggerList = [ievt for ievt in evtEBin if abs(getattr(ievt,triggerType)-1)<0.01]
 				trigEff = triggerEfficiency(len(triggerList),totalEvts)
 				efficiencyList.append(trigEff)
+				if errorType == "poisson":						
+					if totalEvts != 0:
+						poissonErr = np.sqrt(len(triggerList))/totalEvts
+					else:
+						poissonErr = 0.00001
+					errorListLow.append(poissonErr)
+					errorListHigh.append(poissonErr)
+				elif errorType == "wilson":
+					# wilsonErr = binom_conf_interval(k=len(triggerList), n=totalEvts, confidence_level=0.68269, interval='wilson')
+					if totalEvts < 1:
+						errorListLow.append(0.000001)
+						errorListHigh.append(0.000001)
+					else:
+						# wilsonErr = binom_conf_interval(k=len(triggerList), n=totalEvts, interval='wilson')
+						wilsonErr = binomial_proportion(nsel=len(triggerList), ntot=totalEvts,coverage=0.68)
+						errorListLow.append(wilsonErr[1])
+						errorListHigh.append(wilsonErr[2])
 				energyList.append(np.log10((lowEdge_E+highEdge_E)/2.0*10**9))
-			ax.plot(energyList,efficiencyList,".",ls='-',lw = 2.5,c=ncolor,label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$ {2:}".format(
-				np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi,iprimary),alpha=1)
+			if sigFit == True:
+				###########################################scipy fit#################
+				# popt, pcov = curve_fit(sigmoid, energyList[:-2], efficiencyList[:-2], p0=[14, 0.5,0])
+				# xfit = np.linspace(14,17,1000)
+				# yfit = sigmoid(xfit,*popt)
+				# ax.plot(xfit,yfit,ls="-",c=ncolor,alpha=1.0)
+				# # ax.plot(energyList,efficiencyList,".",lw = 2.5,c=ncolor,label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$ {2:}".format(
+				# # 	np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi,iprimary),alpha=1)
+				# ax.errorbar(energyList,efficiencyList,yerr=np.asarray([errorListLow,errorListHigh]),fmt="o",lw = 2.5,c=ncolor,label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$ {2:}".format(
+				# 	np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi,iprimary),alpha=1)
+				# ###########################################minuit fit################
+				xfit = np.linspace(14,17,1000)
+				yerr=np.asarray([errorListLow[:-8],errorListHigh[:-8]])
+				fit = MinuitFit(x=energyList[:-8],y=efficiencyList[:-8],yerr=yerr,fitFunc=sigmoid)
+				m,loss = fit.minimization()
+				print("m values",*m.np_values())
+				ax.plot(xfit,sigmoid(xfit,*m.np_values()),ls="-",lw=2.5,c=ncolor,alpha=1.0)
+				ax.errorbar(energyList,efficiencyList,yerr=np.asarray([errorListLow,errorListHigh]),fmt="o",lw = 2.5,c=ncolor,label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$ {2:}".format(
+					np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi,iprimary),alpha=1)
+			else:
+				ax.plot(energyList,efficiencyList,".",ls='-',lw = 2.5,c=ncolor,label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$ {2:}".format(
+					np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi,iprimary),alpha=1)
 	ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
 	ax.set_xlabel(r"log10 (E [eV])", fontsize=22)
 	ax.set_ylabel(r"trigger efficiency", fontsize=22)
@@ -182,12 +344,12 @@ def plotTrigEfficiencyPure(eventListP,eventListFe,energyBins,triggerType,contain
 	ax.text(0.78,0.1,s=r"trig:{0}".format(triggerType),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
 	# ax.set_xscale('log')
 	ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
-	ax.set_ylim(0,1.01)
+	ax.set_ylim(0,1.05)
 	ax.set_xlim(14,17)
 	# ax.yaxis.set_minor_locator(MultipleLocator(100))
 	ax.xaxis.set_minor_locator(MultipleLocator(0.1))
 	ax.grid(True,alpha=0.5)
-	l1=ax.legend(loc="upper left",fontsize=12)
+	l1=ax.legend(loc='center right',fontsize=10)
 	point_dash = mlines.Line2D([], [], linestyle='--',lw=2.0,color='black', marker='',markersize=5, label=r"0.98")
 	# l2 = ax.legend(handles=[point_dash],loc="upper left",fontsize=20,framealpha=0.1,handlelength=1.4,handletextpad=0.5)
 	# ax.add_artist(l1)
@@ -195,33 +357,34 @@ def plotTrigEfficiencyPure(eventListP,eventListFe,energyBins,triggerType,contain
 	plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"PureEfficiency.pdf",transparent=False,bbox_inches='tight')
 	plt.close()
 
-# for itrigger in triggerList:
-# 	plotTrigEfficiencyPure(evtListP,evtListFe,energyBins,triggerType=itrigger,containment=True)
+# for itrigger in triggerListSelect:
+	# plotTrigEfficiencyPure(evtList,energyBins,triggerType=itrigger,containment=True,sigFit=True,errorType="poisson")
+plotTrigEfficiencyPure(evtList,energyBins,triggerType="tank7_3000",containment=True,sigFit=True,errorType="wilson")
 
 
 def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
-  if containment == True:
-    # evtList = containedEvents(evtList,640)
-    eventList = containedEvents(eventList,410)
-  nHits = [getattr(ievt,hitType) for ievt in eventList if abs(getattr(ievt,triggerType)-1)<0.01]
-  meanHit = np.mean(nHits)
-  fig = plt.figure(figsize=(8,5))
-  gs = gridspec.GridSpec(nrows=1,ncols=1)
-  ax = fig.add_subplot(gs[0])
-  bins = np.linspace(-1,max(nHits),max(nHits)+2)
-  ax.hist(nHits,bins=bins,histtype="step",label="total",lw=1.5)
-  ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
-  ax.set_xlabel("n_hits per event", fontsize=22)
-  ax.set_ylabel("count", fontsize=22)
-  ax.set_yscale("log")
-  ax.grid(True,alpha=0.4)
-  pulseDict = {"nSLC":"SLC tank","nHLC":"HLC tank","nHLCVEM":"HLC VEM","nSLCVEM":"SLC VEM"}
-  ax.text(0.82,0.88,s="mean {0} hits\n{1:.1f} per event".format(pulseDict[hitType],meanHit),size=15,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
-  # ax.legend(loc="upper left",fontsize=12)
-  # ax.legend(fontsize=12)
-  # ax.hist(weightspy3,histtype="step")
-  plt.savefig(plotFolder+"/hits"+str(hitType)+str(triggerType)+str(containment)+".pdf",transparent=False,bbox_inches='tight')
-  plt.close()
+	if containment == True:
+		# evtList = containedEvents(evtList,640)
+		eventList = containedEvents(eventList,410)
+	nHits = [getattr(ievt,hitType) for ievt in eventList if abs(getattr(ievt,triggerType)-1)<0.01]
+	meanHit = np.mean(nHits)
+	fig = plt.figure(figsize=(8,5))
+	gs = gridspec.GridSpec(nrows=1,ncols=1)
+	ax = fig.add_subplot(gs[0])
+	bins = np.linspace(-1,max(nHits),max(nHits)+2)
+	ax.hist(nHits,bins=bins,histtype="step",label="total",lw=1.5)
+	ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
+	ax.set_xlabel("n_hits per event", fontsize=22)
+	ax.set_ylabel("count", fontsize=22)
+	ax.set_yscale("log")
+	ax.grid(True,alpha=0.4)
+	pulseDict = {"nSLC":"SLC tank","nHLC":"HLC tank","nHLCVEM":"HLC VEM","nSLCVEM":"SLC VEM"}
+	ax.text(0.82,0.88,s="mean {0} hits\n{1:.1f} per event".format(pulseDict[hitType],meanHit),size=15,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+	# ax.legend(loc="upper left",fontsize=12)
+	# ax.legend(fontsize=12)
+	# ax.hist(weightspy3,histtype="step")
+	plt.savefig(plotFolder+"/hits"+str(hitType)+str(triggerType)+str(containment)+".pdf",transparent=False,bbox_inches='tight')
+	plt.close()
 
 # nHitsPerEvent(evtList,bins=np.linspace(-1,200,202),hitType="nHLCVEM",triggerType="tank7_3000",containment=True)
 # nHitsPerEvent(evtList,bins=np.linspace(-1,60,62),hitType="nSLCVEM",triggerType="tank7_3000",containment=True)
