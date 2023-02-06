@@ -31,7 +31,7 @@ from icecube.weighting.weighting import icetop_mc_weights
 # weight_file = "/home/enpaudel/icecube/triggerStudy/simFiles/dataset_info_10.json" #my sim json file
 weight_file = "/home/enpaudel/icecube/triggerStudy/simFiles/dataset_info200Uneven.json" #my sim json file
 
-exceptionTanks_HG = {39:62,26:62,67:64}
+exceptionTanks_HG = {39:62,26:62,67:64,74:62}
 exceptionTanks_LG = {26:61,67:63}
 
 ConfigIDMap = {102:(6,5000,"HLC6"),
