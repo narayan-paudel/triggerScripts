@@ -19,6 +19,8 @@ basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/"
 
 plotFolder = "/home/enpaudel/icecube/triggerStudy/plots/"
 
+#example python pickleEvtList.py /home/enpaudel/icecube/triggerStudy/simFiles/dataSetCleanTanks/FeDAT000001GenDetFiltProcUniqueCleanVEMEvts.hdf5
+
 
 triggerList = ["HLC6_5000","tank6_5000","tank6_4000","tank6_3000","tank6_2000",
   "tank7_5000","tank7_4000","tank7_3000","tank7_2000","tank8_5000","tank8_4000","tank8_3000","tank8_2000"]

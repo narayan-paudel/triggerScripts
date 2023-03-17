@@ -7,6 +7,7 @@ from I3Tray import I3Tray, I3Units
 from icecube import icetray, dataclasses, dataio
 import argparse
 import math
+import subprocess
 
 
 import argparse
@@ -28,9 +29,12 @@ class FrameCounter(icetray.I3Module):
 
 	def Finish(self):
 		# print("total no of events in the frame is ", self.eventNo)
-		print(args.input)
+		# print(args.input)
 		if int(self.eventNo) != 100:
+			print(args.input)
 			print("Some events are lost, recheck scripts",self.eventNo)
+			print("the incomplete file will be deleted")
+			subprocess.call(["rm {}".format(args.input[0])], shell=True)
 			with open("../lessThan100.txt","a") as f:
 				f.write(str(*args.input))
 				f.write(" "+str(self.eventNo)+"\n")

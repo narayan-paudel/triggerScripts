@@ -236,7 +236,7 @@ def AddTotalTankHit(frame,pulseseriesList):
 # 		hit_tanks = []
 # 		for istation in hit_stations:
 # 			tanks = [iom for iom in hit_omkeys if (iom[0] == istation and iom[0] not in exceptionTanks_HG.keys()) and (iom[1] == 61 or iom[1]== 63)  or 
-# 			(iom[0] == istation and iom[0] in [26,39] and (iom[1] == 62 or iom[1]== 63) ) or (iom[0] == istation and iom[0] == 67 and (iom[1] == 61 or iom[1] == 64) )]
+# 			(iom[0] == istation and iom[0] in [26,39,74] and (iom[1] == 62 or iom[1]== 63) ) or (iom[0] == istation and iom[0] == 67 and (iom[1] == 61 or iom[1] == 64) )]
 # 			pulses = [psm[om] for om in tanks]
 # 			hit_tanks += tanks
 # 			# ipulses = [ipulse for ipulse in pulse for pulse in pulses]
@@ -306,7 +306,7 @@ def deltaTHLCHit(frame,pulseseriesList):
 		hit_tanks = []
 		for istation in hit_stations:
 			tanks = [iom for iom in hit_omkeys if (iom[0] == istation and iom[0] not in exceptionTanks_HG.keys()) and (iom[1] == 61 or iom[1]== 63)  or 
-			(iom[0] == istation and iom[0] in [26,39] and (iom[1] == 62 or iom[1]== 63) ) or (iom[0] == istation and iom[0] == 67 and (iom[1] == 61 or iom[1] == 64) )]
+			(iom[0] == istation and iom[0] in [26,39,74] and (iom[1] == 62 or iom[1]== 63) ) or (iom[0] == istation and iom[0] == 67 and (iom[1] == 61 or iom[1] == 64) )]
 			pulses = [psm[om] for om in tanks]
 			doms = [om for om in tanks]
 			hit_tanks += tanks
@@ -389,7 +389,7 @@ def checkFilter(frame,filterKeys):
 # 		hit_tanks = []
 # 		for istation in hit_stations:
 # 			tanks = [iom for iom in hit_omkeys if (iom[0] == istation and iom[0] not in exceptionTanks_HG.keys()) and (iom[1] == 61 or iom[1]== 63)  or 
-# 			(iom[0] == istation and iom[0] in [26,39] and (iom[1] == 62 or iom[1]== 63) ) or (iom[0] == istation and iom[0] == 67 and (iom[1] == 61 or iom[1] == 64) )]
+# 			(iom[0] == istation and iom[0] in [26,39,74] and (iom[1] == 62 or iom[1]== 63) ) or (iom[0] == istation and iom[0] == 67 and (iom[1] == 61 or iom[1] == 64) )]
 # 			pulses = [psm[om] for om in tanks]
 # 			hit_tanks += tanks
 # 			# ipulses = [ipulse for ipulse in pulse for pulse in pulses]
@@ -452,7 +452,7 @@ def hasHLCHit(frame,HLCpulseseriesList):
 	hit_tanksHLC = []
 	for istation in hit_stationsHLC:
 		tanks = [iom for iom in hit_omkeysHLC if (iom[0] == istation and iom[0] not in exceptionTanks_HG.keys()) and (iom[1] == 61 or iom[1]== 63)  or 
-		(iom[0] == istation and iom[0] in [26,39] and (iom[1] == 62 or iom[1]== 63) ) or (iom[0] == istation and iom[0] == 67 and (iom[1] == 61 or iom[1] == 64) )]
+		(iom[0] == istation and iom[0] in [26,39,74] and (iom[1] == 62 or iom[1]== 63) ) or (iom[0] == istation and iom[0] == 67 and (iom[1] == 61 or iom[1] == 64) )]
 		pulses = [psm[om] for om in tanks]
 		hit_times = [pulse[0].time for pulse in pulses]
 		if len(hit_times)>=2:
@@ -492,7 +492,7 @@ def deltaT3SLCHit(frame,SLCpulseseriesList,HLCpulseseriesList):
 	domList = []
 	for istation in hit_stations:
 		tanks = [iom for iom in hit_omkeys if (iom[0] == istation and iom[0] not in exceptionTanks_HG.keys()) and (iom[1] == 61 or iom[1]== 63)  or 
-		(iom[0] == istation and iom[0] in [26,39] and (iom[1] == 62 or iom[1]== 63) ) or (iom[0] == istation and iom[0] == 67 and (iom[1] == 61 or iom[1] == 64) )]
+		(iom[0] == istation and iom[0] in [26,39,74] and (iom[1] == 62 or iom[1]== 63) ) or (iom[0] == istation and iom[0] == 67 and (iom[1] == 61 or iom[1] == 64) )]
 		pulses = [psm[om] for om in tanks]
 		doms = [om for om in tanks]
 		SLCpulsesList += pulses
@@ -552,7 +552,7 @@ def getPulses(frame,pulseseries):
 	domList = []
 	for istation in hit_stations:
 		tanks = [iom for iom in hit_omkeys if (iom[0] == istation and iom[0] not in exceptionTanks_HG.keys()) and (iom[1] == 61 or iom[1]== 63)  or 
-		(iom[0] == istation and iom[0] in [26,39] and (iom[1] == 62 or iom[1]== 63) ) or (iom[0] == istation and iom[0] == 67 and (iom[1] == 61 or iom[1] == 64) )]
+		(iom[0] == istation and iom[0] in [26,39,74] and (iom[1] == 62 or iom[1]== 63) ) or (iom[0] == istation and iom[0] == 67 and (iom[1] == 61 or iom[1] == 64) )]
 		pulses = [psm[om] for om in tanks]
 		doms = [om for om in tanks]
 		pulsesList += pulses

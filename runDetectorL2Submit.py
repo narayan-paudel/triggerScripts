@@ -107,14 +107,14 @@ def submitToCondor(corsikaFiles,primary):
 
 # # print("submitting proton files: ", basePathProton)
 # print("submitting Iron files from: ", basePathIron)
-ironCorsikaFiles = getCorsikaFiles(basePathIron,energyList)
-submitToCondor(ironCorsikaFiles,"Fe")
+# ironCorsikaFiles = getCorsikaFiles(basePathIron,energyList)
+# submitToCondor(ironCorsikaFiles,"Fe")
 
-protonCorsikaFiles = getCorsikaFiles(basePathProton,energyList)
-submitToCondor(protonCorsikaFiles,"p")
+# protonCorsikaFiles = getCorsikaFiles(basePathProton,energyList)
+# submitToCondor(protonCorsikaFiles,"p")
 
-heliumCorsikaFiles = getCorsikaFiles(basePathHelium,energyList)
-submitToCondor(heliumCorsikaFiles,"He")
+# heliumCorsikaFiles = getCorsikaFiles(basePathHelium,energyList)
+# submitToCondor(heliumCorsikaFiles,"He")
 
 oxygenCorsikaFiles = getCorsikaFiles(basePathOxygen,energyList)
 submitToCondor(oxygenCorsikaFiles,"O")

@@ -11,7 +11,8 @@ ABS_PATH_HERE = str(os.path.dirname(os.path.realpath(__file__)))
 # ABS_PATH_HERE = "./"
 ABS_PATH_HERE += "/"
 
-basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/"
+# basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/"
+basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetCleanTanks/"
 
 # hdf5NullListP = sorted(glob.glob(basePath+"p*Clean*.hdf5"))
 # hdf5NullListHe = sorted(glob.glob(basePath+"He*Clean*.hdf5"))

@@ -53,6 +53,8 @@ for ipickle in pickleFiles:
 	with open(ipickle,"rb") as f:
 		ievtList = pickle.load(f)
 		evtList += ievtList
+firstEvent = evtList[0]
+print("first event",dir(firstEvent))
 
 
 
@@ -74,10 +76,25 @@ colorsIter = iter(colorsCustom)
 # multiple_color = np.concatenate((np.asarray([]),mpl.cm.winter(range(4)),mpl.cm.cool(range(4)),mpl.cm.Wistia(range(4)),mpl.cm.copper(range(4))))
 multiple_color = ["olive","darkslategray","teal","darkturquoise","paleturquoise","midnightblue","royalblue","cornflowerblue","lightsteelblue","brown","indianred","lightcoral","rosybrown","darkgoldenrod","goldenrod","gold","khaki","purple","mediumorchid","violet","plum"]
 
-triggerList = ["HLC6_5000","tank6_5000","tank6_4000","tank6_3000","tank6_2000",
-	"tank7_5000","tank7_4000","tank7_3000","tank7_2000","tank8_5000","tank8_4000","tank8_3000","tank8_2000"]
-triggerList7 = ["HLC6_5000","tank7_5000","tank7_4000","tank7_3000","tank7_2000"]
-triggerListSelect = ["HLC6_5000","tank6_3000","tank7_3000","tank8_3000"]
+# triggerList = ["HLC6_5000","tank6_5000","tank6_4000","tank6_3000","tank6_2000",
+# 	"tank7_5000","tank7_4000","tank7_3000","tank7_2000","tank8_5000","tank8_4000","tank8_3000","tank8_2000"]
+# triggerList7 = ["HLC6_5000","tank7_5000","tank7_4000","tank7_3000","tank7_2000"]
+# triggerListSelect = ["HLC6_5000","tank6_3000","tank7_3000","tank8_3000"]
+triggerListSelect = ["SMT102","SMT173","SMT183","SMT273","SMT373"]
+# triggerListSelectDict = {"SMT102":"6HLC_5","SMT173":"7Hit_3","SMT183":"8Hit_3"}
+triggerListSelectDict = {"SMT102":"6HLC_5","SMT183":"8Hit_3"}
+# triggerListFull = ["SMT102", "SMT103", "SMT104", "SMT1101", "SMT1102", "SMT1103", "SMT1104", "SMT1105", "SMT161",
+# 		 "SMT162", "SMT163", "SMT164", "SMT165", "SMT171", "SMT172", "SMT173", "SMT174", "SMT175", "SMT181", "SMT182", "SMT183",
+# 			"SMT184", "SMT185", "SMT191", "SMT192", "SMT193", "SMT194", "SMT195", "SMT2101", "SMT2102", "SMT2103", "SMT2104", "SMT2105",
+# 			 "SMT261", "SMT262", "SMT263", "SMT264", "SMT265", "SMT271", "SMT272", "SMT273","SMT274", "SMT275", "SMT281", "SMT282", "SMT283",
+# 				"SMT284", "SMT285", "SMT291", "SMT292", "SMT293", "SMT294", "SMT295", "SMT3101", "SMT3102", "SMT3103", "SMT3104", "SMT3105",
+# 				 "SMT321", "SMT322", "SMT323", "SMT324", "SMT325", "SMT341", "SMT342", "SMT343", "SMT344", "SMT345", "SMT361", "SMT362",
+# 					"SMT363", "SMT364", "SMT365", "SMT371", "SMT372", "SMT373", "SMT374", "SMT375", "SMT381", "SMT382", "SMT383", "SMT384",
+# 					 "SMT385","SMT391","SMT392","SMT393","SMT394","SMT395","HLC6_5000","tank6_5000","tank6_4000","tank6_3000","tank6_2000",
+# 	"tank7_5000","tank7_4000","tank7_3000","tank7_2000","tank8_5000","tank8_4000","tank8_3000","tank8_2000"]
+
+# triggerListFull = ["SMT102","SMT103","SMT104","SMT163","SMT173","SMT183","SMT193","SMT263","SMT273","SMT283","SMT293","SMT323","SMT343", "SMT344", "SMT345", "SMT361", "SMT362",
+# 					"SMT363","SMT373","SMT383","SMT393"]
 
 
 trigWindow = 10**(-6) # in ns
@@ -266,7 +283,7 @@ def plotTrigEfficiencyPure(eventList,energyBins,triggerType,containment,sigFit,e
 	colorIter = iter(colorsCustom+colorsCustom)
 	# colorIter = iter(colorsList)
 	# sin2ZenBins = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.822]
-	sin2ZenBins = [0.0,0.5,0.6,0.7,0.822]
+	sin2ZenBins = [0.0,0.5,0.822]
 	# sin2ZenBins = sin2ZenBins[-4:]
 	colorListp = ["maroon","firebrick","indianred","lightcoral"]
 	colorListFe = ["darkslategray","teal","darkturquoise","skyblue"]
@@ -341,7 +358,7 @@ def plotTrigEfficiencyPure(eventList,energyBins,triggerType,containment,sigFit,e
 	ax.set_xlabel(r"log10 (E [eV])", fontsize=22)
 	ax.set_ylabel(r"trigger efficiency", fontsize=22)
 	# ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
-	ax.text(0.78,0.1,s=r"trig:{0}".format(triggerType),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+	ax.text(0.78,0.1,s=r"trig:{0}".format(triggerListSelectDict[triggerType]),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
 	# ax.set_xscale('log')
 	ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
 	ax.set_ylim(0,1.05)
@@ -357,9 +374,9 @@ def plotTrigEfficiencyPure(eventList,energyBins,triggerType,containment,sigFit,e
 	plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"PureEfficiency.pdf",transparent=False,bbox_inches='tight')
 	plt.close()
 
-# for itrigger in triggerListSelect:
-	# plotTrigEfficiencyPure(evtList,energyBins,triggerType=itrigger,containment=True,sigFit=True,errorType="poisson")
-plotTrigEfficiencyPure(evtList,energyBins,triggerType="tank7_3000",containment=True,sigFit=True,errorType="wilson")
+for itrigger in triggerListSelectDict.keys():
+	plotTrigEfficiencyPure(evtList,energyBins,triggerType=itrigger,containment=True,sigFit=False,errorType="poisson")
+# plotTrigEfficiencyPure(evtList,energyBins,triggerType="tank7_3000",containment=True,sigFit=True,errorType="wilson")
 
 
 def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
@@ -693,46 +710,47 @@ def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
 # 	plt.close()
 
 
-# def plotEnergyFlux(eventList,triggerType,yscale,suffix,energyScale,containment):
-# 	"""
-# 	plots energy flux
-# 	"""
-# 	eventList = [ievt for ievt in eventList if abs(getattr(ievt,triggerType)-1)<0.01]
-# 	if containment == True:
-# 		eventList = containedEvents(eventList,410)		
-# 	fig = plt.figure(figsize=(8,5))
-# 	gs = gridspec.GridSpec(ncols=1,nrows=1)
-# 	ax = fig.add_subplot(gs[0])
-# 	colorIter = iter(colorsCustom+colorsCustom)
-# 	hitBins = np.linspace(14.0,17.0,31)
-# 	totalRate = 0
-# 	for nbin, binStart in enumerate(sin2ZenBins[:-1]):
-# 		lowEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin]))
-# 		highEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))
-# 		evtZenBin = [ievt for ievt in eventList if lowEdge <= ievt.zenith < highEdge]
-# 		energyList = []
-# 		neventList = []
-# 		# ax = plotSteps(evtZenBin,ax,"{}".format("total"),energyScale)
-# 		ncolor = next(colorIter)
-# 		ax,histSum = plotSteps(evtZenBin,ax,r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),energyScale,ncolor=colorsCustom2[nbin])
-# 		totalRate += histSum
-# 	# ax.hist(energy,bins=hitBins,histtype="step",weights=weights,lw=2.5,label="after weighting",alpha=1)
-# 	# ax.hist(energy,bins=hitBins,histtype="step",weights=adjWeights,lw=2.5,label="after adj weighting",alpha=1)
-# 	ax.tick_params(axis='both',which='both', direction='in', labelsize=20)
-# 	ax.set_xlabel(r"log10 (E [eV])", fontsize=22)
-# 	# ax.set_ylabel(r"$E^{{{0:.1f}}}$ rate [Hz]".format(energyScale), fontsize=20))
-# 	ax.set_ylabel(r"rate [Hz]".format(energyScale), fontsize=20)
-# 	ax.set_yscale(yscale)	
-# 	ax.set_ylim(10**-5,10**1)
-# 	ax.set_xlim(14.0,17.0)
-# 	# ax.set_xscale('log')
-# 	ax.grid(True,alpha=0.7)
-# 	ax.text(0.82,0.82,s=r"{0} rate:{1:.1f} Hz".format(triggerType,totalRate),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
-# 	# ax.text(0.9,0.9,s=r"{0:.1f} Hz".format(totalRate),horizontalalignment='center',verticalalignment='center', transform=ax.transAxes, bbox=dict(boxstyle='round',facecolor='purple', alpha=0.1))
-# 	# ax.set_title(key,fontsize=16)
-# 	ax.legend(fontsize=10,ncol=3,loc="lower center")
-# 	plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+"cont"+str(containment)+".pdf",transparent=False,bbox_inches='tight')
-# 	plt.close()
+def plotEnergyFlux(eventList,triggerType,yscale,suffix,energyScale,containment):
+	"""
+	plots energy flux
+	"""
+	eventList = [ievt for ievt in eventList if abs(getattr(ievt,triggerType)-0)>0.01]
+	if containment == True:
+		eventList = containedEvents(eventList,410)
+	# eventList = [ievt for ievt in eventList if 10**6.9 <= ievt.energy < 10**8.0]		
+	fig = plt.figure(figsize=(8,5))
+	gs = gridspec.GridSpec(ncols=1,nrows=1)
+	ax = fig.add_subplot(gs[0])
+	colorIter = iter(colorsCustom+colorsCustom)
+	hitBins = np.linspace(14.0,17.0,31)
+	totalRate = 0
+	for nbin, binStart in enumerate(sin2ZenBins[:-1]):
+		lowEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin]))
+		highEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))
+		evtZenBin = [ievt for ievt in eventList if lowEdge <= ievt.zenith < highEdge]
+		energyList = []
+		neventList = []
+		# ax = plotSteps(evtZenBin,ax,"{}".format("total"),energyScale)
+		ncolor = next(colorIter)
+		ax,histSum = plotSteps(evtZenBin,ax,r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),energyScale,ncolor=colorsCustom2[nbin])
+		totalRate += histSum
+	# ax.hist(energy,bins=hitBins,histtype="step",weights=weights,lw=2.5,label="after weighting",alpha=1)
+	# ax.hist(energy,bins=hitBins,histtype="step",weights=adjWeights,lw=2.5,label="after adj weighting",alpha=1)
+	ax.tick_params(axis='both',which='both', direction='in', labelsize=20)
+	ax.set_xlabel(r"log10 (E [eV])", fontsize=22)
+	# ax.set_ylabel(r"$E^{{{0:.1f}}}$ rate [Hz]".format(energyScale), fontsize=20))
+	ax.set_ylabel(r"rate [Hz]".format(energyScale), fontsize=20)
+	ax.set_yscale(yscale)	
+	ax.set_ylim(10**-5,10**1)
+	ax.set_xlim(14.0,17.0)
+	# ax.set_xscale('log')
+	ax.grid(True,alpha=0.7)
+	ax.text(0.82,0.82,s=r"{0} rate:{1:.1f} Hz".format(triggerListSelectDict[triggerType],totalRate),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+	# ax.text(0.9,0.9,s=r"{0:.1f} Hz".format(totalRate),horizontalalignment='center',verticalalignment='center', transform=ax.transAxes, bbox=dict(boxstyle='round',facecolor='purple', alpha=0.1))
+	# ax.set_title(key,fontsize=16)
+	ax.legend(fontsize=10,ncol=3,loc="lower center")
+	plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+"cont"+str(containment)+".pdf",transparent=False,bbox_inches='tight')
+	plt.close()
 
 # def plotEnergyFluxComponentTest(eventList,triggerType,yscale,suffix,energyScale,containment):
 # 	"""
@@ -825,33 +843,33 @@ def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
 # 	plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+"cont"+str(containment)+"Pure.pdf",transparent=False,bbox_inches='tight')
 # 	plt.close()
 
-# def plotSteps(triggeredEvts,ax,legendLabel,energyScale,ncolor):
-# 	hitBins = np.linspace(14.0,17.0,31)
-# 	energy = [ievt.energy for ievt in triggeredEvts]
-# 	weights = [ievt.H4aWeight for ievt in triggeredEvts]
-# 	# weights_direct = [ievt.directWeight for ievt in triggeredEvts]
-# 	energy = np.log10(energy)+9.0
-# 	hist,binEdge = np.histogram(energy,hitBins,weights=[w for w in weights])
-# 	# binCenter = [(binEdge[i+1]+binEdge[i])/2.0 for i,j in enumerate(binEdge[:-1])]
-# 	print("sum of simulated rate",sum(hist))
-# 	# if "total" in legendLabel:
-# 		# ax.text(0.05, 0.95, r"sim. rate:{:.1f} Hz".format(sum(hist)), transform=ax.transAxes, fontsize=12,verticalalignment='top')
-# 	# ax.text(0.05, 0.95, r"sim. rate:{:.1f} Hz".format(sum(hist)), transform=ax.transAxes, fontsize=12,verticalalignment='top')
-# 		# ax.set_ylim(10**-4,20)
-# 	binCenter = (binEdge[:-1]+binEdge[1:])/2.0
-# 	if str(energyScale) == "0.0":
-# 		H = [h for h in hist]		
-# 	else:
-# 		H = [h*(10**E)**energyScale for h,E in zip(hist,binCenter)]
-# 	# ax.hist(energy,bins=hitBins,histtype="step",lw=2.5,label=r"before weighting",alpha=1)
-# 	ax.step(binCenter,H,"-",where="mid",lw=2.5,label=legendLabel+r", {:.2f} Hz".format(sum(hist)),color=ncolor,alpha=1)
-# 	return ax,sum(hist)
+def plotSteps(triggeredEvts,ax,legendLabel,energyScale,ncolor):
+	hitBins = np.linspace(14.0,17.0,31)
+	energy = [ievt.energy for ievt in triggeredEvts]
+	weights = [ievt.H4aWeight for ievt in triggeredEvts]
+	# weights_direct = [ievt.directWeight for ievt in triggeredEvts]
+	energy = np.log10(energy)+9.0
+	hist,binEdge = np.histogram(energy,hitBins,weights=[w for w in weights])
+	# binCenter = [(binEdge[i+1]+binEdge[i])/2.0 for i,j in enumerate(binEdge[:-1])]
+	print("sum of simulated rate",sum(hist))
+	# if "total" in legendLabel:
+		# ax.text(0.05, 0.95, r"sim. rate:{:.1f} Hz".format(sum(hist)), transform=ax.transAxes, fontsize=12,verticalalignment='top')
+	# ax.text(0.05, 0.95, r"sim. rate:{:.1f} Hz".format(sum(hist)), transform=ax.transAxes, fontsize=12,verticalalignment='top')
+		# ax.set_ylim(10**-4,20)
+	binCenter = (binEdge[:-1]+binEdge[1:])/2.0
+	if str(energyScale) == "0.0":
+		H = [h for h in hist]		
+	else:
+		H = [h*(10**E)**energyScale for h,E in zip(hist,binCenter)]
+	# ax.hist(energy,bins=hitBins,histtype="step",lw=2.5,label=r"before weighting",alpha=1)
+	ax.step(binCenter,H,"-",where="mid",lw=2.5,label=legendLabel+r", {:.2f} Hz".format(sum(hist)),color=ncolor,alpha=1)
+	return ax,sum(hist)
 
 
-# for itrigger in triggerList:
-# 	plotEnergyFlux(evtList,triggerType=itrigger,yscale="log",suffix="fluxLog",energyScale=0.0,containment=False)
+# for itrigger in triggerListSelectDict.keys():
+# 	# plotEnergyFlux(evtList,triggerType=itrigger,yscale="log",suffix="fluxLog",energyScale=0.0,containment=False)
 # 	plotEnergyFlux(evtList,triggerType=itrigger,yscale="log",suffix="fluxLog",energyScale=0.0,containment=True)
-# for itrigger in triggerList:
+# for itrigger in triggerListFull:
 # 	plotPureEnergyFlux(evtListP,evtListFe,triggerType=itrigger,yscale="log",suffix="fluxLog",energyScale=0.0,containment=False)
 # 	plotPureEnergyFlux(evtListP,evtListFe,triggerType=itrigger,yscale="log",suffix="fluxLog",energyScale=0.0,containment=True)
 
@@ -940,117 +958,121 @@ def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
 # plotInclinedEnergyFlux7(evtList,triggerList7,"log","fluxLog",0.0,containment=False)
 # plotInclinedEnergyFlux7(evtList,triggerList7,"log","fluxLog",0.0,containment=True)
 
-# def plotInclinedEnergyFluxSelect(eventList,triggerList,yscale,suffix,energyScale,containment):
-# 	"""
-# 	plots energy flux
-# 	"""
-# 	if containment == True:
-# 		eventList = containedEvents(eventList,410)
-# 	fig = plt.figure(figsize=(8,5))
-# 	gs = gridspec.GridSpec(ncols=1,nrows=1)
-# 	ax = fig.add_subplot(gs[0])
-# 	colorIter = iter(colorsCustom+colorsCustom)
-# 	hitBins = np.linspace(14.0,17.0,31)
-# 	totalRate = 0
-# 	lowEdge = np.arcsin(np.sqrt(sin2ZenBins[-2]))
-# 	highEdge = np.arcsin(np.sqrt(sin2ZenBins[-1]))
-# 	for ntrig,itrigger in enumerate(triggerList):
-# 		evtZenBin = [ievt for ievt in eventList if (lowEdge <= ievt.zenith < highEdge and abs(getattr(ievt,itrigger)-1)<0.01)]
-# 		energyList = []
-# 		neventList = []
-# 		# ax = plotSteps(evtZenBin,ax,"{}".format("total"),energyScale)
-# 		ncolor = multiple_color[ntrig]
-# 		ax,histSum = plotSteps(evtZenBin,ax,str(itrigger),energyScale,ncolor=ncolor)
-# 	# ax.hist(energy,bins=hitBins,histtype="step",weights=weights,lw=2.5,label="after weighting",alpha=1)
-# 	# ax.hist(energy,bins=hitBins,histtype="step",weights=adjWeights,lw=2.5,label="after adj weighting",alpha=1)
-# 	ax.tick_params(axis='both',which='both', direction='in', labelsize=20)
-# 	ax.set_xlabel(r"log10 (E [eV])", fontsize=22)
-# 	# ax.set_ylabel(r"$E^{{{0:.1f}}}$ rate [Hz]".format(energyScale), fontsize=20))
-# 	ax.set_ylabel(r"rate [Hz]".format(energyScale), fontsize=20)
-# 	ax.set_yscale(yscale)	
-# 	ax.set_ylim(10**-5,10**(-1))
-# 	ax.set_xlim(14,17)
-# 	# ax.set_xscale('log')
-# 	ax.grid(True,alpha=0.7)
-# 	ax.text(0.78,0.1,s=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[-2]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[-1]))*180.0/np.pi),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
-# 	# ax.text(0.9,0.9,s=r"{0:.1f} Hz".format(totalRate),horizontalalignment='center',verticalalignment='center', transform=ax.transAxes, bbox=dict(boxstyle='round',facecolor='purple', alpha=0.1))
-# 	# ax.set_title(key,fontsize=16)
-# 	ax.legend(fontsize=10,ncol=3,loc="lower center")
-# 	plt.savefig(plotFolder+"/energySpecTrigInclined"+str(suffix)+"scale"+str(energyScale)+"SelectCont"+str(containment)+".pdf",transparent=False,bbox_inches='tight')
-# 	plt.close()
+def plotInclinedEnergyFluxSelect(eventList,triggerListDict,yscale,suffix,energyScale,containment):
+	"""
+	plots energy flux
+	"""
+	triggerList = triggerListDict.keys()
+	if containment == True:
+		eventList = containedEvents(eventList,410)
+	# eventList = [ievt for ievt in eventList if 10**6.9 <= ievt.energy < 10**8.0]
+	fig = plt.figure(figsize=(8,5))
+	gs = gridspec.GridSpec(ncols=1,nrows=1)
+	ax = fig.add_subplot(gs[0])
+	colorIter = iter(colorsCustom+colorsCustom)
+	hitBins = np.linspace(14.0,17.0,31)
+	totalRate = 0
+	lowEdge = np.arcsin(np.sqrt(sin2ZenBins[-2]))
+	highEdge = np.arcsin(np.sqrt(sin2ZenBins[-1]))
+	for ntrig,itrigger in enumerate(triggerList):
+		evtZenBin = [ievt for ievt in eventList if (lowEdge <= ievt.zenith < highEdge and abs(getattr(ievt,itrigger)-1)<0.01)]
+		energyList = []
+		neventList = []
+		# ax = plotSteps(evtZenBin,ax,"{}".format("total"),energyScale)
+		ncolor = multiple_color[ntrig]
+		ax,histSum = plotSteps(evtZenBin,ax,str(triggerListDict[itrigger]),energyScale,ncolor=ncolor)
+	# ax.hist(energy,bins=hitBins,histtype="step",weights=weights,lw=2.5,label="after weighting",alpha=1)
+	# ax.hist(energy,bins=hitBins,histtype="step",weights=adjWeights,lw=2.5,label="after adj weighting",alpha=1)
+	ax.tick_params(axis='both',which='both', direction='in', labelsize=20)
+	ax.set_xlabel(r"log10 (E [eV])", fontsize=22)
+	# ax.set_ylabel(r"$E^{{{0:.1f}}}$ rate [Hz]".format(energyScale), fontsize=20))
+	ax.set_ylabel(r"rate [Hz]".format(energyScale), fontsize=20)
+	ax.set_yscale(yscale)	
+	ax.set_ylim(10**-5,10**(-1))
+	# ax.set_ylim(10**-5,10**(-2))
+	ax.set_xlim(14,17)
+	# ax.set_xlim(15.9,17)
+	# ax.set_xscale('log')
+	ax.grid(True,alpha=0.7)
+	ax.text(0.78,0.1,s=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[-2]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[-1]))*180.0/np.pi),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+	# ax.text(0.9,0.9,s=r"{0:.1f} Hz".format(totalRate),horizontalalignment='center',verticalalignment='center', transform=ax.transAxes, bbox=dict(boxstyle='round',facecolor='purple', alpha=0.1))
+	# ax.set_title(key,fontsize=16)
+	ax.legend(fontsize=10,ncol=3,loc="lower center")
+	plt.savefig(plotFolder+"/energySpecTrigInclined"+str(suffix)+"scale"+str(energyScale)+"SelectCont"+str(containment)+".pdf",transparent=False,bbox_inches='tight')
+	plt.close()
 
 # plotInclinedEnergyFluxSelect(evtList,triggerListSelect,"log","fluxLog",0.0,containment=False)
-# plotInclinedEnergyFluxSelect(evtList,triggerListSelect,"log","fluxLog",0.0,containment=True)
+# plotInclinedEnergyFluxSelect(evtList,triggerListSelectDict,"log","fluxLog",0.0,containment=True)
 
 
 
 
-# def plotZenithFlux(eventList,triggerType,yscale,suffix,containment):
-# 	"""
-# 	plots energy flux
-# 	"""
-# 	if containment == True:
-# 		eventList = containedEvents(eventList,410)
-# 	eventList = [ievt for ievt in eventList if abs(getattr(ievt,itrigger)-1)<0.01]
-# 	fig = plt.figure(figsize=(8,5))
-# 	gs = gridspec.GridSpec(ncols=1,nrows=1)
-# 	ax = fig.add_subplot(gs[0])
-# 	colorIter = iter(colorsCustom+colorsCustom)
-# 	hitBins = np.linspace(14.0,17.0,31)
-# 	totalRate = 0
-# 	for nbin, binStart in enumerate(energyBinsShort[:-1]):
-# 		lowEdge = energyBinsShort[nbin]
-# 		highEdge = energyBinsShort[nbin+1]
-# 		evtEnergyBin = [ievt for ievt in eventList if lowEdge <= ievt.energy < highEdge]
-# 		zenithList = []
-# 		neventList = []
-# 		# ax = plotSteps(evtZenBin,ax,"{}".format("total"),energyScale)
-# 		ncolor = next(colorIter)
-# 		ax,histSum = plotZenithSteps(evtEnergyBin,ax,r"$10^{{{0:.1f}-{1:.1f}}}$ eV".format(np.log10(energyBinsShort[nbin])+9,np.log10(energyBinsShort[nbin+1])+9),ncolor=colorsCustom2[nbin])
-# 		totalRate += histSum
-# 	# ax.hist(energy,bins=hitBins,histtype="step",weights=weights,lw=2.5,label="after weighting",alpha=1)
-# 	# ax.hist(energy,bins=hitBins,histtype="step",weights=adjWeights,lw=2.5,label="after adj weighting",alpha=1)
-# 	ax.tick_params(axis='both',which='both', direction='in', labelsize=20)
-# 	ax.set_xlabel(r"zenith [$^{\circ}$]", fontsize=22)
-# 	ax.set_xticks(np.linspace(0,70,8))
-# 	# ax.set_ylabel(r"$E^{{{0:.1f}}}$ rate [Hz]".format(energyScale), fontsize=20))
-# 	ax.set_ylabel(r"log10(rate [Hz])", fontsize=20)
-# 	# ax.set_yscale(yscale)	
-# 	# ax.set_ylim(0,65)
-# 	ax.xaxis.set_minor_locator(MultipleLocator(5))
-# 	ax.set_xlim(0,65)
-# 	ax.set_ylim(-4.5,0.5)
-# 	# ax.set_xscale('log')
-# 	ax.grid(True,alpha=0.7)
-# 	ax.text(0.82,0.82,s=r"{0} rate:{1:.2f} Hz".format(triggerType,totalRate),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
-# 	# ax.text(0.9,0.9,s=r"{0:.1f} Hz".format(totalRate),horizontalalignment='center',verticalalignment='center', transform=ax.transAxes, bbox=dict(boxstyle='round',facecolor='purple', alpha=0.1))
-# 	# ax.set_title(key,fontsize=16)
-# 	# ax.legend(fontsize=10,ncol=3,loc="lower center",columnspacing=0.4)
-# 	ax.legend(fontsize=10,ncol=1,loc="upper left",columnspacing=0.4)
-# 	plt.savefig(plotFolder+"/ZenithSpecTrig"+str(triggerType)+str(suffix)+"scaleCont"+str(containment)+".pdf",transparent=False,bbox_inches='tight')
-# 	plt.close()
+def plotZenithFlux(eventList,triggerType,yscale,suffix,containment):
+	"""
+	plots energy flux
+	"""
+	if containment == True:
+		eventList = containedEvents(eventList,410)
+	eventList = [ievt for ievt in eventList if abs(getattr(ievt,itrigger)-1)<0.01]
+	fig = plt.figure(figsize=(8,5))
+	gs = gridspec.GridSpec(ncols=1,nrows=1)
+	ax = fig.add_subplot(gs[0])
+	colorIter = iter(colorsCustom+colorsCustom)
+	hitBins = np.linspace(14.0,17.0,31)
+	totalRate = 0
+	for nbin, binStart in enumerate(energyBinsShort[:-1]):
+		lowEdge = energyBinsShort[nbin]
+		highEdge = energyBinsShort[nbin+1]
+		evtEnergyBin = [ievt for ievt in eventList if lowEdge <= ievt.energy < highEdge]
+		zenithList = []
+		neventList = []
+		# ax = plotSteps(evtZenBin,ax,"{}".format("total"),energyScale)
+		ncolor = next(colorIter)
+		ax,histSum = plotZenithSteps(evtEnergyBin,ax,r"$10^{{{0:.1f}-{1:.1f}}}$ eV".format(np.log10(energyBinsShort[nbin])+9,np.log10(energyBinsShort[nbin+1])+9),ncolor=colorsCustom2[nbin])
+		totalRate += histSum
+	# ax.hist(energy,bins=hitBins,histtype="step",weights=weights,lw=2.5,label="after weighting",alpha=1)
+	# ax.hist(energy,bins=hitBins,histtype="step",weights=adjWeights,lw=2.5,label="after adj weighting",alpha=1)
+	ax.tick_params(axis='both',which='both', direction='in', labelsize=20)
+	ax.set_xlabel(r"zenith [$^{\circ}$]", fontsize=22)
+	ax.set_xticks(np.linspace(0,70,8))
+	# ax.set_ylabel(r"$E^{{{0:.1f}}}$ rate [Hz]".format(energyScale), fontsize=20))
+	ax.set_ylabel(r"log10(rate [Hz])", fontsize=20)
+	# ax.set_yscale(yscale)	
+	# ax.set_ylim(0,65)
+	ax.xaxis.set_minor_locator(MultipleLocator(5))
+	ax.set_xlim(0,65)
+	ax.set_ylim(-4.5,0.5)
+	# ax.set_xscale('log')
+	ax.grid(True,alpha=0.7)
+	ax.text(0.82,0.82,s=r"{0} rate:{1:.2f} Hz".format(triggerListSelectDict[triggerType],totalRate),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+	# ax.text(0.9,0.9,s=r"{0:.1f} Hz".format(totalRate),horizontalalignment='center',verticalalignment='center', transform=ax.transAxes, bbox=dict(boxstyle='round',facecolor='purple', alpha=0.1))
+	# ax.set_title(key,fontsize=16)
+	# ax.legend(fontsize=10,ncol=3,loc="lower center",columnspacing=0.4)
+	ax.legend(fontsize=10,ncol=1,loc="upper left",columnspacing=0.4)
+	plt.savefig(plotFolder+"/ZenithSpecTrig"+str(triggerListSelectDict[triggerType])+str(suffix)+"scaleCont"+str(containment)+".pdf",transparent=False,bbox_inches='tight')
+	plt.close()
 
-# def plotZenithSteps(triggeredEvts,ax,legendLabel,ncolor):
-# 	zenithBins = [np.arcsin(np.sqrt(izen)) for izen in sin2ZenBins]
-# 	zenith = [ievt.zenith for ievt in triggeredEvts]
-# 	weights = [ievt.H4aWeight for ievt in triggeredEvts]
-# 	# weights_direct = [ievt.directWeight for ievt in triggeredEvts]
-# 	hist,binEdge = np.histogram(zenith,zenithBins,weights=[w for w in weights])
-# 	# binCenter = [(binEdge[i+1]+binEdge[i])/2.0 for i,j in enumerate(binEdge[:-1])]
-# 	print("sum of simulated rate",sum(hist))
-# 	# if "total" in legendLabel:
-# 		# ax.text(0.05, 0.95, r"sim. rate:{:.1f} Hz".format(sum(hist)), transform=ax.transAxes, fontsize=12,verticalalignment='top')
-# 	# ax.text(0.05, 0.95, r"sim. rate:{:.1f} Hz".format(sum(hist)), transform=ax.transAxes, fontsize=12,verticalalignment='top')
-# 		# ax.set_ylim(10**-4,20)
-# 	print("binedge",(binEdge[:-1]+binEdge[1:])/2.0)
-# 	binCenter = (binEdge[:-1]+binEdge[1:])/2.0*180.0/np.pi
-# 	H = [np.log10(h) for h in hist]		
-# 	# ax.hist(energy,bins=hitBins,histtype="step",lw=2.5,label=r"before weighting",alpha=1)
-# 	ax.step(binCenter,H,"-",where="mid",lw=2.5,label=legendLabel+r", {:.2f} Hz".format(sum(hist)),color=ncolor,alpha=1)
-# 	return ax,sum(hist)
+def plotZenithSteps(triggeredEvts,ax,legendLabel,ncolor):
+	zenithBins = [np.arcsin(np.sqrt(izen)) for izen in sin2ZenBins]
+	zenith = [ievt.zenith for ievt in triggeredEvts]
+	weights = [ievt.H4aWeight for ievt in triggeredEvts]
+	# weights_direct = [ievt.directWeight for ievt in triggeredEvts]
+	hist,binEdge = np.histogram(zenith,zenithBins,weights=[w for w in weights])
+	# binCenter = [(binEdge[i+1]+binEdge[i])/2.0 for i,j in enumerate(binEdge[:-1])]
+	print("sum of simulated rate",sum(hist))
+	# if "total" in legendLabel:
+		# ax.text(0.05, 0.95, r"sim. rate:{:.1f} Hz".format(sum(hist)), transform=ax.transAxes, fontsize=12,verticalalignment='top')
+	# ax.text(0.05, 0.95, r"sim. rate:{:.1f} Hz".format(sum(hist)), transform=ax.transAxes, fontsize=12,verticalalignment='top')
+		# ax.set_ylim(10**-4,20)
+	print("binedge",(binEdge[:-1]+binEdge[1:])/2.0)
+	binCenter = (binEdge[:-1]+binEdge[1:])/2.0*180.0/np.pi
+	H = [np.log10(h) for h in hist]		
+	# ax.hist(energy,bins=hitBins,histtype="step",lw=2.5,label=r"before weighting",alpha=1)
+	ax.step(binCenter,H,"-",where="mid",lw=2.5,label=legendLabel+r", {:.4f} Hz".format(sum(hist)),color=ncolor,alpha=1)
+	return ax,sum(hist)
 
-# for itrigger in triggerList:
-# 	plotZenithFlux(evtList,itrigger,"log","fluxLog",containment=False)
+# for itrigger in triggerListSelectDict.keys():
+# 	# plotZenithFlux(evtList,itrigger,"log","fluxLog",containment=False)
 # 	plotZenithFlux(evtList,itrigger,"log","fluxLog",containment=True)
 
 
@@ -1224,65 +1246,69 @@ def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
 # plotInclinedEnergyFluxRatio7(evtList,triggerList7,"log","fluxLog")
 
 
-# def plotTrigEfficiency(evtList,energyBins,triggerType,containment):
-# 	'''
-# 	plots trigger efficiency in different zenith bins
-# 	'''
-# 	print("plotting trigger efficiency for ",triggerType)
-# 	if containment == True:
-# 		# evtList = containedEvents(evtList,640)
-# 		evtList = containedEvents(evtList,410)
-# 	fig = plt.figure(figsize=(8,5))
-# 	gs = gridspec.GridSpec(nrows=1,ncols=1)
-# 	ax = fig.add_subplot(gs[0])
-# 	colorIter = iter(colorsCustom+colorsCustom)
-# 	# colorIter = iter(colorsList)
-# 	for nbin, binStart in enumerate(sin2ZenBins[:-1]):
-# 		lowEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin]))
-# 		highEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))
-# 		evtZenBin = [ievt for ievt in evtList if lowEdge <= ievt.zenith < highEdge]
-# 		energyList = []
-# 		efficiencyList = []
-# 		ncolor = colorsCustom2[nbin]
-# 		for ebin, ebinStart in enumerate(energyBins[:-1]):
-# 			lowEdge_E = energyBins[ebin]
-# 			highEdge_E = energyBins[ebin+1]
-# 			evtEBin = [ievt for ievt in evtZenBin if lowEdge_E <= ievt.energy < highEdge_E]
-# 			# totalEvts = len(evtEBin)
-# 			weights = [ievt.H4aWeight for ievt in evtEBin]
-# 			totalEvts = len(evtEBin)
-# 			# sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
-# 			triggerList = [ievt for ievt in evtEBin if abs(getattr(ievt,triggerType)-1)<0.01]
-# 			trigEff = triggerEfficiency(len(triggerList),totalEvts)
-# 			efficiencyList.append(trigEff)
-# 			energyList.append(np.log10((lowEdge_E+highEdge_E)/2.0*10**9))		
-# 		ax.plot(energyList,efficiencyList,".",ls='-',lw = 2.5,c=ncolor,label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),alpha=1)
-# 	ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
-# 	ax.set_xlabel(r"log10 (E [eV])", fontsize=22)
-# 	ax.set_ylabel(r"trigger efficiency", fontsize=22)
-# 	# ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
-# 	ax.text(0.78,0.1,s=r"trig:{0}".format(triggerType),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
-# 	# ax.set_xscale('log')
-# 	ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
-# 	ax.set_ylim(0,1.01)
-# 	ax.set_xlim(14,17)
-# 	# ax.yaxis.set_minor_locator(MultipleLocator(100))
-# 	ax.xaxis.set_minor_locator(MultipleLocator(0.1))
-# 	ax.grid(True,alpha=0.5)
-# 	l1=ax.legend(loc="upper left",fontsize=12)
-# 	point_dash = mlines.Line2D([], [], linestyle='--',lw=2.0,color='black', marker='',markersize=5, label=r"0.98")
-# 	# l2 = ax.legend(handles=[point_dash],loc="upper left",fontsize=20,framealpha=0.1,handlelength=1.4,handletextpad=0.5)
-# 	# ax.add_artist(l1)
-# 	# ax.add_artist(l2)
-# 	plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"Efficiency.pdf",transparent=False,bbox_inches='tight')
-# 	plt.close()
+def plotTrigEfficiency(evtList,energyBins,triggerType,containment):
+	'''
+	plots trigger efficiency in different zenith bins
+	'''
+	print("plotting trigger efficiency for ",triggerType)
+	if containment == True:
+		# evtList = containedEvents(evtList,640)
+		evtList = containedEvents(evtList,410)
+	fig = plt.figure(figsize=(8,5))
+	gs = gridspec.GridSpec(nrows=1,ncols=1)
+	ax = fig.add_subplot(gs[0])
+	colorIter = iter(colorsCustom+colorsCustom)
+	# colorIter = iter(colorsList)
+	for nbin, binStart in enumerate(sin2ZenBins[:-1]):
+		lowEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin]))
+		highEdge = np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))
+		evtZenBin = [ievt for ievt in evtList if lowEdge <= ievt.zenith < highEdge]
+		energyList = []
+		efficiencyList = []
+		ncolor = colorsCustom2[nbin]
+		for ebin, ebinStart in enumerate(energyBins[:-1]):
+			lowEdge_E = energyBins[ebin]
+			highEdge_E = energyBins[ebin+1]
+			evtEBin = [ievt for ievt in evtZenBin if lowEdge_E <= ievt.energy < highEdge_E]
+			# totalEvts = len(evtEBin)
+			weights = [ievt.H4aWeight for ievt in evtEBin]
+			totalEvts = len(evtEBin)
+			# sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
+			# triggerList = [ievt for ievt in evtEBin if abs(getattr(ievt,triggerType)-1)<0.01]
+			triggerList = [ievt for ievt in evtEBin if abs(getattr(ievt,triggerType)-0)>0.01]
+			trigEff = triggerEfficiency(len(triggerList),totalEvts)
+			efficiencyList.append(trigEff)
+			energyList.append(np.log10((lowEdge_E+highEdge_E)/2.0*10**9))		
+		ax.plot(energyList,efficiencyList,".",ls='-',lw = 2.5,c=ncolor,label=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),alpha=1)
+	ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
+	ax.set_xlabel(r"log10 (E [eV])", fontsize=22)
+	ax.set_ylabel(r"trigger efficiency", fontsize=22)
+	# ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
+	ax.text(0.78,0.1,s=r"trig:{0}".format(triggerListSelectDict[triggerType]),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+	# ax.set_xscale('log')
+	ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
+	ax.set_ylim(0,1.01)
+	ax.set_xlim(14,17)
+	# ax.yaxis.set_minor_locator(MultipleLocator(100))
+	ax.xaxis.set_minor_locator(MultipleLocator(0.1))
+	ax.grid(True,alpha=0.5)
+	l1=ax.legend(loc="upper left",fontsize=12)
+	point_dash = mlines.Line2D([], [], linestyle='--',lw=2.0,color='black', marker='',markersize=5, label=r"0.98")
+	# l2 = ax.legend(handles=[point_dash],loc="upper left",fontsize=20,framealpha=0.1,handlelength=1.4,handletextpad=0.5)
+	# ax.add_artist(l1)
+	# ax.add_artist(l2)
+	plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"Efficiency.pdf",transparent=False,bbox_inches='tight')
+	plt.close()
 
 
-# # plotTrigEfficiency(evtList,energyBins,triggerType="tank1",containment=True)
-# # plotTrigEfficiency(evtList,energyBins,triggerType="sta1",containment=True)
+# plotTrigEfficiency(evtList,energyBins,triggerType="tank1",containment=True)
+# plotTrigEfficiency(evtList,energyBins,triggerType="sta1",containment=True)
+###########################################################
 # for itrigger in triggerList:
 # 	plotTrigEfficiency(evtList,energyBins,triggerType=itrigger,containment=True)
-
+#########################################################
+# for itrigger in triggerListSelectDict.keys():
+# 	plotTrigEfficiency(evtList,energyBins,triggerType=itrigger,containment=True)
 # ########################################################
 # #########################################################
 
@@ -1402,120 +1428,122 @@ def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
 # plotInclinedTrigEfficiency7(evtList,energyBins,triggerTypes=triggerList7,containment=True)
 
 
-# def plotInclinedTrigEfficiencySelect(evtList,energyBins,triggerTypes,containment):
-# 	'''
-# 	plots trigger efficiency in different zenith bins
-# 	'''
-# 	print("plotting trigger efficiency for ",triggerTypes)
-# 	if containment == True:
-# 		# evtList = containedEvents(evtList,640)
-# 		evtList = containedEvents(evtList,410)
-# 	fig = plt.figure(figsize=(8,5))
-# 	gs = gridspec.GridSpec(nrows=1,ncols=1)
-# 	ax = fig.add_subplot(gs[0])
-# 	colorIter = iter(colorsCustom+colorsCustom)
-# 	# colorIter = iter(colorsList)
-# 	for ntrig,itrigger in enumerate(triggerTypes):
-# 			lowEdge = np.arcsin(np.sqrt(sin2ZenBins[-2]))
-# 			highEdge = np.arcsin(np.sqrt(sin2ZenBins[-1]))
-# 			evtZenBin = [ievt for ievt in evtList if lowEdge <= ievt.zenith < highEdge]
-# 			energyList = []
-# 			efficiencyList = []
-# 			# ncolor = colorsCustom2[ntrig]
-# 			ncolor = multiple_color[ntrig]
-# 			for ebin, ebinStart in enumerate(energyBins[:-1]):
-# 				lowEdge_E = energyBins[ebin]
-# 				highEdge_E = energyBins[ebin+1]
-# 				evtEBin = [ievt for ievt in evtZenBin if lowEdge_E <= ievt.energy < highEdge_E]
-# 				# totalEvts = len(evtEBin)
-# 				weights = [ievt.H4aWeight for ievt in evtEBin]
-# 				totalEvts = len(evtEBin)
-# 				# sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
-# 				triggerList = [ievt for ievt in evtEBin if abs(int(getattr(ievt,str(itrigger)))-1)<0.01]
-# 				trigEff = triggerEfficiency(len(triggerList),totalEvts)
-# 				efficiencyList.append(trigEff)
-# 				energyList.append(np.log10((lowEdge_E+highEdge_E)/2.0*10**9))		
-# 			ax.plot(energyList,efficiencyList,".",ls='-',lw = 2.5,c=ncolor,label=str(itrigger),alpha=1)
-# 	ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
-# 	ax.set_xlabel(r"log10 (E [eV])", fontsize=22)
-# 	ax.set_ylabel(r"trigger efficiency", fontsize=22)
-# 	# ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
-# 	ax.text(0.78,0.1,s=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[-2]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[-1]))*180.0/np.pi),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
-# 	# ax.set_xscale('log')
-# 	ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
-# 	ax.set_ylim(0,1.01)
-# 	ax.set_xlim(14,17)
-# 	# ax.yaxis.set_minor_locator(MultipleLocator(100))
-# 	ax.xaxis.set_minor_locator(MultipleLocator(0.1))
-# 	ax.grid(True,alpha=0.5)
-# 	l1=ax.legend(loc="upper left",fontsize=12)
-# 	point_dash = mlines.Line2D([], [], linestyle='--',lw=2.0,color='gray', marker='',markersize=5, label=r"0.98")
-# 	# l2 = ax.legend(handles=[point_dash],loc="center left",fontsize=13,framealpha=0.1,handlelength=1.4,handletextpad=0.5)
-# 	l2 = ax.legend(handles=[point_dash],fontsize=13,framealpha=0.1,handlelength=1.4,handletextpad=0.5,bbox_to_anchor=(0.85,0.25),bbox_transform=ax.transAxes,prop={"family":"serif","size":13})
-# 	ax.add_artist(l1)
-# 	ax.add_artist(l2)
-# 	plt.savefig(plotFolder+"/trigInclinedcont"+str(containment)+"EfficiencySelect.pdf",transparent=False,bbox_inches='tight')
-# 	plt.close()
+def plotInclinedTrigEfficiencySelect(evtList,energyBins,triggerTypes,containment):
+	'''
+	plots trigger efficiency in different zenith bins
+	'''
+	print("plotting trigger efficiency for ",triggerTypes)
+	if containment == True:
+		# evtList = containedEvents(evtList,640)
+		evtList = containedEvents(evtList,410)
+	fig = plt.figure(figsize=(8,5))
+	gs = gridspec.GridSpec(nrows=1,ncols=1)
+	ax = fig.add_subplot(gs[0])
+	colorIter = iter(colorsCustom+colorsCustom)
+	# colorIter = iter(colorsList)
+	for ntrig,itrigger in enumerate(triggerTypes):
+			lowEdge = np.arcsin(np.sqrt(sin2ZenBins[-2]))
+			highEdge = np.arcsin(np.sqrt(sin2ZenBins[-1]))
+			evtZenBin = [ievt for ievt in evtList if lowEdge <= ievt.zenith < highEdge]
+			energyList = []
+			efficiencyList = []
+			# ncolor = colorsCustom2[ntrig]
+			ncolor = multiple_color[ntrig]
+			for ebin, ebinStart in enumerate(energyBins[:-1]):
+				lowEdge_E = energyBins[ebin]
+				highEdge_E = energyBins[ebin+1]
+				evtEBin = [ievt for ievt in evtZenBin if lowEdge_E <= ievt.energy < highEdge_E]
+				# totalEvts = len(evtEBin)
+				weights = [ievt.H4aWeight for ievt in evtEBin]
+				totalEvts = len(evtEBin)
+				# sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
+				triggerList = [ievt for ievt in evtEBin if abs(int(getattr(ievt,str(itrigger)))-1)<0.01]
+				trigEff = triggerEfficiency(len(triggerList),totalEvts)
+				efficiencyList.append(trigEff)
+				energyList.append(np.log10((lowEdge_E+highEdge_E)/2.0*10**9))		
+			ax.plot(energyList,efficiencyList,".",ls='-',lw = 2.5,c=ncolor,label=str(triggerListSelectDict[itrigger]),alpha=1)
+	ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
+	ax.set_xlabel(r"log10 (E [eV])", fontsize=22)
+	ax.set_ylabel(r"trigger efficiency", fontsize=22)
+	# ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
+	ax.text(0.78,0.1,s=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[-2]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[-1]))*180.0/np.pi),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+	# ax.set_xscale('log')
+	ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
+	ax.set_ylim(0.0,1.01)
+	ax.set_xlim(14,17)
+	# ax.set_xlim(15.8,17)
+	# ax.yaxis.set_minor_locator(MultipleLocator(100))
+	ax.xaxis.set_minor_locator(MultipleLocator(0.1))
+	ax.grid(True,alpha=0.5)
+	l1=ax.legend(loc="upper right",fontsize=12)
+	point_dash = mlines.Line2D([], [], linestyle='--',lw=2.0,color='gray', marker='',markersize=5, label=r"0.98")
+	# l2 = ax.legend(handles=[point_dash],loc="center left",fontsize=13,framealpha=0.1,handlelength=1.4,handletextpad=0.5)
+	l2 = ax.legend(handles=[point_dash],fontsize=13,framealpha=0.1,handlelength=1.4,handletextpad=0.5,bbox_to_anchor=(0.85,0.25),bbox_transform=ax.transAxes,prop={"family":"serif","size":13})
+	ax.add_artist(l1)
+	ax.add_artist(l2)
+	plt.savefig(plotFolder+"/trigInclinedcont"+str(containment)+"EfficiencySelect.pdf",transparent=False,bbox_inches='tight')
+	plt.close()
 
 # plotInclinedTrigEfficiencySelect(evtList,energyBins,triggerTypes=triggerListSelect,containment=True)
+# plotInclinedTrigEfficiencySelect(evtList,10**np.linspace(5.0, 8.0, 30),triggerTypes=triggerListSelectDict.keys(),containment=True)
 
 
-# def plotTrigEfficiencyZenith(evtList,energyBins,triggerType,containment):
-# 	'''
-# 	plots trigger efficiency in different zenith bins
-# 	'''
-# 	print("plotting trigger efficiency for ",triggerType)
-# 	if containment == True:
-# 		# evtList = containedEvents(evtList,640)
-# 		evtList = containedEvents(evtList,410)
-# 	fig = plt.figure(figsize=(8,5))
-# 	gs = gridspec.GridSpec(nrows=1,ncols=1)
-# 	ax = fig.add_subplot(gs[0])
-# 	colorIter = iter(colorsCustom+colorsCustom)
-# 	# colorIter = iter(colorsList)
-# 	for nbin, binStart in enumerate(energyBinsShort[:-1]):
-# 		lowEdge = energyBinsShort[nbin]
-# 		highEdge = energyBinsShort[nbin+1]
-# 		evtEnergyBin = [ievt for ievt in evtList if lowEdge <= ievt.energy < highEdge]
-# 		zenithList = []
-# 		efficiencyList = []
-# 		ncolor = colorsCustom2[nbin]
-# 		for ebin, ebinStart in enumerate(sin2ZenBins[:-1]):
-# 			lowEdge_Z = sin2ZenBins[ebin]
-# 			highEdge_Z = sin2ZenBins[ebin+1]
-# 			evtZBin = [ievt for ievt in evtEnergyBin if lowEdge_Z <= np.sin(ievt.zenith)**2 < highEdge_Z]
-# 			weights = [ievt.H4aWeight for ievt in evtZBin]
-# 			totalEvts = len(evtZBin)
-# 			# sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
-# 			triggerList = [ievt for ievt in evtZBin if abs(getattr(ievt,triggerType)-1)<0.01]
-# 			trigEff = triggerEfficiency(len(triggerList),totalEvts)
-# 			efficiencyList.append(trigEff)
-# 			zenithList.append((np.arcsin(np.sqrt(lowEdge_Z))+np.arcsin(np.sqrt(highEdge_Z)))/2.0*180/np.pi)
-# 		ax.plot(zenithList,efficiencyList,".",ls='-',lw = 2.5,c=ncolor,label=r"$10^{{{0:.1f}-{1:.1f}}}$ eV".format(np.log10(energyBinsShort[nbin])+9,np.log10(energyBinsShort[nbin+1])+9),alpha=1)
-# 	ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
-# 	ax.set_xlabel(r"zenith [$^{\circ}$]", fontsize=22)
-# 	ax.set_ylabel(r"trigger efficiency", fontsize=22)
-# 	# ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
-# 	ax.text(0.78,0.1,s=r"trig:{0}".format(triggerType),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
-# 	# ax.set_xscale('log')
-# 	ax.set_xticks(np.linspace(0,70,8))
-# 	yline=0.98
-# 	ax.axhline(y=yline,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
-# 	ax.set_ylim(0,1.01)
-# 	ax.set_xlim(0,65)
-# 	# ax.yaxis.set_minor_locator(MultipleLocator(100))
-# 	ax.xaxis.set_minor_locator(MultipleLocator(5))
-# 	ax.grid(True,alpha=0.5)
-# 	l1=ax.legend(loc="upper left",fontsize=12)
-# 	point_dash = mlines.Line2D([], [], linestyle='--',lw=2.0,color='black', marker='',markersize=5, label=r"{yline:.2f}")
-# 	# l2 = ax.legend(handles=[point_dash],loc="upper left",fontsize=20,framealpha=0.1,handlelength=1.4,handletextpad=0.5)
-# 	# ax.add_artist(l1)
-# 	# ax.add_artist(l2)
-# 	plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"EfficiencyZenith.pdf",transparent=False,bbox_inches='tight')
-# 	plt.close()
+def plotTrigEfficiencyZenith(evtList,energyBins,triggerType,containment):
+	'''
+	plots trigger efficiency in different zenith bins
+	'''
+	print("plotting trigger efficiency for ",triggerType)
+	if containment == True:
+		# evtList = containedEvents(evtList,640)
+		evtList = containedEvents(evtList,410)
+	fig = plt.figure(figsize=(8,5))
+	gs = gridspec.GridSpec(nrows=1,ncols=1)
+	ax = fig.add_subplot(gs[0])
+	colorIter = iter(colorsCustom+colorsCustom)
+	# colorIter = iter(colorsList)
+	for nbin, binStart in enumerate(energyBinsShort[:-1]):
+		lowEdge = energyBinsShort[nbin]
+		highEdge = energyBinsShort[nbin+1]
+		evtEnergyBin = [ievt for ievt in evtList if lowEdge <= ievt.energy < highEdge]
+		zenithList = []
+		efficiencyList = []
+		ncolor = colorsCustom2[nbin]
+		for ebin, ebinStart in enumerate(sin2ZenBins[:-1]):
+			lowEdge_Z = sin2ZenBins[ebin]
+			highEdge_Z = sin2ZenBins[ebin+1]
+			evtZBin = [ievt for ievt in evtEnergyBin if lowEdge_Z <= np.sin(ievt.zenith)**2 < highEdge_Z]
+			weights = [ievt.H4aWeight for ievt in evtZBin]
+			totalEvts = len(evtZBin)
+			# sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
+			triggerList = [ievt for ievt in evtZBin if abs(getattr(ievt,triggerType)-1)<0.01]
+			trigEff = triggerEfficiency(len(triggerList),totalEvts)
+			efficiencyList.append(trigEff)
+			zenithList.append((np.arcsin(np.sqrt(lowEdge_Z))+np.arcsin(np.sqrt(highEdge_Z)))/2.0*180/np.pi)
+		ax.plot(zenithList,efficiencyList,".",ls='-',lw = 2.5,c=ncolor,label=r"$10^{{{0:.1f}-{1:.1f}}}$ eV".format(np.log10(energyBinsShort[nbin])+9,np.log10(energyBinsShort[nbin+1])+9),alpha=1)
+	ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
+	ax.set_xlabel(r"zenith [$^{\circ}$]", fontsize=22)
+	ax.set_ylabel(r"trigger efficiency", fontsize=22)
+	# ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
+	ax.text(0.78,0.1,s=r"trig:{0}".format(triggerListSelectDict[triggerType]),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+	# ax.set_xscale('log')
+	ax.set_xticks(np.linspace(0,70,8))
+	yline=0.98
+	ax.axhline(y=yline,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
+	ax.set_ylim(0,1.01)
+	ax.set_xlim(0,65)
+	# ax.yaxis.set_minor_locator(MultipleLocator(100))
+	ax.xaxis.set_minor_locator(MultipleLocator(5))
+	ax.grid(True,alpha=0.5)
+	l1=ax.legend(loc="upper left",fontsize=12)
+	point_dash = mlines.Line2D([], [], linestyle='--',lw=2.0,color='black', marker='',markersize=5, label=r"{yline:.2f}")
+	# l2 = ax.legend(handles=[point_dash],loc="upper left",fontsize=20,framealpha=0.1,handlelength=1.4,handletextpad=0.5)
+	# ax.add_artist(l1)
+	# ax.add_artist(l2)
+	plt.savefig(plotFolder+"/trig"+str(triggerListSelectDict[triggerType])+"cont"+str(containment)+"EfficiencyZenith.pdf",transparent=False,bbox_inches='tight')
+	plt.close()
 
 
-# for itrigger in triggerList:
+# for itrigger in triggerListSelectDict.keys():
 # 	plotTrigEfficiencyZenith(evtList,energyBins,triggerType=itrigger,containment=True)
 
 

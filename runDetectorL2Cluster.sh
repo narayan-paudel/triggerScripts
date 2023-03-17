@@ -6,7 +6,8 @@ BASEDIR=$HERE/
 
 eval `/cvmfs/icecube.opensciencegrid.org/py3-v4.1.1/setup.sh`
 
-I3BASE=/data/user/enpaudel/icecube_software/icetray_main
+# I3BASE=/data/user/enpaudel/icecube_software/icetray_main
+I3BASE=/data/user/enpaudel/icecube_software/icetray_inclinedTrigger
 I3SRC=$I3BASE/src
 I3BUILD=$I3BASE/build
 ICETRAY_ENV=$I3BUILD/env-shell.sh
@@ -28,8 +29,8 @@ ICETRAY_ENV=$I3BUILD/env-shell.sh
 ######################################################################################
 # GCD=/home/acoleman/work/datasets/gcd-files/GCD-Survey-AntITScint_2020.02.24.i3.gz
 # GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz
-# GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz
-GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz
+GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz
+# GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz
 ######################################################################################
 
 

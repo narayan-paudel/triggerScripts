@@ -86,7 +86,7 @@ def line(x,a,b):
   return a+b*x
 
 
-def plotHitsEnergyZenBin(eventList,hitType,triggerType,containment,sin2ZenBins,xaxis,weighting):
+def plotHitsEnergyZenBin(eventList,hitType,triggerType,containment,sin2ZenBins,xaxis,weighting,hitBin):
   if containment == True:
     eventList = containedEvents(eventList,410)
   if triggerType != None:
@@ -100,16 +100,19 @@ def plotHitsEnergyZenBin(eventList,hitType,triggerType,containment,sin2ZenBins,x
     else:
       weights = [1 for ievt in evtZenBin]
     energy = [np.log10(ievt.energy*10**(9.0)) for ievt in evtZenBin]
-    hits = [getattr(ievt,hitType) for ievt in evtZenBin]
+    if "Diff" in hitType:
+      hits = [getattr(ievt,"nSLCTank")-getattr(ievt,"nHLCTank") for ievt in evtZenBin]
+    elif "Ratio" in hitType:
+      hits = [getattr(ievt,"nSLCTank")/getattr(ievt,"nHLCTank") if getattr(ievt,"nHLCTank") > 0 else -100 for ievt in evtZenBin]
+    elif "Sum" in hitType:
+      hits = [getattr(ievt,"nSLCTank")+getattr(ievt,"nHLCTank") for ievt in evtZenBin]
+    else:
+      hits = [getattr(ievt,hitType) for ievt in evtZenBin]
     fig = plt.figure(figsize=(8,5))
     gs = gridspec.GridSpec(nrows=1,ncols=1)
     ax = fig.add_subplot(gs[0])
     # bins=[np.linspace(14,17,31),np.linspace(0,160,161)]
     eBin = np.linspace(14,17,31)
-    if "SLC" in hitType:
-      hitBin=np.linspace(0,50,51)
-    else:
-      hitBin=np.linspace(0,130,131)
     # ax.plot(energy,hits,".",c="orange",label=r"".format(hitType))
     if xaxis == "energy":
       ylabel = r"hits" 
@@ -124,10 +127,10 @@ def plotHitsEnergyZenBin(eventList,hitType,triggerType,containment,sin2ZenBins,x
     cbar.set_ticks(mtick.LogLocator(), update_ticks=True)
     cbar.ax.set_ylabel(r"count", fontsize=22)
     ################################################################
-    popt, pcov = curve_fit(line, hits, energy, p0=[14.0,1.5])
-    xfit = np.linspace(0,50,1000)
-    yfit = line(xfit,*popt)
-    ax.plot(xfit,yfit,ls="-",c="red",alpha=1.0)
+    # popt, pcov = curve_fit(line, hits, energy, p0=[14.0,1.5])
+    # xfit = np.linspace(0,50,1000)
+    # yfit = line(xfit,*popt)
+    # ax.plot(xfit,yfit,ls="-",c="red",alpha=1.0)
     ################################################################
     ax.axhline(y=16.0,xmin=0,xmax=1,color="orange",ls="--",lw=2.5,alpha=1.0)
     ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
@@ -148,22 +151,37 @@ def plotHitsEnergyZenBin(eventList,hitType,triggerType,containment,sin2ZenBins,x
     plt.close()
 
 
-plotHitsEnergyZenBin(evtListReco,"nSLCTank","tank7_3000",True,sin2ZenBins,xaxis="hits",weighting=True)
-plotHitsEnergyZenBin(evtListReco,"nSLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True)
-plotHitsEnergyZenBin(evtListReco,"nSLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True)
-plotHitsEnergyZenBin(evtListReco,"nHLCTank","tank7_3000",True,sin2ZenBins,xaxis="hits",weighting=True)
-plotHitsEnergyZenBin(evtListReco,"nHLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True)
-plotHitsEnergyZenBin(evtListReco,"nHLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True)
-
-# plotHitsEnergyZenBin(evtListReco,"nSLCTank","tank7_3000",True,sin2ZenBins,xaxis="energy",weighting=True)
-# plotHitsEnergyZenBin(evtListReco,"nSLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True)
-# plotHitsEnergyZenBin(evtListReco,"nSLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True)
-# plotHitsEnergyZenBin(evtListReco,"nHLCTank","tank7_3000",True,sin2ZenBins,xaxis="energy",weighting=True)
-# plotHitsEnergyZenBin(evtListReco,"nHLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True)
-# plotHitsEnergyZenBin(evtListReco,"nHLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True)
+# plotHitsEnergyZenBin(evtListReco,"nSLCTank","tank7_3000",True,sin2ZenBins,xaxis="hits",weighting=True,hitBin= np.linspace(0,50,51))
+# plotHitsEnergyZenBin(evtListReco,"nSLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,50,51))
+# plotHitsEnergyZenBin(evtListReco,"nSLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,50,51))
+# plotHitsEnergyZenBin(evtListReco,"nHLCTank","tank7_3000",True,sin2ZenBins,xaxis="hits",weighting=True,hitBin= np.linspace(0,50,51))
+# plotHitsEnergyZenBin(evtListReco,"nHLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,50,51))
+# plotHitsEnergyZenBin(evtListReco,"nHLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,50,51))
 
 
-def plotQtotEnergyZenBin(eventList,QtotType,triggerType,containment,sin2ZenBins,xaxis,weighting):
+plotHitsEnergyZenBin(evtListReco,"nSLCHLCSum","tank7_3000",True,sin2ZenBins,xaxis="hits",weighting=True,hitBin= np.linspace(0,150,151))
+plotHitsEnergyZenBin(evtListReco,"nSLCHLCSum","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,150,151))
+plotHitsEnergyZenBin(evtListReco,"nSLCHLCSum",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,150,151))
+
+
+plotHitsEnergyZenBin(evtListReco,"nSLCHLCDiff","tank7_3000",True,sin2ZenBins,xaxis="hits",weighting=True,hitBin= np.linspace(-25,25,52))
+plotHitsEnergyZenBin(evtListReco,"nSLCHLCDiff","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(-25,25,52))
+plotHitsEnergyZenBin(evtListReco,"nSLCHLCDiff",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(-25,25,52))
+
+
+plotHitsEnergyZenBin(evtListReco,"nSLCHLCRatio","tank7_3000",True,sin2ZenBins,xaxis="hits",weighting=True,hitBin= np.linspace(-1,15,151))
+plotHitsEnergyZenBin(evtListReco,"nSLCHLCRatio","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(-1,15,151))
+plotHitsEnergyZenBin(evtListReco,"nSLCHLCRatio",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(-1,15,151))
+
+# plotHitsEnergyZenBin(evtListReco,"nSLCTank","tank7_3000",True,sin2ZenBins,xaxis="energy",weighting=True,hitBin= np.linspace(0,300,301))
+# plotHitsEnergyZenBin(evtListReco,"nSLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True,hitBin= np.linspace(0,300,301))
+# plotHitsEnergyZenBin(evtListReco,"nSLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True,hitBin= np.linspace(0,300,301))
+# plotHitsEnergyZenBin(evtListReco,"nHLCTank","tank7_3000",True,sin2ZenBins,xaxis="energy",weighting=True,hitBin= np.linspace(0,300,301))
+# plotHitsEnergyZenBin(evtListReco,"nHLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True,hitBin= np.linspace(0,300,301))
+# plotHitsEnergyZenBin(evtListReco,"nHLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True,hitBin= np.linspace(0,300,301))
+
+
+def plotQtotEnergyZenBin(eventList,QtotType,triggerType,containment,sin2ZenBins,xaxis,weighting,hitBin):
   if containment == True:
     eventList = containedEvents(eventList,410)
   if triggerType != None:
@@ -177,23 +195,27 @@ def plotQtotEnergyZenBin(eventList,QtotType,triggerType,containment,sin2ZenBins,
     else:
       weights = [1 for ievt in evtZenBin]
     energy = [np.log10(ievt.energy*10**(9.0)) for ievt in evtZenBin]
-    hits = [getattr(ievt,QtotType) for ievt in evtZenBin]
+    if "Diff" in QtotType:
+      hits = [getattr(ievt,"QtotSLCTank")-getattr(ievt,"QtotHLCTank") for ievt in evtZenBin]
+    elif "Ratio" in QtotType:
+      hits = [getattr(ievt,"QtotSLCTank")/getattr(ievt,"QtotHLCTank") if getattr(ievt,"QtotHLCTank")>0 else -100 for ievt in evtZenBin]
+    elif "Sum" in QtotType:
+      hits = [getattr(ievt,"QtotSLCTank")+getattr(ievt,"QtotHLCTank") for ievt in evtZenBin]
+    else:
+      hits = [getattr(ievt,QtotType) for ievt in evtZenBin]
+    hits = [np.log10(ihit) if ihit > 0 else -10 for ihit in hits ]
     fig = plt.figure(figsize=(8,5))
     gs = gridspec.GridSpec(nrows=1,ncols=1)
     ax = fig.add_subplot(gs[0])
     # bins=[np.linspace(14,17,31),np.linspace(0,160,161)]
     eBin = np.linspace(14,17,31)
-    if "SLC" in QtotType:
-      hitBin=np.linspace(0,50,51)
-    else:
-      hitBin=np.linspace(0,200,201)
     # ax.plot(energy,hits,".",c="orange",label=r"".format(hitType))
     if xaxis == "energy":
-      ylabel = r"Q$_{tot} [VEM]$"
+      ylabel = r"log10 (Q$_{tot}$ [VEM])"
       xlabel = r"log10 (E [eV])"
       counts,xedges,yedges,im=ax.hist2d(energy,hits,bins=[eBin,hitBin],weights=weights,norm=colors.LogNorm(),label=r"".format(QtotType))
     elif xaxis == "hits":
-      xlabel = r"Q$_{tot} [VEM]$"
+      xlabel = r"log10 (Q$_{tot}$ [VEM])"
       ylabel = r"log10 (E [eV])"
       counts,xedges,yedges,im=ax.hist2d(hits,energy,bins=[hitBin,eBin],weights=weights,norm=colors.LogNorm(),label=r"".format(QtotType))
     cbar = fig.colorbar(im, ax=ax)
@@ -220,25 +242,39 @@ def plotQtotEnergyZenBin(eventList,QtotType,triggerType,containment,sin2ZenBins,
 
 
 
-plotQtotEnergyZenBin(evtListReco,"QtotSLCTank","tank7_3000",True,sin2ZenBins,xaxis="hits",weighting=True)
-plotQtotEnergyZenBin(evtListReco,"QtotSLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True)
-plotQtotEnergyZenBin(evtListReco,"QtotSLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True)
-plotQtotEnergyZenBin(evtListReco,"QtotHLCTank","tank7_3000",True,sin2ZenBins,xaxis="hits",weighting=True)
-plotQtotEnergyZenBin(evtListReco,"QtotHLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True)
-plotQtotEnergyZenBin(evtListReco,"QtotHLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True)
+# plotQtotEnergyZenBin(evtListReco,"QtotSLCTank","tank7_3000",True,sin2ZenBins,xaxis="hits",weighting=True,hitBin= np.linspace(0,200,201))
+# plotQtotEnergyZenBin(evtListReco,"QtotSLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,200,201))
+# plotQtotEnergyZenBin(evtListReco,"QtotSLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,200,201))
+# plotQtotEnergyZenBin(evtListReco,"QtotHLCTank","tank7_3000",True,sin2ZenBins,xaxis="hits",weighting=True,hitBin= np.linspace(0,200,201))
+# plotQtotEnergyZenBin(evtListReco,"QtotHLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,200,201))
+# plotQtotEnergyZenBin(evtListReco,"QtotHLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,200,201))
 
 
-# plotQtotEnergyZenBin(evtListReco,"QtotSLCTank","tank7_3000",True,sin2ZenBins,xaxis="energy",weighting=True)
-# plotQtotEnergyZenBin(evtListReco,"QtotSLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True)
-# plotQtotEnergyZenBin(evtListReco,"QtotSLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True)
-# plotQtotEnergyZenBin(evtListReco,"QtotHLCTank","tank7_3000",True,sin2ZenBins,xaxis="energy",weighting=True)
-# plotQtotEnergyZenBin(evtListReco,"QtotHLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True)
-# plotQtotEnergyZenBin(evtListReco,"QtotHLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True)
+plotQtotEnergyZenBin(evtListReco,"QtotSLCHLCSum","tank7_3000",True,sin2ZenBins,xaxis="hits",weighting=True,hitBin=np.linspace(-1,4,51))
+plotQtotEnergyZenBin(evtListReco,"QtotSLCHLCSum","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin=np.linspace(-1,4,51))
+plotQtotEnergyZenBin(evtListReco,"QtotSLCHLCSum",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin=np.linspace(-1,4,51))
+
+plotQtotEnergyZenBin(evtListReco,"QtotSLCHLCDiff","tank7_3000",True,sin2ZenBins,xaxis="hits",weighting=True,hitBin=np.linspace(-5,5,51))
+plotQtotEnergyZenBin(evtListReco,"QtotSLCHLCDiff","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin=np.linspace(-5,5,51))
+plotQtotEnergyZenBin(evtListReco,"QtotSLCHLCDiff",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin=np.linspace(-5,5,51))
+
+
+plotQtotEnergyZenBin(evtListReco,"QtotSLCHLCRatio","tank7_3000",True,sin2ZenBins,xaxis="hits",weighting=True,hitBin=np.linspace(-5,5,51))
+plotQtotEnergyZenBin(evtListReco,"QtotSLCHLCRatio","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin=np.linspace(-5,5,51))
+plotQtotEnergyZenBin(evtListReco,"QtotSLCHLCRatio",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin=np.linspace(-5,5,51))
+
+
+# plotQtotEnergyZenBin(evtListReco,"QtotSLCTank","tank7_3000",True,sin2ZenBins,xaxis="energy",weighting=True,hitBin= np.linspace(0,300,301))
+# plotQtotEnergyZenBin(evtListReco,"QtotSLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True,hitBin= np.linspace(0,300,301))
+# plotQtotEnergyZenBin(evtListReco,"QtotSLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True,hitBin= np.linspace(0,300,301))
+# plotQtotEnergyZenBin(evtListReco,"QtotHLCTank","tank7_3000",True,sin2ZenBins,xaxis="energy",weighting=True,hitBin= np.linspace(0,300,301))
+# plotQtotEnergyZenBin(evtListReco,"QtotHLCTank","tank7_3000",True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True,hitBin= np.linspace(0,300,301))
+# plotQtotEnergyZenBin(evtListReco,"QtotHLCTank",None,True,[sin2ZenBins[i] for i in [0,-1]],xaxis="energy",weighting=True,hitBin= np.linspace(0,300,301))
 
 ##########################################################################################
 ##########################################################################################
 ################as a function of zenith angle ############################################
-def plotHitsZenithEnergyBin(eventList,hitType,triggerType,containment,energyBins,xaxis,weighting):
+def plotHitsZenithEnergyBin(eventList,hitType,triggerType,containment,energyBins,xaxis,weighting,hitBin):
   if containment == True:
     eventList = containedEvents(eventList,410)
   if triggerType != None:
@@ -251,24 +287,31 @@ def plotHitsZenithEnergyBin(eventList,hitType,triggerType,containment,energyBins
       weights = [ievt.H4aWeight for ievt in evtEBin]
     else:
       weights = [1 for ievt in evtEBin]
-    zenith = [ievt.zenith*180.0/np.pi for ievt in evtEBin]
-    hits = [getattr(ievt,hitType) for ievt in evtEBin]
+    # zenith = [ievt.zenith*180.0/np.pi for ievt in evtEBin]
+    zenith = [np.sin(ievt.zenith)**2 for ievt in evtEBin]
+    if "Diff" in hitType:
+      hits = [getattr(ievt,"nSLCTank")-getattr(ievt,"nHLCTank") for ievt in evtEBin]
+    elif "Ratio" in hitType:
+      hits = [getattr(ievt,"nSLCTank")/getattr(ievt,"nHLCTank") if getattr(ievt,"nHLCTank") > 0 else -100 for ievt in evtEBin]
+    elif "Sum" in hitType:
+      hits = [getattr(ievt,"nSLCTank")+getattr(ievt,"nHLCTank") for ievt in evtEBin]
+    else:
+      hits = [getattr(ievt,hitType) for ievt in evtEBin]
     fig = plt.figure(figsize=(8,5))
     gs = gridspec.GridSpec(nrows=1,ncols=1)
     ax = fig.add_subplot(gs[0])
     # bins=[np.linspace(14,17,31),np.linspace(0,160,161)]
-    zenBin = np.linspace(0,66,67)
-    if "SLC" in hitType:
-      hitBin = np.linspace(0,50,51)
-    else:
-      hitBin = np.linspace(0,100,101)
+    # zenBin = np.linspace(0,66,67)
+    zenBin = sin2ZenBins
     # ax.plot(energy,hits,".",c="orange",label=r"".format(hitType))
     if xaxis == "zenith":
-      xlabel = r"$\theta^{\circ}$"
+      # xlabel = r"$\theta^{\circ}$"
+      xlabel = r"sin $^2\,\theta$"
       ylabel = r"hits"
       counts,xedges,yedges,im=ax.hist2d(zenith,hits,bins=[zenBin,hitBin],weights=weights,norm=colors.LogNorm(),label=r"".format(hitType))
     elif xaxis == "hits":
-      ylabel = r"$\theta^{\circ}$"
+      # ylabel = r"$\theta^{\circ}$"
+      ylabel = r"sin $^2\,\theta$"
       xlabel = r"hits"
       counts,xedges,yedges,im=ax.hist2d(hits,zenith,bins=[hitBin,zenBin],weights=weights,norm=colors.LogNorm(),label=r"".format(hitType))
     cbar = fig.colorbar(im, ax=ax)
@@ -293,23 +336,39 @@ def plotHitsZenithEnergyBin(eventList,hitType,triggerType,containment,energyBins
     plt.close()
 
 
-plotHitsZenithEnergyBin(evtListReco,"nSLCTank","tank7_3000",True,energyBinsShort,xaxis="hits",weighting=True)
-plotHitsZenithEnergyBin(evtListReco,"nSLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True)
-plotHitsZenithEnergyBin(evtListReco,"nSLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True)
-plotHitsZenithEnergyBin(evtListReco,"nHLCTank","tank7_3000",True,energyBinsShort,xaxis="hits",weighting=True)
-plotHitsZenithEnergyBin(evtListReco,"nHLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True)
-plotHitsZenithEnergyBin(evtListReco,"nHLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True)
+# plotHitsZenithEnergyBin(evtListReco,"nSLCTank","tank7_3000",True,energyBinsShort,xaxis="hits",weighting=True,hitBin= np.linspace(0,50,51))
+# plotHitsZenithEnergyBin(evtListReco,"nSLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,50,51))
+# plotHitsZenithEnergyBin(evtListReco,"nSLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,50,51))
+# plotHitsZenithEnergyBin(evtListReco,"nHLCTank","tank7_3000",True,energyBinsShort,xaxis="hits",weighting=True,hitBin= np.linspace(0,50,51))
+# plotHitsZenithEnergyBin(evtListReco,"nHLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,50,51))
+# plotHitsZenithEnergyBin(evtListReco,"nHLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,50,51))
 
 
-# plotHitsZenithEnergyBin(evtListReco,"nSLCTank","tank7_3000",True,energyBinsShort,xaxis="zenith",weighting=True)
-# plotHitsZenithEnergyBin(evtListReco,"nSLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True)
-# plotHitsZenithEnergyBin(evtListReco,"nSLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True)
-# plotHitsZenithEnergyBin(evtListReco,"nHLCTank","tank7_3000",True,energyBinsShort,xaxis="zenith",weighting=True)
-# plotHitsZenithEnergyBin(evtListReco,"nHLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True)
-# plotHitsZenithEnergyBin(evtListReco,"nHLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True)
+
+plotHitsZenithEnergyBin(evtListReco,"nSLCHLCSum","tank7_3000",True,energyBinsShort,xaxis="hits",weighting=True,hitBin= np.linspace(0,150,151))
+plotHitsZenithEnergyBin(evtListReco,"nSLCHLCSum","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,150,151))
+plotHitsZenithEnergyBin(evtListReco,"nSLCHLCSum",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,150,151))
 
 
-def plotQtotZenithEnergyBin(eventList,QtotType,triggerType,containment,energyBins,xaxis,weighting):
+plotHitsZenithEnergyBin(evtListReco,"nSLCHLCDiff","tank7_3000",True,energyBinsShort,xaxis="hits",weighting=True,hitBin= np.linspace(-70,25,96))
+plotHitsZenithEnergyBin(evtListReco,"nSLCHLCDiff","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(-70,25,96))
+plotHitsZenithEnergyBin(evtListReco,"nSLCHLCDiff",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(-70,25,96))
+
+
+plotHitsZenithEnergyBin(evtListReco,"nSLCHLCRatio","tank7_3000",True,energyBinsShort,xaxis="hits",weighting=True,hitBin= np.linspace(-1,14,151))
+plotHitsZenithEnergyBin(evtListReco,"nSLCHLCRatio","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(-1,14,151))
+plotHitsZenithEnergyBin(evtListReco,"nSLCHLCRatio",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(-1,14,151))
+
+
+# plotHitsZenithEnergyBin(evtListReco,"nSLCTank","tank7_3000",True,energyBinsShort,xaxis="zenith",weighting=True,hitBin= np.linspace(0,300,301))
+# plotHitsZenithEnergyBin(evtListReco,"nSLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True,hitBin= np.linspace(0,300,301))
+# plotHitsZenithEnergyBin(evtListReco,"nSLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True,hitBin= np.linspace(0,300,301))
+# plotHitsZenithEnergyBin(evtListReco,"nHLCTank","tank7_3000",True,energyBinsShort,xaxis="zenith",weighting=True,hitBin= np.linspace(0,300,301))
+# plotHitsZenithEnergyBin(evtListReco,"nHLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True,hitBin= np.linspace(0,300,301))
+# plotHitsZenithEnergyBin(evtListReco,"nHLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True,hitBin= np.linspace(0,300,301))
+
+
+def plotQtotZenithEnergyBin(eventList,QtotType,triggerType,containment,energyBins,xaxis,weighting,hitBin):
   if containment == True:
     eventList = containedEvents(eventList,410)
   if triggerType != None:
@@ -322,25 +381,37 @@ def plotQtotZenithEnergyBin(eventList,QtotType,triggerType,containment,energyBin
       weights = [ievt.H4aWeight for ievt in evtEBin]
     else:
       weights = [1 for ievt in evtEBin]
-    zenith = [ievt.zenith*180.0/np.pi for ievt in evtEBin]
-    hits = [getattr(ievt,QtotType) for ievt in evtEBin]
+    # zenith = [ievt.zenith*180.0/np.pi for ievt in evtEBin]
+    zenith = [np.sin(ievt.zenith)**2 for ievt in evtEBin]
+    if "Diff" in QtotType:
+      hits = [getattr(ievt,"QtotSLCTank")-getattr(ievt,"QtotHLCTank") for ievt in evtEBin]
+    elif "Ratio" in QtotType:
+      hits = [getattr(ievt,"QtotSLCTank")/getattr(ievt,"QtotHLCTank") if getattr(ievt,"QtotHLCTank") > 0 else -100 for ievt in evtEBin]
+    elif "Sum" in QtotType:
+      hits = [getattr(ievt,"QtotSLCTank")+getattr(ievt,"QtotHLCTank") for ievt in evtEBin]
+    else:
+      hits = [getattr(ievt,QtotType) for ievt in evtEBin]
+    hits = [np.log10(ihit) if ihit > 0 else -10 for ihit in hits ]
     fig = plt.figure(figsize=(8,5))
     gs = gridspec.GridSpec(nrows=1,ncols=1)
     ax = fig.add_subplot(gs[0])
     # bins=[np.linspace(14,17,31),np.linspace(0,160,161)]
-    zenBin = np.linspace(0,66,67)
-    if "SLC" in QtotType:
-      hitBin = np.linspace(0,50,51)
-    else:
-      hitBin = np.linspace(0,300,301)
+    # zenBin = np.linspace(np.sin(0)**2,np.sin(65*np.pi/180.0)**2,)
+    zenBin = sin2ZenBins
     # ax.plot(energy,hits,".",c="orange",label=r"".format(QtotType))
     if xaxis == "zenith":
-      xlabel = r"$\theta^{\circ}$"
-      ylabel = r"Q$_{tot} [VEM]$"
+      # xlabel = r"$\theta^{\circ}$"
+      xlabel = r"sin $^2\,\theta$"
+      ylabel = r"log10(Q$_{tot}$ [VEM])"
+      yscale = "log"
+      xscale = "linear"
       counts,xedges,yedges,im=ax.hist2d(zenith,hits,bins=[zenBin,hitBin],weights=weights,norm=colors.LogNorm(),label=r"".format(QtotType))
     elif xaxis == "hits":
-      ylabel = r"$\theta^{\circ}$"
-      xlabel = r"Q$_{tot} [VEM]$"
+      # ylabel = r"$\theta^{\circ}$"
+      ylabel = r"sin $^2\,\theta$"
+      xlabel = r"log10(Q$_{tot}$ [VEM])"
+      xscale = "log"
+      yscale = "linear"
       counts,xedges,yedges,im=ax.hist2d(hits,zenith,bins=[hitBin,zenBin],weights=weights,norm=colors.LogNorm(),label=r"".format(QtotType))
     cbar = fig.colorbar(im, ax=ax)
     cbar.ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
@@ -366,17 +437,31 @@ def plotQtotZenithEnergyBin(eventList,QtotType,triggerType,containment,energyBin
 
 
 # plotQtotEnergy(evtListReco,QtotType)
-plotQtotZenithEnergyBin(evtListReco,"QtotSLCTank","tank7_3000",True,energyBinsShort,xaxis="hits",weighting=True)
-plotQtotZenithEnergyBin(evtListReco,"QtotSLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True)
-plotQtotZenithEnergyBin(evtListReco,"QtotSLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True)
-plotQtotZenithEnergyBin(evtListReco,"QtotHLCTank","tank7_3000",True,energyBinsShort,xaxis="hits",weighting=True)
-plotQtotZenithEnergyBin(evtListReco,"QtotHLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True)
-plotQtotZenithEnergyBin(evtListReco,"QtotHLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True)
+# plotQtotZenithEnergyBin(evtListReco,"QtotSLCTank","tank7_3000",True,energyBinsShort,xaxis="hits",weighting=True,hitBin= np.linspace(0,50,51))
+# plotQtotZenithEnergyBin(evtListReco,"QtotSLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,50,51))
+# plotQtotZenithEnergyBin(evtListReco,"QtotSLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,50,51))
+# plotQtotZenithEnergyBin(evtListReco,"QtotHLCTank","tank7_3000",True,energyBinsShort,xaxis="hits",weighting=True,hitBin= np.linspace(0,300,301))
+# plotQtotZenithEnergyBin(evtListReco,"QtotHLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,300,301))
+# plotQtotZenithEnergyBin(evtListReco,"QtotHLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin= np.linspace(0,300,301))
 
 
-# plotQtotZenithEnergyBin(evtListReco,"QtotSLCTank","tank7_3000",True,energyBinsShort,xaxis="zenith",weighting=True)
-# plotQtotZenithEnergyBin(evtListReco,"QtotSLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True)
-# plotQtotZenithEnergyBin(evtListReco,"QtotSLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True)
-# plotQtotZenithEnergyBin(evtListReco,"QtotHLCTank","tank7_3000",True,energyBinsShort,xaxis="zenith",weighting=True)
-# plotQtotZenithEnergyBin(evtListReco,"QtotHLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True)
-# plotQtotZenithEnergyBin(evtListReco,"QtotHLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True)
+plotQtotZenithEnergyBin(evtListReco,"QtotSLCHLCSum","tank7_3000",True,energyBinsShort,xaxis="hits",weighting=True,hitBin=np.linspace(-1,4,51))
+plotQtotZenithEnergyBin(evtListReco,"QtotSLCHLCSum","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin=np.linspace(-1,4,51))
+plotQtotZenithEnergyBin(evtListReco,"QtotSLCHLCSum",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin=np.linspace(-1,4,51))
+
+
+plotQtotZenithEnergyBin(evtListReco,"QtotSLCHLCDiff","tank7_3000",True,energyBinsShort,xaxis="hits",weighting=True,hitBin=np.linspace(-2.5,2.1,51))
+plotQtotZenithEnergyBin(evtListReco,"QtotSLCHLCDiff","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin=np.linspace(-2.5,2.1,51))
+plotQtotZenithEnergyBin(evtListReco,"QtotSLCHLCDiff",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin=np.linspace(-2.5,2.1,51))
+
+plotQtotZenithEnergyBin(evtListReco,"QtotSLCHLCRatio","tank7_3000",True,energyBinsShort,xaxis="hits",weighting=True,hitBin=np.linspace(- 3,2,51))
+plotQtotZenithEnergyBin(evtListReco,"QtotSLCHLCRatio","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin=np.linspace(-3,2,51))
+plotQtotZenithEnergyBin(evtListReco,"QtotSLCHLCRatio",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="hits",weighting=True,hitBin=np.linspace(-3,2,51))
+
+
+# plotQtotZenithEnergyBin(evtListReco,"QtotSLCTank","tank7_3000",True,energyBinsShort,xaxis="zenith",weighting=True,hitBin= np.linspace(0,300,301))
+# plotQtotZenithEnergyBin(evtListReco,"QtotSLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True,hitBin= np.linspace(0,300,301))
+# plotQtotZenithEnergyBin(evtListReco,"QtotSLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True,hitBin= np.linspace(0,300,301))
+# plotQtotZenithEnergyBin(evtListReco,"QtotHLCTank","tank7_3000",True,energyBinsShort,xaxis="zenith",weighting=True,hitBin= np.linspace(0,300,301))
+# plotQtotZenithEnergyBin(evtListReco,"QtotHLCTank","tank7_3000",True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True,hitBin= np.linspace(0,300,301))
+# plotQtotZenithEnergyBin(evtListReco,"QtotHLCTank",None,True,[energyBinsShort[i] for i in [0,-1]],xaxis="zenith",weighting=True,hitBin= np.linspace(0,300,301))
