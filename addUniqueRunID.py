@@ -27,7 +27,8 @@ outputDir = "/home/enpaudel/icecube/triggerStudy/simFiles/"
 # GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz"
 GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz"
 
-dataSetUnique = "dataSetUnique/"
+# dataSetUnique = "dataSetUnique/"
+dataSetUnique = "dataSetUnique1_6/"
 # dataSetUnique = "dataSetUniqueFRT/"
 # dataSetUnique = "dataSetUniqueWFRT/"
 

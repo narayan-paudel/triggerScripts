@@ -15,7 +15,8 @@ print("abs path",ABS_PATH_HERE)
 # parser.add_argument('outputPath', type=str, default="/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/", help='Destination folder for output files.')
 # args = parser.parse_args()
 ############################################################################
-inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique/"
+# inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique/"
+inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique1_6/"
 # inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUnique.FRT/"
 # inputPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetUniqueSeedSame/"
 OinputList = sorted(glob.glob(inputPath+"ODAT*GenDetFiltProcUnique.i3.gz"))

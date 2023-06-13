@@ -4,9 +4,11 @@ HERE=$(dirname $(realpath -s $0))
 BASEDIR=$HERE/
 
 
-eval `/cvmfs/icecube.opensciencegrid.org/py3-v4.1.1/setup.sh`
+# eval `/cvmfs/icecube.opensciencegrid.org/py3-v4.1.1/setup.sh`
+eval `/cvmfs/icecube.opensciencegrid.org/py3-v4.2.1/setup.sh`
 
-I3BASE=/data/user/enpaudel/icecube_software/icetray_main
+# I3BASE=/data/user/enpaudel/icecube_software/icetray_main
+I3BASE=/data/user/enpaudel/icecube_software/icetray_1.6.0
 I3SRC=$I3BASE/src
 I3BUILD=$I3BASE/build
 ICETRAY_ENV=$I3BUILD/env-shell.sh
@@ -27,8 +29,8 @@ ICETRAY_ENV=$I3BUILD/env-shell.sh
 
 ######################################################################################
 # GCD=/home/acoleman/work/datasets/gcd-files/GCD-Survey-AntITScint_2020.02.24.i3.gz
-# GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz
-GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz
+GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz
+# GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz
 ######################################################################################
 
 
@@ -53,18 +55,25 @@ if [[ -s "$logFile" ]]; then
 	ENERGY=$(echo $ERANGE | sed -e 's/[^0-9.]//g')
 	PRIMARY=$(sed -n -e '/PRMPAR/p' $logFile)
 	PRIMARY=$(echo $PRIMARY | sed -e 's/[^0-9]//g')
+	OBSLEV=$(sed -n -e '/OBSLEV/p' $logFile)
+	OBSLEV=$(echo $OBSLEV | sed -e 's/[^0-9]//g')
+	OBSLEV=${OBSLEV:0:4}
 	if [[ $PRIMARY == 14 ]]; then
 		PRIMARY_NAME=p
-		pSEED=14
+		# pSEED=14
+		pSEED=1
 	elif [[ $PRIMARY == 5626 ]]; then
 		PRIMARY_NAME=Fe
-		pSEED=5626
+		# pSEED=5626
+		pSEED=4
 	elif [[ $PRIMARY == 402 ]]; then
 		PRIMARY_NAME=He
-		pSEED=402
+		# pSEED=402
+		pSEED=2
 	elif [[ $PRIMARY == 1608 ]]; then
 		PRIMARY_NAME=O
-		pSEED=1608
+		# pSEED=1608
+		pSEED=3
 	fi
 	echo log file exists
 	discR=$(python -c "import math;print(800+(int(math.log10($ENERGY))-5)*300 + (2*(int(math.log10($ENERGY))-5)//3)*300 + ((int(math.log10($ENERGY))-5)//3)*300)")
@@ -73,19 +82,32 @@ else
 	ENERGY=$(basename $CORSIKA_FOLDER)
 	if [[ $PRIMARY == 10410 ]]; then
 		PRIMARY_NAME=p
-		pSEED=14
+		# pSEED=14
+		pSEED=1
+		OBSLEV=2834
 	elif [[ $PRIMARY == 10889 ]]; then
 		PRIMARY_NAME=Fe
-		pSEED=5626
+		# pSEED=5626
+		pSEED=4
+		OBSLEV=2834
 	elif [[ $PRIMARY == 11663 ]]; then
 		PRIMARY_NAME=He
-		pSEED=402
+		# pSEED=402
+		pSEED=2
+		OBSLEV=2837
 	elif [[ $PRIMARY == 12605 ]]; then
 		PRIMARY_NAME=O
-		pSEED=1608
+		# pSEED=1608
+		pSEED=3
+		OBSLEV=2837
 	fi
 	discR=$(python -c "import math;print(800+(int($ENERGY)-5)*300 + (2*(int($ENERGY)-5)//3)*300 + ((int($ENERGY)-5)//3)*300)")
 fi
+
+OBSLEV_GOOD=2840
+RAISE_H=$((OBSLEV_GOOD-OBSLEV))
+echo RAISE_H $RAISE_H
+
 echo using disc radius $discR
 echo energy $ENERGY
 nSamples=100
@@ -105,19 +127,22 @@ fi
 ##########################################################################
 #calculate the seed
 echo calculating the seed
-echo $corsikaRunID
-echo $PRIMARY_NAME
+echo RunID $corsikaRunID
+echo Primary $PRIMARY_NAME
 echo $pSEED
-echo $ENERGY
-eSEED=$(python -c "import math;print(int(math.log10($ENERGY)))")
-SEED=$(($corsikaRunID+($pSEED*10+$eSEED)*10800000))
-# eSEED=$(python -c "import math;print(int(math.log10($ENERGY)*10))")
-# SEED=$(($corsikaRunID+($pSEED*10+$eSEED)*108000000)) #
-echo $SEED
+echo Energy $ENERGY
+###########old seed with pSEED 14,5626,402,1608######
+# eSEED=$(python -c "import math;print(int(math.log10($ENERGY)))")
+# SEED=$(($corsikaRunID+($pSEED*10+$eSEED)*10800000))
+#####################################################
+eSEED=$(python -c "import math;print(int(math.log10($ENERGY)*10))")
+SEED=$(($corsikaRunID+($pSEED*100+$eSEED)*1000000)) #pseed:1,eseed:2,runID:6 digits (total:9 digits)
+echo SEED $SEED
 
 GENERATOR_PY=$I3SRC/simprod-scripts/resources/scripts/icetopshowergenerator.py 
 
 FLAGS="--UseGSLRNG --gcdfile ${GCD} --seed ${SEED} --nproc 1 --RunID $corsikaRunID --samples $nSamples --r $discR --no-PropagateMuons"
+FLAGS="$FLAGS --raise-observation-level ${RAISE_H}"
 FLAGS="$FLAGS --inputfile $OUTPUT_FOLDER/temp/${PRIMARY_NAME}$CORSIKA_ID"
 FLAGS="$FLAGS --output $OUTPUT_FOLDER/dataSet/${PRIMARY_NAME}${CORSIKA_ID}GenTemp.i3.bz2"
 

@@ -40,6 +40,7 @@ GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135
 #input ex:/data/sim/IceTop/2009/generated/CORSIKA-ice-top/10410/5.2/DAT001203.bz2"
 #input ex:/data/sim/IceTop/2009/generated/CORSIKA-ice-top/10410/5.7/DAT000638.bz2"
 #input ex:/data/sim/IceTop/2009/generated/CORSIKA-ice-top/10410/6.0/DAT000671.bz2"
+#input ex:/data/sim/IceTop/2009/generated/CORSIKA-ice-top/10410/5.0/DAT000001.bz2"
 
 SCRATCH_FOLDER=/scratch/enpaudel/
 CORSIKA_FILE_PATH=$1
@@ -55,18 +56,25 @@ if [[ -s "$logFile" ]]; then
 	ENERGY=$(echo $ERANGE | sed -e 's/[^0-9.]//g')
 	PRIMARY=$(sed -n -e '/PRMPAR/p' $logFile)
 	PRIMARY=$(echo $PRIMARY | sed -e 's/[^0-9]//g')
+	OBSLEV=$(sed -n -e '/OBSLEV/p' $logFile)
+	OBSLEV=$(echo $OBSLEV | sed -e 's/[^0-9]//g')
+	OBSLEV=${OBSLEV:0:4}
 	if [[ $PRIMARY == 14 ]]; then
 		PRIMARY_NAME=p
-		pSEED=14
+		# pSEED=14
+		pSEED=1
 	elif [[ $PRIMARY == 5626 ]]; then
 		PRIMARY_NAME=Fe
-		pSEED=5626
+		# pSEED=5626
+		pSEED=4
 	elif [[ $PRIMARY == 402 ]]; then
 		PRIMARY_NAME=He
-		pSEED=402
+		# pSEED=402
+		pSEED=2
 	elif [[ $PRIMARY == 1608 ]]; then
 		PRIMARY_NAME=O
-		pSEED=1608
+		# pSEED=1608
+		pSEED=3
 	fi
 	echo log file exists
 	discR=$(python -c "import math;print(800+(int(math.log10($ENERGY))-5)*300 + (2*(int(math.log10($ENERGY))-5)//3)*300 + ((int(math.log10($ENERGY))-5)//3)*300)")
@@ -75,19 +83,32 @@ else
 	ENERGY=$(basename $CORSIKA_FOLDER)
 	if [[ $PRIMARY == 10410 ]]; then
 		PRIMARY_NAME=p
-		pSEED=14
+		# pSEED=14
+		pSEED=1
+		OBSLEV=2834
 	elif [[ $PRIMARY == 10889 ]]; then
 		PRIMARY_NAME=Fe
-		pSEED=5626
+		# pSEED=5626
+		pSEED=4
+		OBSLEV=2834
 	elif [[ $PRIMARY == 11663 ]]; then
 		PRIMARY_NAME=He
-		pSEED=402
+		# pSEED=402
+		pSEED=2
+		OBSLEV=2837
 	elif [[ $PRIMARY == 12605 ]]; then
 		PRIMARY_NAME=O
-		pSEED=1608
+		# pSEED=1608
+		pSEED=3
+		OBSLEV=2837
 	fi
 	discR=$(python -c "import math;print(800+(int($ENERGY)-5)*300 + (2*(int($ENERGY)-5)//3)*300 + ((int($ENERGY)-5)//3)*300)")
 fi
+
+OBSLEV_GOOD=2840
+RAISE_H=$((OBSLEV_GOOD-OBSLEV))
+echo RAISE_H $RAISE_H
+
 echo using disc radius $discR
 echo energy $ENERGY
 nSamples=100
@@ -96,6 +117,9 @@ echo nSamples $nSamples
 OUTPUT_FOLDER=/home/enpaudel/icecube/triggerStudy/simFiles/
 # DATASETUNIQUE=dataSetUniqueWFRT
 DATASETUNIQUE=dataSetUnique
+# DATASETUNIQUE=dataSetUnique1_6
+# DATASETGEN=dataSetGen1_6
+DATASETGEN=dataSetGen
 # DATASETUNIQUE=dataSetUniqueFRT
 start_time=$SECONDS
 
@@ -105,16 +129,18 @@ echo $corsikaRunID
 echo $PRIMARY_NAME
 echo $pSEED
 echo $ENERGY
-eSEED=$(python -c "import math;print(int(math.log10($ENERGY)))")
-SEED=$(($corsikaRunID+($pSEED*10+$eSEED)*10800000))
-# eSEED=$(python -c "import math;print(int(math.log10($ENERGY)*10))")
-# SEED=$(($corsikaRunID+($pSEED*10+$eSEED)*108000000)) #
-echo $SEED
+###########old seed with pSEED 14,5626,402,1608######
+# eSEED=$(python -c "import math;print(int(math.log10($ENERGY)))")
+# SEED=$(($corsikaRunID+($pSEED*10+$eSEED)*10800000))
+#####################################################
+eSEED=$(python -c "import math;print(int(math.log10($ENERGY)*10))")
+SEED=$(($corsikaRunID+($pSEED*100+$eSEED)*1000000)) #pseed:1,eseed:2,runID:6 digits (total:9 digits)
+echo SEED $SEED
 
 
 DETECTOR_PY=$I3SRC/simprod-scripts/resources/scripts/detector.py
 FLAGS2="--UseGSLRNG --gcdfile ${GCD} --noInIce --LowMem --seed ${SEED} --nproc 1 --DetectorName IC86.2019 --no-FilterTrigger"
-FLAGS2+=" --inputfile $OUTPUT_FOLDER/dataSetGen/${PRIMARY_NAME}${CORSIKA_ID}Gen.i3.bz2"
+FLAGS2+=" --inputfile $OUTPUT_FOLDER/${DATASETGEN}/${PRIMARY_NAME}${CORSIKA_ID}Gen.i3.bz2"
 FLAGS2+=" --output $OUTPUT_FOLDER/${DATASETUNIQUE}/${PRIMARY_NAME}${CORSIKA_ID}GenDet.i3.bz2"
 
 echo running $DETECTOR_PY

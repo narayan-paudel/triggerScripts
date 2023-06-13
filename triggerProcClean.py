@@ -29,7 +29,8 @@ from icecube.weighting.weighting import icetop_mc_weights
 # weight_file = "/home/enpaudel/icecube/triggerStudy/simFiles/dataset_info_partUneven.json" #my sim json file
 # weight_file = "/home/enpaudel/icecube/triggerStudy/simFiles/dataset_info_100.json" #my sim json file
 # weight_file = "/home/enpaudel/icecube/triggerStudy/simFiles/dataset_info_10.json" #my sim json file
-weight_file = "/home/enpaudel/icecube/triggerStudy/simFiles/dataset_info200Uneven.json" #my sim json file
+# weight_file = "/home/enpaudel/icecube/triggerStudy/simFiles/dataset_info200Uneven.json" #my sim json file
+weight_file = "/home/enpaudel/icecube/triggerStudy/simFiles/dataset_info200UnevenSnow.json" #my sim json file
 
 exceptionTanks_HG = {39:62,26:62,67:64,74:62}
 exceptionTanks_LG = {26:61,67:63}
@@ -45,7 +46,8 @@ print("keys",ConfigIDMap.keys())
 
 CORSIKA_ID = "DAT059871"
 outputDir = "/home/enpaudel/icecube/triggerStudy/simFiles/"
-dataSetClean = "/dataSetClean/"
+# dataSetClean = "/dataSetClean/"
+dataSetClean = "/dataSetClean1_6/"
 # dataSetClean = "/dataSetCleanTest/"
 # dataSetClean = "/dataSetCleanWFRT/"
 # dataSetClean = "/dataSetCleanFRT/"

@@ -56,7 +56,7 @@ def makeSubFile(corsikaFile,primary):
 		# submitFile.write('+AccountingGroup = "1_week.$ENV(USER)" #other options 1_week, 2_week, instead of long\n')
 		# submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
 	elif energyID > 7.5:
-		submitFile.write("+AccountingGroup=\"2_week.$ENV(USER)\" \n\n")
+		submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
 	elif energyID > 7.0:
 		submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
 	# submitFile.write("priority = {}\n".format(priority))
@@ -138,6 +138,23 @@ jobs21 = ["Fe-29","Fe-59","Fe-30","Fe-60","Fe-149","He-119","p-150","p-120","p-9
 jobs7LargerMemory = ["He-898","He-838"] #6 GB
 # queueJobs = ["Fe-30"]
 queueJobs = []
+jobs7 = ["Fe-390","Fe-480","Fe-1134","Fe-1164","Fe-1194","Fe-1075","Fe-1195","Fe-1106",
+"Fe-1196","Fe-1077","Fe-1107","Fe-1137","Fe-1167","Fe-1197","Fe-1078","Fe-1108","Fe-1138",
+"Fe-1168","Fe-1198","Fe-1079","Fe-1109","Fe-1139","Fe-1169","Fe-1199","Fe-1080","Fe-1110",
+"Fe-1140","Fe-1170","Fe-1200","p-2936","p-2966","He-2875","He-2876","He-2936","He-2966",
+"He-2996","O-2904","O-2934","O-2875","O-2905","O-2965","O-2876","O-2906","O-2936","Fe-3113",
+"Fe-3024","Fe-3055","Fe-3085","Fe-3115","Fe-3145","Fe-3026","Fe-3056","Fe-3086","Fe-3146",
+"p-3024","p-3115","p-3056","p-3116","p-3146","He-3025","He-3145","He-3026","He-3056",
+"He-3086","He-3116","He-3146","Fe-3295","Fe-3176","Fe-3206","Fe-3236","Fe-3266","Fe-3296",
+"p-3174","p-3294","p-3176","p-3266","p-3296","He-3294","He-3175","He-3205","He-3235","He-3265",
+"He-3176","He-3236","O-3204","O-3234","O-3264","O-3175","O-3205","O-3265","O-3295","O-3176",
+"O-3236","O-3266","O-3296","Fe-3323","Fe-3383","Fe-3354","Fe-3384","Fe-3414","Fe-3325","Fe-3355",
+"Fe-3385","Fe-3415","Fe-3445","Fe-3326","Fe-3356","Fe-3416","Fe-3446",
+"O-3384", "O-3414", "O-3385", "O-3326", "O-3356", "O-3386", "O-3416", "O-3446",
+ "Fe-3503", "Fe-3474", "Fe-3564", "Fe-3594", "Fe-3565", "Fe-3595", "Fe-3506", "Fe-3536", "Fe-3596",
+ "p-3535","p-3565","p-3506","He-3503"]
+jobs14 = ["O-57","Fe-87","He-87","O-117","Fe-237","O-237","Fe-267","Fe-297","Fe-627","Fe-687",
+"Fe-747","Fe-628","Fe-658","Fe-1047","p-1047","p-1018","p-1050","He-928"]
 
 
 def getCORSIKALists(basePath,energyDir):
@@ -153,7 +170,7 @@ def getCorsikaFiles(basePath,energyList):
 		corsikaList=getCORSIKALists(basePath,ienergy)
 		# print("corsikaList",corsikaList)
 		# corsikaFiles.append(corsikaList[:11])
-		corsikaFiles += corsikaList[0:200]
+		corsikaFiles += corsikaList[190:200]
 		# corsikaFiles += corsikaList
 	# print("corsika files",corsikaFiles)
 	return corsikaFiles
@@ -163,7 +180,7 @@ def submitToCondorFile(corsikaFile,primary):
 	corsikaID = str(corsikaFile).split("/")[-1]
 	corsikaID = str(corsikaID).split(".")[0]
 	# simulatedFile = simFiles+"dataSetUnique/"+primary+corsikaID+"GenDetFiltProcUnique.i3.gz"
-	simulatedFile = simFiles+"dataSetGen/"+primary+corsikaID+"Gen.i3.bz2"
+	simulatedFile = simFiles+"dataSetGen1_6/"+primary+corsikaID+"Gen.i3.bz2"
 	# simulatedFile = simFiles+"dataSetUnique/"+primary+corsikaID+"GenDetFiltProcUnique.i3.gz"
 	# print("simulated file",simulatedFile)
 	if not os.path.exists(simulatedFile):
@@ -195,3 +212,4 @@ submitToCondor(heliumCorsikaFiles,"He")
 
 oxygenCorsikaFiles = getCorsikaFiles(basePathOxygen,energyList)
 submitToCondor(oxygenCorsikaFiles,"O")
+#to add time in seconds +OriginalTime=21600

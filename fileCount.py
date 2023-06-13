@@ -137,11 +137,11 @@ def checkCompletedFiles(lcol,hcol):
   newList=sorted(newList)
   cmpletedLines = completedJobs("../completedJobs.txt",newList)
   # print("completed jobs",len([i for i in newList if i in cmpletedLines]),[i for i in newList if i in cmpletedLines],len([i for i in newList if i in cmpletedLines]))
-  print("completed jobs",lcol,len([i for i in newList if i in cmpletedLines]),len([i for i in newList if i in cmpletedLines]))
+  print("completed jobs",hcol,len([i for i in newList if i in cmpletedLines]),len([i for i in newList if i in cmpletedLines]))
 
 
 
 for i in range(0,30):
   checkCompletedFiles(i,i+1)
 
-checkCompletedFiles(0,30)
+checkCompletedFiles(0,31)
