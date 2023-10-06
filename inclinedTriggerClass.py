@@ -31,20 +31,25 @@ plt.rcParams["font.family"] = "serif"
 plt.rcParams["mathtext.fontset"] = "dejavuserif"
 plt.rcParams.update({'font.size': 20})
 
-from weighting import GetWeight, ParticleType, PDGCode
+# from weighting import GetWeight, ParticleType, PDGCode
 from inclinedTriggerTools import *
 
-from icecube.weighting.fluxes import GaisserH4a_IT
+# from icecube.weighting.fluxes import GaisserH4a_IT
+from weighting.python.fluxes import GaisserH4a_IT
+# from weighting.fluxes import GaisserH4a_IT
+from weighting.python.weighting import icetop_mc_weights
 
 # basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetCleanSeedSame/"
-basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/"
+# basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/"
+basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean1_6/"
 # basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetCleanFRT/"
 # basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetCleanTest/"
 
 
 plotFolder = "/home/enpaudel/icecube/triggerStudy/plots/"
 
-pickleFilesPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetPickle/"
+# pickleFilesPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetPickle/"
+pickleFilesPath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetPickle1_6/"
 pickleFiles = sorted(glob.glob(pickleFilesPath+"*GenDetFiltProcUniqueCleanVEMEvts.pkl"))
 
 
@@ -84,7 +89,10 @@ multiple_color = ["olive","darkslategray","teal","darkturquoise","paleturquoise"
 triggerListSelect = ["SMT102","SMT273"]
 # triggerListSelectDict = {"SMT102":"6HLC_5","SMT173":"7Hit_3","SMT183":"8Hit_3"}
 # triggerListSelectDict = {"SMT102":"6HLC_5","SMT273":"7HGHit_3","SMT183":"8Hit_3"}
-triggerListSelectDict = {"SMT102":"ITSMT","SMT273":"IT7HG"}
+# triggerListSelectDict = {"SMT102":"ITSMT","SMT273":"IT7HG"}
+# triggerListSelectDict = {"HG7_3000":"IT7HG","HLC6_5000":"ITSMT"}
+# triggerListSelectDict = {"HG7_3000":"current_trig","HLC6_5000":"new_trig"}
+triggerListSelectDict = {"HG7_3000":"7 tanks","HLC6_5000":"3 stations"}
 # triggerListSelectDict = {"SMT102":"current trig","SMT273":"new trig"}
 # triggerListFull = ["SMT102", "SMT103", "SMT104", "SMT1101", "SMT1102", "SMT1103", "SMT1104", "SMT1105", "SMT161",
 #      "SMT162", "SMT163", "SMT164", "SMT165", "SMT171", "SMT172", "SMT173", "SMT174", "SMT175", "SMT181", "SMT182", "SMT183",
@@ -134,7 +142,7 @@ def plotWeightHist(weightsi3,weightspy2,weightspy3):
   # ax.hist(weightsi3,histtype="step")
   ax.hist(weightspy2,histtype="step")
   # ax.hist(weightspy3,histtype="step")
-  plt.savefig(plotFolder+"/weightCompare3.png",transparent=False,bbox_inches='tight')
+  plt.savefig(plotFolder+"/weightCompare3.pdf",transparent=False,bbox_inches='tight')
   plt.close()
 
 # plotWeightHist(weightsI3,weightsPy2,weightsPy3)
@@ -202,7 +210,7 @@ def binomial_proportion(nsel, ntot, coverage=0.68):
 
     z = norm().ppf(0.5 + 0.5 * coverage)
     z2 = z * z
-    p = np.asarray(nsel, dtype=np.float) / ntot
+    p = np.asarray(nsel, dtype=float) / ntot
     div = 1.0 + z2 / ntot
     pm = (p + z2 / (2 * ntot))
     dp = z * np.sqrt(p * (1.0 - p) / ntot + z2 / (4 * ntot * ntot))
@@ -210,6 +218,34 @@ def binomial_proportion(nsel, ntot, coverage=0.68):
     pu = (pm + dp) / div
 
     return p, p - pl, pu - p
+
+####################################################
+# # Short tools to help define Wilson confidence intervals for binomial trials
+# # The z-parameter gives the equivalent z-score for a Gaussian distribution
+# # z = 1.00, 68%
+# # z = 1.44, 85%
+# # z = 1.96, 95%
+
+
+def WilsonMean(nPass, nFail, z=1.0):
+    if nPass < 0 or nFail < 0:
+        return 0
+
+    return (nPass + z ** 2 / 2.0) / float(nPass + nFail + z ** 2)
+
+
+def WilsonError(nPass, nFail, z=1.0):
+    if nPass < 0 or nFail < 0:
+        return 0
+
+    if nPass + nFail == 0:
+        return 0.5
+
+    term = z / float(nPass + nFail + z ** 2)
+
+    return term * (nPass * nFail / float(nPass + nFail) + z ** 2 / 4.0) ** 0.5
+
+###################################################
 
 
 
@@ -375,7 +411,7 @@ def plotTrigEfficiencyPure(eventList,energyBins,triggerType,containment,sigFit,e
   # l2 = ax.legend(handles=[point_dash],loc="upper left",fontsize=20,framealpha=0.1,handlelength=1.4,handletextpad=0.5)
   # ax.add_artist(l1)
   # ax.add_artist(l2)
-  plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"PureEfficiency.png",transparent=False,bbox_inches='tight')
+  plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"PureEfficiency.pdf",transparent=False,bbox_inches='tight')
   plt.close()
 
 # for itrigger in triggerListSelectDict.keys():
@@ -405,7 +441,7 @@ def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
   # ax.legend(loc="upper left",fontsize=12)
   # ax.legend(fontsize=12)
   # ax.hist(weightspy3,histtype="step")
-  plt.savefig(plotFolder+"/hits"+str(hitType)+str(triggerType)+str(containment)+".png",transparent=False,bbox_inches='tight')
+  plt.savefig(plotFolder+"/hits"+str(hitType)+str(triggerType)+str(containment)+".pdf",transparent=False,bbox_inches='tight')
   plt.close()
 
 # nHitsPerEvent(evtList,bins=np.linspace(-1,200,202),hitType="nHLCVEM",triggerType="tank7_3000",containment=True)
@@ -453,7 +489,7 @@ def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
 #   ax.set_title(title,fontsize=16)
 #   ax.set_aspect("equal")
 #   plt.legend(fontsize=12)
-#   plt.savefig(plotFolder+"/coreScatter"+str(suffix)+".png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/coreScatter"+str(suffix)+".pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # # def plotCoreScatter(hdfFileList):
@@ -518,7 +554,7 @@ def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
 #   ax.set_title(title,fontsize=30)
 #   ax.set_aspect("equal")
 #   plt.legend(fontsize=12)
-#   plt.savefig(plotFolder+"/coreScatter"+str(suffix)+".png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/coreScatter"+str(suffix)+".pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 
@@ -564,7 +600,7 @@ def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
 #     # ax.xaxis.set_minor_locator(MultipleLocator(0.1))
 #     ax.grid(True,alpha=0.6)
 #     ax.legend(fontsize=12,loc='upper left')
-#     plt.savefig(plotFolder+"/distanceScattTrig"+str(triggerType)+"energy{0:.1f}.png".format(np.log10(energyBins[ebin])+9),transparent=False,bbox_inches='tight')
+#     plt.savefig(plotFolder+"/distanceScattTrig"+str(triggerType)+"energy{0:.1f}.pdf".format(np.log10(energyBins[ebin])+9),transparent=False,bbox_inches='tight')
 #     plt.close()
 # plotScatterCore(evtList,"None")
 # plotScatterCore(evtList,"sta3")
@@ -616,7 +652,7 @@ def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
 #   # ax.xaxis.set_minor_locator(MultipleLocator(0.1))
 #   ax.grid(True,alpha=0.6)
 #   # ax.legend(fontsize=12)
-#   plt.savefig(plotFolder+"/distance2dHist"+str(triggerType)+"energy{0:.1f}.png".format(np.log10(lowEdge_E)+9),transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/distance2dHist"+str(triggerType)+"energy{0:.1f}.pdf".format(np.log10(lowEdge_E)+9),transparent=False,bbox_inches='tight')
 #   plt.close()
 
 
@@ -664,13 +700,13 @@ def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
 #   ax.set_ylabel(r"count", fontsize=22)
 #   # ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
 #   # ax.set_xscale('log')
-#   # ax.set_ylim(0,1.01)
+#   # ax.set_ylim(0,1.05)
 #   # ax.set_xlim(14,17)
 #   # ax.yaxis.set_minor_locator(MultipleLocator(100))
 #   # ax.xaxis.set_minor_locator(MultipleLocator(0.1))
 #   ax.grid(True,alpha=0.6)
 #   ax.legend(fontsize=12)
-#   plt.savefig(plotFolder+"/distanceScattTrig"+str(triggerType)+"energy{0:.1f}.png".format(np.log10(lowEdge_E)+9),transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/distanceScattTrig"+str(triggerType)+"energy{0:.1f}.pdf".format(np.log10(lowEdge_E)+9),transparent=False,bbox_inches='tight')
 #   plt.close()
 # # plotScatterCoreGiven(evtList,"sta3",energyLim=[10**6.0,10**6.5],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],distanceLim=[400,500])
 
@@ -711,7 +747,7 @@ def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
 #   # ax.text(0.9,0.9,s=r"{0:.1f} Hz".format(totalRate),horizontalalignment='center',verticalalignment='center', transform=ax.transAxes, bbox=dict(boxstyle='round',facecolor='purple', alpha=0.1))
 #   # ax.set_title(key,fontsize=16)
 #   ax.legend(fontsize=10,ncol=3,loc="lower center")
-#   plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+".png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+".pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 
@@ -758,7 +794,7 @@ def plotEnergyFlux(eventList,triggerType,yscale,suffix,energyScale,containment):
   # ax.text(0.9,0.9,s=r"{0:.1f} Hz".format(totalRate),horizontalalignment='center',verticalalignment='center', transform=ax.transAxes, bbox=dict(boxstyle='round',facecolor='purple', alpha=0.1))
   # ax.set_title(key,fontsize=16)
   ax.legend(fontsize=10,ncol=3,loc="lower center")
-  plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+"cont"+str(containment)+".png",transparent=False,bbox_inches='tight')
+  plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+"cont"+str(containment)+".pdf",transparent=False,bbox_inches='tight')
   plt.close()
 
 # def plotEnergyFluxComponentTest(eventList,triggerType,yscale,suffix,energyScale,containment):
@@ -799,7 +835,7 @@ def plotEnergyFlux(eventList,triggerType,yscale,suffix,energyScale,containment):
 #   # ax.text(0.9,0.9,s=r"{0:.1f} Hz".format(totalRate),horizontalalignment='center',verticalalignment='center', transform=ax.transAxes, bbox=dict(boxstyle='round',facecolor='purple', alpha=0.1))
 #   # ax.set_title(key,fontsize=16)
 #   ax.legend(fontsize=10,ncol=3,loc="lower center")
-#   plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+"cont"+str(containment)+"ComponentTest.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+"cont"+str(containment)+"ComponentTest.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # def plotPureEnergyFlux(eventListP,eventListFe,triggerType,yscale,suffix,energyScale,containment):
@@ -849,7 +885,7 @@ def plotEnergyFlux(eventList,triggerType,yscale,suffix,energyScale,containment):
 #   # ax.text(0.9,0.9,s=r"{0:.1f} Hz".format(totalRate),horizontalalignment='center',verticalalignment='center', transform=ax.transAxes, bbox=dict(boxstyle='round',facecolor='purple', alpha=0.1))
 #   # ax.set_title(key,fontsize=16)
 #   ax.legend(fontsize=10,ncol=3,loc="lower center")
-#   plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+"cont"+str(containment)+"Pure.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+"cont"+str(containment)+"Pure.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 def plotSteps(triggeredEvts,ax,legendLabel,energyScale,ncolor):
@@ -920,7 +956,7 @@ for itrigger in triggerListSelectDict.keys():
 #   # ax.text(0.9,0.9,s=r"{0:.1f} Hz".format(totalRate),horizontalalignment='center',verticalalignment='center', transform=ax.transAxes, bbox=dict(boxstyle='round',facecolor='purple', alpha=0.1))
 #   # ax.set_title(key,fontsize=16)
 #   ax.legend(fontsize=10,ncol=3,loc="lower center")
-#   plt.savefig(plotFolder+"/energySpecTrigInclined"+str(suffix)+"scale"+str(energyScale)+"Cont"+str(containment)+".png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/energySpecTrigInclined"+str(suffix)+"scale"+str(energyScale)+"Cont"+str(containment)+".pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # plotInclinedEnergyFlux(evtList,triggerList,"log","fluxLog",0.0,containment=False)
@@ -962,7 +998,7 @@ for itrigger in triggerListSelectDict.keys():
 #   # ax.text(0.9,0.9,s=r"{0:.1f} Hz".format(totalRate),horizontalalignment='center',verticalalignment='center', transform=ax.transAxes, bbox=dict(boxstyle='round',facecolor='purple', alpha=0.1))
 #   # ax.set_title(key,fontsize=16)
 #   ax.legend(fontsize=10,ncol=3,loc="lower center")
-#   plt.savefig(plotFolder+"/energySpecTrigInclined"+str(suffix)+"scale"+str(energyScale)+"7"+"Cont"+str(containment)+".png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/energySpecTrigInclined"+str(suffix)+"scale"+str(energyScale)+"7"+"Cont"+str(containment)+".pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # plotInclinedEnergyFlux7(evtList,triggerList7,"log","fluxLog",0.0,containment=False)
@@ -1012,7 +1048,7 @@ def plotInclinedEnergyFluxSelect(eventList,triggerListDict,yscale,suffix,energyS
   # ax.text(0.9,0.9,s=r"{0:.1f} Hz".format(totalRate),horizontalalignment='center',verticalalignment='center', transform=ax.transAxes, bbox=dict(boxstyle='round',facecolor='purple', alpha=0.1))
   # ax.set_title(key,fontsize=16)
   ax.legend(fontsize=10,ncol=3,loc="lower center")
-  plt.savefig(plotFolder+"/energySpecTrigInclined"+str(suffix)+"scale"+str(energyScale)+"SelectCont"+str(containment)+".png",transparent=False,bbox_inches='tight')
+  plt.savefig(plotFolder+"/energySpecTrigInclined"+str(suffix)+"scale"+str(energyScale)+"SelectCont"+str(containment)+".pdf",transparent=False,bbox_inches='tight')
   plt.close()
 
 # plotInclinedEnergyFluxSelect(evtList,triggerListSelect,"log","fluxLog",0.0,containment=False)
@@ -1064,7 +1100,7 @@ def plotZenithFlux(eventList,triggerType,yscale,suffix,containment):
   # ax.set_title(key,fontsize=16)
   # ax.legend(fontsize=10,ncol=3,loc="lower center",columnspacing=0.4)
   ax.legend(fontsize=10,ncol=1,loc="upper left",columnspacing=0.4)
-  plt.savefig(plotFolder+"/ZenithSpecTrig"+str(triggerListSelectDict[triggerType])+str(suffix)+"scaleCont"+str(containment)+".png",transparent=False,bbox_inches='tight')
+  plt.savefig(plotFolder+"/ZenithSpecTrig"+str(triggerListSelectDict[triggerType])+str(suffix)+"scaleCont"+str(containment)+".pdf",transparent=False,bbox_inches='tight')
   plt.close()
 
 def plotZenithSteps(triggeredEvts,ax,legendLabel,ncolor):
@@ -1122,7 +1158,7 @@ def plotZenithSteps(triggeredEvts,ax,legendLabel,ncolor):
 #   # ax.set_title(key,fontsize=16)
 #   ax.legend(fontsize=10,ncol=3)
 #   triggerType = re.sub(r"[^a-zA-Z0-9_ ]", "", triggerType)
-#   plt.savefig(plotFolder+r"/energySpecRatioTrig"+str(triggerType)+str(suffix)+".png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+r"/energySpecRatioTrig"+str(triggerType)+str(suffix)+".pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # plotEnergyFluxRatio([ievt for ievt in evtList if abs(ievt.HLC6_5000-1)<0.01],[ievt for ievt in evtList if abs(ievt.tank6_5000-1)<0.01 ]
@@ -1218,7 +1254,7 @@ def plotZenithSteps(triggeredEvts,ax,legendLabel,ncolor):
 #   ax.grid(True,alpha=0.6)
 #   # ax.set_title(key,fontsize=16)
 #   ax.legend(fontsize=10,loc="upper left")
-#   plt.savefig(plotFolder+r"/energySpecRatioTrigInclined"+str(suffix)+".png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+r"/energySpecRatioTrigInclined"+str(suffix)+".pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # plotInclinedEnergyFluxRatio(evtList,triggerList,"log","fluxLog")
@@ -1255,7 +1291,7 @@ def plotZenithSteps(triggeredEvts,ax,legendLabel,ncolor):
 #   ax.grid(True,alpha=0.6)
 #   # ax.set_title(key,fontsize=16)
 #   ax.legend(fontsize=10,loc="upper left")
-#   plt.savefig(plotFolder+r"/energySpecRatioTrigInclined"+str(suffix)+"7.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+r"/energySpecRatioTrigInclined"+str(suffix)+"7.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # plotInclinedEnergyFluxRatio7(evtList,triggerList7,"log","fluxLog")
@@ -1305,7 +1341,7 @@ def plotTrigEfficiency(evtList,energyBins,triggerType,containment):
   ax.text(0.78,0.2,s=r"snow:{0}".format("2021/03"),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
   # ax.set_xscale('log')
   ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
-  ax.set_ylim(0,1.01)
+  ax.set_ylim(0,1.05)
   # ax.set_xlim(14,17)
   ax.set_xlim(14,16.8)
   # ax.yaxis.set_minor_locator(MultipleLocator(100))
@@ -1317,7 +1353,7 @@ def plotTrigEfficiency(evtList,energyBins,triggerType,containment):
   # l2 = ax.legend(handles=[point_dash],loc="upper left",fontsize=20,framealpha=0.1,handlelength=1.4,handletextpad=0.5)
   # ax.add_artist(l1)
   # ax.add_artist(l2)
-  plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"Efficiency.png",transparent=False,bbox_inches='tight')
+  plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"Efficiency.pdf",transparent=False,bbox_inches='tight')
   plt.close()
 
 
@@ -1374,7 +1410,7 @@ for itrigger in triggerListSelectDict.keys():
 #   ax.text(0.78,0.1,s=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[-2]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[-1]))*180.0/np.pi),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
 #   # ax.set_xscale('log')
 #   ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
-#   ax.set_ylim(0,1.01)
+#   ax.set_ylim(0,1.05)
 #   ax.set_xlim(14,17)
 #   # ax.yaxis.set_minor_locator(MultipleLocator(100))
 #   ax.xaxis.set_minor_locator(MultipleLocator(0.1))
@@ -1385,7 +1421,7 @@ for itrigger in triggerListSelectDict.keys():
 #   l2 = ax.legend(handles=[point_dash],fontsize=13,framealpha=0.1,handlelength=1.4,handletextpad=0.5,bbox_to_anchor=(0.85,0.25),bbox_transform=ax.transAxes,prop={"family":"serif","size":13})
 #   ax.add_artist(l1)
 #   ax.add_artist(l2)
-#   plt.savefig(plotFolder+"/trigInclinedcont"+str(containment)+"Efficiency.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/trigInclinedcont"+str(containment)+"Efficiency.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # plotInclinedTrigEfficiency(evtList,energyBins,triggerTypes=triggerList,containment=True)
@@ -1431,7 +1467,7 @@ for itrigger in triggerListSelectDict.keys():
 #   ax.text(0.78,0.1,s=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[-2]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[-1]))*180.0/np.pi),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
 #   # ax.set_xscale('log')
 #   ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
-#   ax.set_ylim(0,1.01)
+#   ax.set_ylim(0,1.05)
 #   ax.set_xlim(14,17)
 #   # ax.yaxis.set_minor_locator(MultipleLocator(100))
 #   ax.xaxis.set_minor_locator(MultipleLocator(0.1))
@@ -1442,13 +1478,96 @@ for itrigger in triggerListSelectDict.keys():
 #   l2 = ax.legend(handles=[point_dash],fontsize=13,framealpha=0.1,handlelength=1.4,handletextpad=0.5,bbox_to_anchor=(0.85,0.25),bbox_transform=ax.transAxes,prop={"family":"serif","size":13})
 #   ax.add_artist(l1)
 #   ax.add_artist(l2)
-#   plt.savefig(plotFolder+"/trigInclinedcont"+str(containment)+"Efficiency7.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/trigInclinedcont"+str(containment)+"Efficiency7.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # plotInclinedTrigEfficiency7(evtList,energyBins,triggerTypes=triggerList7,containment=True)
 
+def plotVerticalTrigEfficiencySelect(evtList,energyBins,triggerTypes,containment,wilson):
+  '''
+  plots trigger efficiency in different zenith bins
+  '''
+  print("plotting trigger efficiency for ",triggerTypes)
+  if containment == True:
+    # evtList = containedEvents(evtList,640)
+    evtList = containedEvents(evtList,410)
+  fig = plt.figure(figsize=(8,5))
+  gs = gridspec.GridSpec(nrows=1,ncols=1)
+  ax = fig.add_subplot(gs[0])
+  colorIter = iter(colorsCustom+colorsCustom)
+  # colorIter = iter(colorsList)
+  for ntrig,itrigger in enumerate(triggerTypes):
+      lowEdge = np.arcsin(np.sqrt(sin2ZenBins[0]))
+      highEdge = np.arcsin(np.sqrt(sin2ZenBins[1]))
+      evtZenBin = [ievt for ievt in evtList if lowEdge <= ievt.zenith < highEdge]
+      energyList = []
+      efficiencyList = []
+      wilsonMeanList = []
+      errorListLow = []
+      errorListHigh = []
+      # ncolor = colorsCustom2[ntrig]
+      ncolor = multiple_color[ntrig]
+      for ebin, ebinStart in enumerate(energyBins[:-1]):
+        lowEdge_E = energyBins[ebin]
+        highEdge_E = energyBins[ebin+1]
+        evtEBin = [ievt for ievt in evtZenBin if lowEdge_E <= ievt.energy < highEdge_E]
+        # totalEvts = len(evtEBin)
+        weights = [ievt.H4aWeight for ievt in evtEBin]
+        totalEvts = len(evtEBin)
+        # sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
+        triggerList = [ievt for ievt in evtEBin if abs(int(getattr(ievt,str(itrigger)))-1)<0.01]
+        trigEff = triggerEfficiency(len(triggerList),totalEvts)
+        efficiencyList.append(trigEff)
+        #####################################################################################
+        #binomial interval
+        # wilsonErr = binomial_proportion(nsel=len(triggerList), ntot=totalEvts,coverage=0.68)
+        #####################################################################################
+        wilsonM = WilsonMean(nPass=len(triggerList), nFail=totalEvts-len(triggerList))
+        wilsonErr = WilsonError(nPass=len(triggerList), nFail=totalEvts-len(triggerList))
+        ErrorH = wilsonM + wilsonErr - trigEff
+        ErrorL = trigEff - (wilsonM - wilsonErr)
+        # print("wilson calculation",totalEvts,len(triggerList),trigEff,wilsonErr)
+        wilsonMeanList.append(wilsonM)
+        errorListLow.append(ErrorL)
+        errorListHigh.append(ErrorH)
+        energyList.append(np.log10((lowEdge_E+highEdge_E)/2.0*10**9))
+      # ax.errorbar(energyList,efficiencyList,yerr=np.asarray([errorListLow,errorListHigh]),fmt="o",ls="-",lw = 2.5,c=ncolor,label=str(triggerListSelectDict[itrigger]),alpha=1)
+      # ax.errorbar(energyList,wilsonMeanList,yerr=np.asarray([errorListLow,errorListHigh]),fmt="none",lw=2.5,c=ncolor,label=str(triggerListSelectDict[itrigger]),alpha=1)
+      ax.errorbar(energyList,efficiencyList,yerr=np.asarray([errorListLow,errorListHigh]),fmt="o",ls="-",lw=2.5,c=ncolor,label=str(triggerListSelectDict[itrigger]),alpha=1)
+      ax.plot(energyList,efficiencyList,".",ls='-',lw = 2.5,c=ncolor,alpha=1)
+  ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
+  ax.set_xlabel(r"log10 (E [eV])", fontsize=22)
+  ax.set_ylabel(r"trigger efficiency", fontsize=22)
+  # ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
+  ax.text(0.78,0.1,s=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[0]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[1]))*180.0/np.pi),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+  ax.text(0.12,0.7,s=r"snow:{0}".format("2021/03"),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+  # ax.set_xscale('log')
+  ax.text(0.75,0.5,s="IceCube Preliminary",color="red",size=14,fontWeight='bold',horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+  ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
+  ax.set_ylim(0.0,1.05)
+  # ax.set_ylim(0.9,1.01)
+  # ax.set_xlim(14,17)
+  ax.set_xlim(14,16.8)
+  # ax.set_xlim(15.8,17)
+  # ax.yaxis.set_minor_locator(MultipleLocator(100))
+  ax.xaxis.set_minor_locator(MultipleLocator(0.1))
+  ax.grid(True,alpha=0.5)
+  l1=ax.legend(loc="upper left",fontsize=12)
+  # l1=ax.legend(loc="upper left",fontsize=12)
+  point_dash = mlines.Line2D([], [], linestyle='--',lw=2.0,color='gray', marker='',markersize=5, label=r"0.98")
+  # l2 = ax.legend(handles=[point_dash],loc="center left",fontsize=13,framealpha=0.1,handlelength=1.4,handletextpad=0.5)
+  l2 = ax.legend(handles=[point_dash],fontsize=13,framealpha=0.1,handlelength=1.4,handletextpad=0.5,bbox_to_anchor=(0.85,0.25),bbox_transform=ax.transAxes,prop={"family":"serif","size":13})
+  ax.add_artist(l1)
+  ax.add_artist(l2)
+  plt.savefig(plotFolder+"/trigVertcont"+str(containment)+"EfficiencySelect.pdf",transparent=False,bbox_inches='tight')
+  plt.close()
 
-def plotInclinedTrigEfficiencySelect(evtList,energyBins,triggerTypes,containment):
+# plotVerticalTrigEfficiencySelect(evtList,energyBins,triggerTypes=triggerListSelect,containment=True)
+# plotVerticalTrigEfficiencySelect(evtList,10**np.linspace(5.0, 8.0, 30),triggerTypes=triggerListSelectDict.keys(),containment=True)
+plotVerticalTrigEfficiencySelect(evtList,10**np.linspace(5.0, 7.8, 29),triggerTypes=triggerListSelectDict.keys(),containment=True,wilson=True)
+
+
+def plotInclinedTrigEfficiencySelect(evtList,energyBins,triggerTypes,containment,wilson):
   '''
   plots trigger efficiency in different zenith bins
   '''
@@ -1467,6 +1586,9 @@ def plotInclinedTrigEfficiencySelect(evtList,energyBins,triggerTypes,containment
       evtZenBin = [ievt for ievt in evtList if lowEdge <= ievt.zenith < highEdge]
       energyList = []
       efficiencyList = []
+      wilsonMeanList = []
+      errorListLow = []
+      errorListHigh = []
       # ncolor = colorsCustom2[ntrig]
       ncolor = multiple_color[ntrig]
       for ebin, ebinStart in enumerate(energyBins[:-1]):
@@ -1480,17 +1602,32 @@ def plotInclinedTrigEfficiencySelect(evtList,energyBins,triggerTypes,containment
         triggerList = [ievt for ievt in evtEBin if abs(int(getattr(ievt,str(itrigger)))-1)<0.01]
         trigEff = triggerEfficiency(len(triggerList),totalEvts)
         efficiencyList.append(trigEff)
-        energyList.append(np.log10((lowEdge_E+highEdge_E)/2.0*10**9))   
-      ax.plot(energyList,efficiencyList,".",ls='-',lw = 2.5,c=ncolor,label=str(triggerListSelectDict[itrigger]),alpha=1)
+        #binomial interval
+        # wilsonErr = binomial_proportion(nsel=len(triggerList), ntot=totalEvts,coverage=0.68)
+        #####################################################################################
+        wilsonM = WilsonMean(nPass=len(triggerList), nFail=totalEvts-len(triggerList))
+        wilsonErr = WilsonError(nPass=len(triggerList), nFail=totalEvts-len(triggerList))
+        ErrorH = wilsonM + wilsonErr - trigEff
+        ErrorL = trigEff - (wilsonM - wilsonErr)
+        # print("wilson calculation",totalEvts,len(triggerList),trigEff,wilsonErr)
+        wilsonMeanList.append(wilsonM)
+        errorListLow.append(ErrorL)
+        errorListHigh.append(ErrorH)
+        # print("efficiency bug",wilsonM, wilsonErr)
+        energyList.append(np.log10((lowEdge_E+highEdge_E)/2.0*10**9))
+      # ax.errorbar(energyList,efficiencyList,yerr=np.asarray([errorListLow,errorListHigh]),fmt="o",ls="-",lw = 2.5,c=ncolor,label=str(triggerListSelectDict[itrigger]),alpha=1)
+      ax.errorbar(energyList,efficiencyList,yerr=np.asarray([errorListLow,errorListHigh]),fmt="o",ls="-",lw=2.5,label=str(triggerListSelectDict[itrigger]),c=ncolor,alpha=1)
+      ax.plot(energyList,efficiencyList,".",ls='-',lw = 2.5,c=ncolor,alpha=1)
   ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
   ax.set_xlabel(r"log10 (E [eV])", fontsize=22)
   ax.set_ylabel(r"trigger efficiency", fontsize=22)
   # ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
   ax.text(0.78,0.1,s=r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[-2]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[-1]))*180.0/np.pi),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
   ax.text(0.15,0.3,s=r"snow:{0}".format("2021/03"),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+  ax.text(0.20,0.5,s="IceCube Preliminary",color="red",size=14,fontWeight='bold',horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
   # ax.set_xscale('log')
   ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
-  ax.set_ylim(0.0,1.01)
+  ax.set_ylim(0.0,1.05)
   # ax.set_ylim(0.9,1.01)
   # ax.set_xlim(14,17)
   ax.set_xlim(14,16.8)
@@ -1505,15 +1642,15 @@ def plotInclinedTrigEfficiencySelect(evtList,energyBins,triggerTypes,containment
   l2 = ax.legend(handles=[point_dash],fontsize=13,framealpha=0.1,handlelength=1.4,handletextpad=0.5,bbox_to_anchor=(0.85,0.25),bbox_transform=ax.transAxes,prop={"family":"serif","size":13})
   ax.add_artist(l1)
   ax.add_artist(l2)
-  plt.savefig(plotFolder+"/trigInclinedcont"+str(containment)+"EfficiencySelect.png",transparent=False,bbox_inches='tight')
+  plt.savefig(plotFolder+"/trigInclinedcont"+str(containment)+"EfficiencySelect.pdf",transparent=False,bbox_inches='tight')
   plt.close()
 
 # plotInclinedTrigEfficiencySelect(evtList,energyBins,triggerTypes=triggerListSelect,containment=True)
 # plotInclinedTrigEfficiencySelect(evtList,10**np.linspace(5.0, 8.0, 30),triggerTypes=triggerListSelectDict.keys(),containment=True)
-plotInclinedTrigEfficiencySelect(evtList,10**np.linspace(5.0, 7.8, 29),triggerTypes=triggerListSelectDict.keys(),containment=True)
+plotInclinedTrigEfficiencySelect(evtList,10**np.linspace(5.0, 7.8, 29),triggerTypes=triggerListSelectDict.keys(),containment=True,wilson=True)
 
 
-def plotTrigEfficiencyZenith(evtList,energyBins,triggerType,containment):
+def plotTrigEfficiencyZenith(evtList,energyBins,triggerType,containment,wilson):
   '''
   plots trigger efficiency in different zenith bins
   '''
@@ -1535,6 +1672,9 @@ def plotTrigEfficiencyZenith(evtList,energyBins,triggerType,containment):
     evtEnergyBin = [ievt for ievt in evtList if lowEdge <= ievt.energy < highEdge]
     zenithList = []
     efficiencyList = []
+    wilsonMeanList = []
+    errorListLow = []
+    errorListHigh = []
     ncolor = colorsCustom2[nbin]
     for ebin, ebinStart in enumerate(sin2ZenBins[:-1]):
       lowEdge_Z = sin2ZenBins[ebin]
@@ -1545,34 +1685,58 @@ def plotTrigEfficiencyZenith(evtList,energyBins,triggerType,containment):
       # sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
       triggerList = [ievt for ievt in evtZBin if abs(getattr(ievt,triggerType)-1)<0.01]
       trigEff = triggerEfficiency(len(triggerList),totalEvts)
+      #########################################################
+      # wilsonErr = binomial_proportion(nsel=len(triggerList), ntot=totalEvts,coverage=0.68) #binomial interval
+      ##########################################################
+      #binomial interval
+      # wilsonErr = binomial_proportion(nsel=len(triggerList), ntot=totalEvts,coverage=0.68)
+      #####################################################################################
+      wilsonM = WilsonMean(nPass=len(triggerList), nFail=totalEvts-len(triggerList))
+      wilsonErr = WilsonError(nPass=len(triggerList), nFail=totalEvts-len(triggerList))
+      ErrorH = wilsonM + wilsonErr - trigEff
+      ErrorL = trigEff - (wilsonM - wilsonErr)
+      # print("wilson calculation",totalEvts,len(triggerList),trigEff,wilsonErr)
+      wilsonMeanList.append(wilsonM)
+      errorListLow.append(ErrorL)
+      errorListHigh.append(ErrorH)
       efficiencyList.append(trigEff)
       zenithList.append((np.arcsin(np.sqrt(lowEdge_Z))+np.arcsin(np.sqrt(highEdge_Z)))/2.0*180/np.pi)
-    ax.plot(zenithList,efficiencyList,".",ls='-',lw = 2.5,c=ncolor,label=r"$10^{{{0:.1f}-{1:.1f}}}$ eV".format(np.log10(energyBinsShort[nbin])+9,np.log10(energyBinsShort[nbin+1])+9),zorder=zorders[nbin],alpha=1)
+    # ax.plot(zenithList,efficiencyList,".",ls='-',lw = 2.5,c=ncolor,label=r"$10^{{{0:.1f}-{1:.1f}}}$ eV".format(np.log10(energyBinsShort[nbin])+9,np.log10(energyBinsShort[nbin+1])+9),zorder=zorders[nbin],alpha=1)
+    # ax.errorbar(zenithList,wilsonMeanList,yerr=np.asarray([errorListLow,errorListHigh]),fmt="o",c=ncolor,label=r"{0:.1f}-{1:.1f}".format(np.log10(energyBinsShort[nbin])+9,np.log10(energyBinsShort[nbin+1])+9),zorder=zorders[nbin],alpha=1)
+    # ax.errorbar(zenithList,wilsonMeanList,yerr=np.asarray([errorListLow,errorListHigh]),fmt="none",ls = 2.5,c=ncolor,label=r"{0:.1f}-{1:.1f}".format(np.log10(energyBinsShort[nbin])+9,np.log10(energyBinsShort[nbin+1])+9),zorder=zorders[nbin],alpha=1)
+    ax.errorbar(zenithList,efficiencyList,yerr=np.asarray([errorListLow,errorListHigh]),fmt="o",ls="-",lw = 2.5,c=ncolor,label=r"{0:.1f}-{1:.1f}".format(np.log10(energyBinsShort[nbin])+9,np.log10(energyBinsShort[nbin+1])+9),zorder=zorders[nbin],alpha=1)
+    # ax.plot(zenithList,efficiencyList,".",ls='-',lw = 2.5,c=ncolor,zorder=zorders[nbin],alpha=1)
   ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
   ax.set_xlabel(r"zenith [$^{\circ}$]", fontsize=22)
   ax.set_ylabel(r"trigger efficiency", fontsize=22)
+  ax.text(0.20,0.25,s="IceCube Preliminary",color="red",size=14,fontWeight='bold',horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
   # ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
   # ax.text(0.78,0.1,s=r"trig:{0}".format(triggerListSelectDict[triggerType]),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
   # ax.set_xscale('log')
   ax.set_xticks(np.linspace(0,70,8))
   yline=0.98
   ax.axhline(y=yline,xmin=0,xmax=1,color="gray",linestyle="--",zorder=1,lw=2.0)
-  ax.set_ylim(0,1.01)
+  ax.set_ylim(0,1.05)
   ax.set_xlim(0,65)
   # ax.yaxis.set_minor_locator(MultipleLocator(100))
   ax.xaxis.set_minor_locator(MultipleLocator(5))
   ax.grid(True,alpha=0.5)
-  l1=ax.legend(loc="upper left",fontsize=12).set_zorder(10000)
+  l1=ax.legend(loc="upper left",title=r"log$_{10}$ [E/eV]",fontsize=16).set_zorder(10000)
+  # l1=ax.legend(loc="upper left",title=r"log$_{10}$ [E/eV]",title_fontsize=14,fontsize=14).set_zorder(10000)
+  # l1=ax.legend(loc="upper left",fontsize=14).set_zorder(10000)
+  # plt.setp(l1.get_title(),fontsize=14)
+  # plt.legend.set_title(r"log$_{10}$ (E/eV)",prop={'size':14})
   point_dash = mlines.Line2D([], [], linestyle='--',lw=2.0,color='black', marker='',markersize=5, label=r"{yline:.2f}")
   # l2 = ax.legend(handles=[point_dash],loc="upper left",fontsize=20,framealpha=0.1,handlelength=1.4,handletextpad=0.5)
   # ax.add_artist(l1)
   # ax.add_artist(l2)
-  plt.savefig(plotFolder+"/trig"+str(triggerListSelectDict[triggerType])+"cont"+str(containment)+"EfficiencyZenith.png",transparent=False,bbox_inches='tight')
+  plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"EfficiencyZenith.pdf",transparent=False,bbox_inches='tight')
   plt.close()
 
 
 for itrigger in triggerListSelectDict.keys():
-  plotTrigEfficiencyZenith(evtList,energyBins,triggerType=itrigger,containment=True)
+  # plotTrigEfficiencyZenith(evtList,energyBins,triggerType=itrigger,containment=True,wilson=False)
+  plotTrigEfficiencyZenith(evtList,energyBins,triggerType=itrigger,containment=True,wilson=True)
 
 
 
@@ -1627,7 +1791,7 @@ for itrigger in triggerListSelectDict.keys():
 #   # ax.yaxis.set_minor_locator(MultipleLocator(100))
 #   # ax.xaxis.set_minor_locator(MultipleLocator(0.1))
 #   ax.legend(fontsize=12)
-#   plt.savefig(plotFolder+"/deltaT"+str(deltaType)+"ZenBinsdelta_t.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/deltaT"+str(deltaType)+"ZenBinsdelta_t.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 
@@ -1686,13 +1850,13 @@ for itrigger in triggerListSelectDict.keys():
 #     ax.set_ylabel(r"count", fontsize=22)
 #     # ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
 #     # ax.set_xscale('log')
-#     # ax.set_ylim(0,1.01)
+#     # ax.set_ylim(0,1.05)
 #     # ax.set_xlim(14,17)
 #     # ax.yaxis.set_minor_locator(MultipleLocator(100))
 #     # ax.xaxis.set_minor_locator(MultipleLocator(0.1))
 #     ax.grid(True,alpha=0.6)
 #     ax.legend(fontsize=12)
-#     plt.savefig(plotFolder+"/distanceHistTrig"+str(triggerType)+"energy{0:.1f}.png".format(np.log10(energyBins[ebin])+9),transparent=False,bbox_inches='tight')
+#     plt.savefig(plotFolder+"/distanceHistTrig"+str(triggerType)+"energy{0:.1f}.pdf".format(np.log10(energyBins[ebin])+9),transparent=False,bbox_inches='tight')
 #     plt.close()
 # plotDistanceHist(evtList,triggerType="sta1")
 # plotDistanceHist(evtList,triggerType="slc3")
@@ -1729,13 +1893,13 @@ for itrigger in triggerListSelectDict.keys():
 #   ax.set_ylabel(r"count", fontsize=22)
 #   # ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
 #   # ax.set_xscale('log')
-#   # ax.set_ylim(0,1.01)
+#   # ax.set_ylim(0,1.05)
 #   # ax.set_xlim(14,17)
 #   # ax.yaxis.set_minor_locator(MultipleLocator(100))
 #   # ax.xaxis.set_minor_locator(MultipleLocator(0.1))
 #   ax.grid(True,alpha=0.6)
 #   ax.legend(fontsize=12)
-#   plt.savefig(plotFolder+"/distanceHistTrig"+str(triggerType)+"GivenEnergy{0:.1f}.png".format(lowEdge_E+9),transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/distanceHistTrig"+str(triggerType)+"GivenEnergy{0:.1f}.pdf".format(lowEdge_E+9),transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # plotDistanceHistGiven(evtList,triggerType="sta3",energyLim=[10**6.0,10**6.5],zenLim=[np.arcsin(np.sqrt(0.0)),np.arcsin(np.sqrt(0.1))],distanceLim=[442,446])
@@ -1760,7 +1924,7 @@ for itrigger in triggerListSelectDict.keys():
 #   ax.set_ylim(0,None)
 #   # ax.legend(fontsize=14)
 #   # ax.legend(fontsize=14,ncol=2)
-#   plt.savefig(plotFolder+"zenHist.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"zenHist.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # # plotZenithHist(hdf5NullList)
@@ -1818,7 +1982,7 @@ for itrigger in triggerListSelectDict.keys():
 #   ax.grid(True,alpha=0.2)
 #   # ax.set_title(key,fontsize=16)
 #   ax.legend(fontsize=10,ncol=3,loc="lower center")
-#   plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+".png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+".pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 # # plotEnergyFlux(energy,weights,adjustedWeights,"log","flux")
 # # plotEnergyFlux(evtList,"linear","fluxlinear",1.8,triggerType="sta3")
@@ -1890,7 +2054,7 @@ for itrigger in triggerListSelectDict.keys():
 #   ax.grid(True,alpha=0.2)
 #   # ax.set_title(key,fontsize=16)
 #   ax.legend(fontsize=10,ncol=3,loc="lower center")
-#   plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+"Total"+str(plotTotal)+"ZenBin"+str(sepZenBins)+".png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/energySpecTrig"+str(triggerType)+str(suffix)+"scale"+str(energyScale)+"Total"+str(plotTotal)+"ZenBin"+str(sepZenBins)+".pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 # def plotEffectiveArea(evtList,energyBins,weighting):
 #   '''
@@ -1934,7 +2098,7 @@ for itrigger in triggerListSelectDict.keys():
 #   # ax.set_ylim(0,4)
 #   ax.grid(True,alpha=0.2)
 #   ax.legend(fontsize=12)
-#   plt.savefig(plotFolder+"/effectiveArea.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/effectiveArea.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # # plotEffectiveArea(evtList,energyBins,weighting=False)
@@ -1986,7 +2150,7 @@ for itrigger in triggerListSelectDict.keys():
 #   # ax.set_yscale('log')
 #   ax.grid(True,alpha=0.2)
 #   ax.legend(fontsize=12)
-#   plt.savefig(plotFolder+"/fluxEnergyZenith.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/fluxEnergyZenith.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # # plotFluxEnergyZenith(hdf5NullList,energyBins,weighting=False)
@@ -2038,7 +2202,7 @@ for itrigger in triggerListSelectDict.keys():
 #   ax.grid(True,alpha=0.2)
 #   # ax.set_title(key,fontsize=16)
 #   ax.legend(fontsize=10,ncol=3,loc="lower center")
-#   plt.savefig(plotFolder+"/energySpec"+str(suffix)+"Compare.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/energySpec"+str(suffix)+"Compare.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # # plotEnergySpectraCompare(evtList,evtListOfficial,"IceTopSTA5_13_filter","IceTopSTA5_12_filter","log","fluxLogSTA5",energyScale=1.8)
@@ -2064,7 +2228,7 @@ for itrigger in triggerListSelectDict.keys():
 #   ax.grid(True,alpha=0.2)
 #   ax.set_title(suffix,fontsize=12)
 #   # ax.legend(fontsize=20)
-#   plt.savefig(plotFolder+"/"+str(suffix)+"delta_t.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/"+str(suffix)+"delta_t.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 # # delta_t_hist(evtList,"HLCVEM")
 # # delta_t_hist(evtList,np.linspace(0,10000,2000),"SLCVEM")
@@ -2190,7 +2354,7 @@ for itrigger in triggerListSelectDict.keys():
 #   ax.grid(True,alpha=0.2)
 #   ax.legend(fontsize=14)
 #   # ax.legend(fontsize=14,ncol=2)
-#   plt.savefig(plotFolder+"/"+str(suffix)+"Frac"+str(fraction)+"Wts"+str(weighting)+"trigger_zen.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/"+str(suffix)+"Frac"+str(fraction)+"Wts"+str(weighting)+"trigger_zen.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 
@@ -2237,7 +2401,7 @@ for itrigger in triggerListSelectDict.keys():
 #   ax.set_yscale('log')
 #   ax.grid(True,alpha=0.2)
 #   # ax.legend(fontsize=12)
-#   plt.savefig(plotFolder+"/fluxEnergyZenithScaled.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/fluxEnergyZenithScaled.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # # plotFluxEnergyZenithScaled(hdf5NullList,energyBins,weighting=False)
@@ -2274,7 +2438,7 @@ for itrigger in triggerListSelectDict.keys():
 # #   ax.set_xscale('log')
 # #   ax.grid(True,alpha=0.2)
 # #   ax.legend(fontsize=12)
-# #   plt.savefig(plotFolder+"/trigEfficiency.png",transparent=False,bbox_inches='tight')
+# #   plt.savefig(plotFolder+"/trigEfficiency.pdf",transparent=False,bbox_inches='tight')
 # #   plt.close()
 
 # # plotTrigEfficiency(hdf5NullList,energyBins,weighting=False)
@@ -2329,7 +2493,7 @@ for itrigger in triggerListSelectDict.keys():
 #   ax.xaxis.set_minor_locator(MultipleLocator(0.1))
 #   ax.grid(True,alpha=0.5)
 #   ax.legend(fontsize=12)
-#   plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"EffectiveArea.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"EffectiveArea.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # # plotEffectiveArea(evtList,energyBins,weighting=False,triggerType="sta1",containment=False)
@@ -2365,7 +2529,7 @@ for itrigger in triggerListSelectDict.keys():
 #   ax.set_xscale('log')
 #   ax.grid(True,alpha=0.2)
 #   ax.legend(fontsize=12)
-#   plt.savefig(plotFolder+"/trigEffectiveArea.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/trigEffectiveArea.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # def rateZen(hdfFileList,zenBins,weighting,suffix):
@@ -2401,7 +2565,7 @@ for itrigger in triggerListSelectDict.keys():
 #   ax.grid(True,alpha=0.2)
 #   ax.legend(fontsize=14)
 #   # ax.legend(fontsize=14,ncol=2)
-#   plt.savefig(plotFolder+"/"+str(suffix)+"Wts"+str(weighting)+"triggerRate_zen.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/"+str(suffix)+"Wts"+str(weighting)+"triggerRate_zen.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 # # rateZen(hdf5NullList,[0,10,20,30,40,50,65.1],True,"HLCVEM")
 # # rateZen(hdf5NullList,[0,10,20,30,40,50,65.1],True,"HLCVEM")
@@ -2457,7 +2621,7 @@ for itrigger in triggerListSelectDict.keys():
 #     ax.set_title(key,fontsize=12)
 #     ax.legend(fontsize=14)
 #     # ax.legend(fontsize=14,ncol=2)
-#     plt.savefig(plotFolder+"/"+str(suffix)+"delta_t_zenBins.png",transparent=False,bbox_inches='tight')
+#     plt.savefig(plotFolder+"/"+str(suffix)+"delta_t_zenBins.pdf",transparent=False,bbox_inches='tight')
 #     plt.close()
 # # delta_t_hist_zen_bins(hdf5NullList,[0,10,20,30,40,50,65.1],"HLCVEM","OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge_delta_t")
 # # delta_t_hist_zen_bins(hdf5NullList,[0,10,20,30,40,50,65.1],"SLCVEM","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge_delta_t")
@@ -2502,7 +2666,7 @@ for itrigger in triggerListSelectDict.keys():
 #     ax.grid(True,alpha=0.2)
 #     # ax.set_title(fontsize=12)
 #     ax.legend(fontsize=14)
-#     plt.savefig(plotFolder+"/"+str(suffix)+"zenithDist.png",transparent=False,bbox_inches='tight')
+#     plt.savefig(plotFolder+"/"+str(suffix)+"zenithDist.pdf",transparent=False,bbox_inches='tight')
 #     plt.close()
 # # histZen(hdf5NullList,"hist")
 
@@ -2554,7 +2718,7 @@ for itrigger in triggerListSelectDict.keys():
 #     ax.grid(True,alpha=0.2)
 #     ax.set_title(key,fontsize=16)
 #     # ax.legend(fontsize=20)
-#     plt.savefig(plotFolder+"/"+str(suffix)+".png",transparent=False,bbox_inches='tight')
+#     plt.savefig(plotFolder+"/"+str(suffix)+".pdf",transparent=False,bbox_inches='tight')
 #     plt.close()
 
 # def plotTimeChargeScatter(time,charge,suffix,key):
@@ -2571,7 +2735,7 @@ for itrigger in triggerListSelectDict.keys():
 #     ax.set_ylim(-4.5,4.5)
 #     ax.set_title(key,fontsize=16)
 #     ax.grid(True,alpha=0.2)
-#     plt.savefig(plotFolder+"/scatterChargeTime"+str(suffix)+".png",transparent=False,bbox_inches='tight')
+#     plt.savefig(plotFolder+"/scatterChargeTime"+str(suffix)+".pdf",transparent=False,bbox_inches='tight')
 #     plt.close()
     
 
@@ -2603,7 +2767,7 @@ for itrigger in triggerListSelectDict.keys():
 #     ax_histy = fig.add_subplot(gs[1, 1], sharey=ax)
 #     # use the previously defined function
 #     scatter_hist_(x, y, ax, ax_histx, ax_histy)
-#     plt.savefig(plotFolder+"/scatterChargeTimeHist"+str(suffix)+".png",transparent=False,bbox_inches='tight')
+#     plt.savefig(plotFolder+"/scatterChargeTimeHist"+str(suffix)+".pdf",transparent=False,bbox_inches='tight')
 # #     plt.show()
 #     plt.close()
 
@@ -2650,7 +2814,7 @@ for itrigger in triggerListSelectDict.keys():
 #     # ax.set_yscale('log')
 #     ax.set_ylim(0.1,None)
 #     ax.grid(True,alpha=0.2)
-#     plt.savefig(plotFolder+"/scatterHitDuration"+str(prefix)+".png",transparent=False,bbox_inches='tight')
+#     plt.savefig(plotFolder+"/scatterHitDuration"+str(prefix)+".pdf",transparent=False,bbox_inches='tight')
 #     plt.close()
 
 
@@ -2697,7 +2861,7 @@ for itrigger in triggerListSelectDict.keys():
 #     ax.set_title(key,fontsize=16)
 #     ax.set_ylim(0.1,None)
 #     ax.grid(True,alpha=0.2)
-#     plt.savefig(plotFolder+"/scatterHitzenith"+str(prefix).replace(" ","")+".png",transparent=False,bbox_inches='tight')
+#     plt.savefig(plotFolder+"/scatterHitzenith"+str(prefix).replace(" ","")+".pdf",transparent=False,bbox_inches='tight')
 #     plt.close()
 
 # # plotScatterHitsZenith(hdf5NullList,key="OfflineIceTopHLCVEMPulsesTotalHit",prefix="HLC VEM")
@@ -2732,7 +2896,7 @@ for itrigger in triggerListSelectDict.keys():
 #   ax.grid(True,alpha=0.2)
 #   # ax.set_title(key,fontsize=16)
 #   ax.legend(fontsize=10,ncol=3,loc="lower center")
-#   plt.savefig(plotFolder+"/weightCompare.png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/weightCompare.pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 # # compareTwoWeights(evtList)
 
@@ -2760,7 +2924,7 @@ for itrigger in triggerListSelectDict.keys():
 #   # ax.grid(True,alpha=0.2)
 #   # ax.set_title(key,fontsize=16)
 #   # ax.legend(fontsize=10,ncol=3,loc="lower center")
-#   plt.savefig(plotFolder+"/Rate"+str(prefix)+".png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/Rate"+str(prefix)+".pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # # stationRate(hdf5NullList,key="OfflineIceTopHLCTankPulsesCleanTimeCleanCharge_hitStations",prefix="HLCTankStation",hitBins=np.linspace(0,80,81),xlabel=r"$N_{station}$ per event (HLC Tank)")
@@ -2800,7 +2964,7 @@ for itrigger in triggerListSelectDict.keys():
 #   # ax.grid(True,alpha=0.2)
 #   # ax.set_title(key,fontsize=16)
 #   # ax.legend(fontsize=10,ncol=3,loc="lower center")
-#   plt.savefig(plotFolder+"/chargeRate"+str(prefix)+".png",transparent=False,bbox_inches='tight')
+#   plt.savefig(plotFolder+"/chargeRate"+str(prefix)+".pdf",transparent=False,bbox_inches='tight')
 #   plt.close()
 
 # # chargeRate(hdf5NullList,key="OfflineIceTopHLCTankPulsesCleanTimeCleanChargeTotalCharge",prefix="HLCTankCharge",hitBins=np.linspace(0,5,81),xlabel=r"log($Q_{tot}/VEM$) per event (HLC tank)")

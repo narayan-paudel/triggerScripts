@@ -36,7 +36,7 @@ def snowheight(tank,snowheight):
   # ax.xaxis.set_minor_locator(MultipleLocator(0.1))
   plt.savefig(plotFolder+"tankSnowHeight.pdf",transparent=False,bbox_inches='tight')
   plt.close()
-
+snowHeight = []
 for frame in dataio.I3File(args.gcd,'r'):
   if frame.Stop == icetray.I3Frame.Geometry:
     geom = frame['I3Geometry']
@@ -49,5 +49,7 @@ for frame in dataio.I3File(args.gcd,'r'):
           if om[1] in [61,63]:
             x.append("{:d}\n{}".format(e,om[1]).replace("61","A").replace("63","B"))
             sh.append(original_elevation+tank.position.z+tank.snowheight)
+            snowHeight.append(tank.snowheight)
+print(max(snowHeight),min(snowHeight))
 
 snowheight(x,sh)

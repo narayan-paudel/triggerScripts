@@ -4,10 +4,13 @@ HERE=$(dirname $(realpath -s $0))
 BASEDIR=$HERE/
 
 
-eval `/cvmfs/icecube.opensciencegrid.org/py3-v4.1.1/setup.sh`
+# eval `/cvmfs/icecube.opensciencegrid.org/py3-v4.1.1/setup.sh`
+eval `/cvmfs/icecube.opensciencegrid.org/py3-v4.2.1/setup.sh`
 
 # I3BASE=/data/user/enpaudel/icecube_software/icetray_main
-I3BASE=/data/user/enpaudel/icecube_software/icetray_inclinedTrigger
+# I3BASE=/data/user/enpaudel/icecube_software/icetray_inclinedTrigger
+# I3BASE=/data/user/enpaudel/icecube_software/icetray_current
+I3BASE=/data/user/enpaudel/icecube_software/icetray_work
 I3SRC=$I3BASE/src
 I3BUILD=$I3BASE/build
 ICETRAY_ENV=$I3BUILD/env-shell.sh
@@ -29,7 +32,8 @@ ICETRAY_ENV=$I3BUILD/env-shell.sh
 ######################################################################################
 # GCD=/home/acoleman/work/datasets/gcd-files/GCD-Survey-AntITScint_2020.02.24.i3.gz
 # GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz
-GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz
+# GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz
+GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305_W7HGDomsets.i3.gz
 # GCD=/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz
 ######################################################################################
 
@@ -115,12 +119,8 @@ nSamples=100
 echo nSamples $nSamples
 
 OUTPUT_FOLDER=/home/enpaudel/icecube/triggerStudy/simFiles/
-# DATASETUNIQUE=dataSetUniqueWFRT
-DATASETUNIQUE=dataSetUnique
-# DATASETUNIQUE=dataSetUnique1_6
-# DATASETGEN=dataSetGen1_6
-DATASETGEN=dataSetGen
-# DATASETUNIQUE=dataSetUniqueFRT
+DATASETUNIQUE=$3
+DATASETGEN=$2
 start_time=$SECONDS
 
 #calculate the seed
@@ -139,7 +139,7 @@ echo SEED $SEED
 
 
 DETECTOR_PY=$I3SRC/simprod-scripts/resources/scripts/detector.py
-FLAGS2="--UseGSLRNG --gcdfile ${GCD} --noInIce --LowMem --seed ${SEED} --nproc 1 --DetectorName IC86.2019 --no-FilterTrigger"
+FLAGS2="--UseGSLRNG --gcdfile ${GCD} --noInIce --LowMem --seed ${SEED} --nproc 1 --DetectorName IC86 --no-FilterTrigger"
 FLAGS2+=" --inputfile $OUTPUT_FOLDER/${DATASETGEN}/${PRIMARY_NAME}${CORSIKA_ID}Gen.i3.bz2"
 FLAGS2+=" --output $OUTPUT_FOLDER/${DATASETUNIQUE}/${PRIMARY_NAME}${CORSIKA_ID}GenDet.i3.bz2"
 
@@ -188,8 +188,10 @@ time_proc=$(($SECONDS - $start_time))
 
 UNIQUE_PY=$BASEDIR/addUniqueRunID.py
 INPUT_FILE=$OUTPUT_FOLDER/${DATASETUNIQUE}/${PRIMARY_NAME}${CORSIKA_ID}GenDetFiltProc.i3.bz2
+OUTPUT_FILE=$OUTPUT_FOLDER/${DATASETUNIQUE}/${PRIMARY_NAME}${CORSIKA_ID}GenDetFiltProcUnique.i3.bz2
 
-$ICETRAY_ENV $UNIQUE_PY $INPUT_FILE
+echo input $INPUT_FILE $OUTPUT_FILE $GCD
+$ICETRAY_ENV $UNIQUE_PY -i $INPUT_FILE -o $OUTPUT_FILE -g $GCD
 # rm $ifile
 echo removing intermediate files
 ################################# rm $OUTPUT_FOLDER/dataSet/${PRIMARY_NAME}${CORSIKA_ID}Gen.i3.bz2

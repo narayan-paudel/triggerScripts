@@ -19,31 +19,15 @@ from icecube.simprod.util import PrintContext
 from icecube import topeventcleaning, tpx
 
 
-outputDir = "/home/enpaudel/icecube/triggerStudy/simFiles/"
-# outputDir = "/home/enpaudel/icecube/triggerStudy/simFilesTest/"
-
-# GCD="/data/user/kath/testdata/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz"
-# GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305.i3.gz"
-# GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoSMTDOMSet.i3.gz"
-GCD="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz"
-
-# dataSetUnique = "dataSetUnique/"
-dataSetUnique = "dataSetUnique1_6/"
-# dataSetUnique = "dataSetUniqueFRT/"
-# dataSetUnique = "dataSetUniqueWFRT/"
-
-
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('input', type=str, nargs='+', default="/home/enpaudel/icecube/triggerStudy/simFiles/ITGenTest/FeDAT000001GenDet.i3.bz2", help='Input files after running detector.py.')
+parser.add_argument('--input',"-i", type=str,
+ default="/home/enpaudel/icecube/triggerStudy/simFiles/ITGenTest/FeDAT000001GenDet.i3.bz2", help='Input files after running detector.py.')
+parser.add_argument('--output',"-o", type=str,
+ default="/home/enpaudel/icecube/triggerStudy/simFiles/ITGenTest/FeDAT000001GenDetUnique.i3.bz2", help='Output files after running detector.py.')
+parser.add_argument('--GCD',"-g", type=str,
+ default="/data/user/enpaudel/triggerStudy/simFiles/GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrig.i3.gz", help='Output files after running detector.py.')
 args = parser.parse_args()
-
-fileName = args.input[0].split("/")[-1]
-fileNameGen = fileName[:-18]+fileName[-7:]
-# subprocess.call(["mv {}dataSet/{} {}dataSetGen/".format(outputDir,fileNameGen,outputDir)], shell=True)
-print(fileNameGen)
-fileName = fileName.split(".")[0]
-print(fileName)
 
 def addUniqieEvtID(frame):
 	newHead = dataclasses.I3EventHeader()
@@ -76,22 +60,14 @@ def addUniqieEvtID(frame):
 
 tray = I3Tray()
 tray.AddModule("I3Reader","reader",
-	           filenameList=[GCD]+args.input,
-	           # streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	           # streams=[icetray.I3Frame.Geometry,icetray.I3Frame.Calibration, icetray.I3Frame.DetectorStatus]
+	           filenameList=[args.GCD]+[args.input],
 	          )
 tray.AddModule(addUniqieEvtID,"uniqEvtID",
 				streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics])
 
 tray.AddModule("I3Writer","i3writer",
-	          # filename=str(outputDir)+"/hadronTimeTest/"+str(fileName)+"HadronNonTrigImProperTEvts.i3.gz",
-	          # filename=str(outputDir)+"/dataSetUnique/"+str(fileName)+"Unique.i3.gz",
-	          filename=str(outputDir)+dataSetUnique+str(fileName)+"Unique.i3.gz",
-	          # filename=str(outputDir)+"/dataSetUniqueSeedSame/"+str(fileName)+"Unique.i3.gz",
-	          streams=[icetray.I3Frame.TrayInfo,icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	          # streams=[icetray.I3Frame.TrayInfo,icetray.I3Frame.Geometry,icetray.I3Frame.Calibration,icetray.I3Frame.DetectorStatus,icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	          # streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-	          # streams=[icetray.I3Frame.Geometry,icetray.I3Frame.Calibration, icetray.I3Frame.DetectorStatus]
+	          filename=args.output,
+	          streams=[icetray.I3Frame.TrayInfo,icetray.I3Frame.DAQ,icetray.I3Frame.Physics,icetray.I3Frame.Simulation],
 	          )
 tray.Execute()
 tray.Finish()

@@ -118,10 +118,10 @@ OUTPUT_FOLDER=/home/enpaudel/icecube/triggerStudy/simFiles/
 start_time=$SECONDS
 # echo start time $start_time
 ###########################################################################
-# bunzip2 -ckd $1 > $OUTPUT_FOLDER/temp/${PRIMARY_NAME}$CORSIKA_ID
-
-if [ ! -f $OUTPUT_FOLDER/temp/${PRIMARY_NAME}$CORSIKA_ID ]; then
-	bunzip2 -ckd $1 > $OUTPUT_FOLDER/temp/${PRIMARY_NAME}$CORSIKA_ID
+tempFolder=/data/sim/IceTop/2023/generated/untriggered/temp
+# bunzip2 -ckd $1 > $tempFolder/${PRIMARY_NAME}$CORSIKA_ID
+if [ ! -f $tempFolder/${PRIMARY_NAME}$CORSIKA_ID ]; then
+	bunzip2 -ckd $1 > $tempFolder/${PRIMARY_NAME}$CORSIKA_ID
 fi
 # time_zip=$(($SECONDS - $start_time))
 ##########################################################################
@@ -143,7 +143,7 @@ GENERATOR_PY=$I3SRC/simprod-scripts/resources/scripts/icetopshowergenerator.py
 
 FLAGS="--UseGSLRNG --gcdfile ${GCD} --seed ${SEED} --nproc 1 --RunID $corsikaRunID --samples $nSamples --r $discR --no-PropagateMuons"
 FLAGS="$FLAGS --raise-observation-level ${RAISE_H}"
-FLAGS="$FLAGS --inputfile $OUTPUT_FOLDER/temp/${PRIMARY_NAME}$CORSIKA_ID"
+FLAGS="$FLAGS --inputfile $tempFolder/${PRIMARY_NAME}$CORSIKA_ID"
 FLAGS="$FLAGS --output $OUTPUT_FOLDER/dataSet/${PRIMARY_NAME}${CORSIKA_ID}GenTemp.i3.bz2"
 
 echo running $GENERATOR_PY
@@ -158,7 +158,7 @@ $ICETRAY_ENV ${GENERATOR_PY} $FLAGS
 
 time_gen=$(($SECONDS - $start_time))
 ##########################################################################
-rm $OUTPUT_FOLDER/temp/${PRIMARY_NAME}$CORSIKA_ID
+rm $tempFolder/${PRIMARY_NAME}$CORSIKA_ID
 mv $OUTPUT_FOLDER/dataSet/${PRIMARY_NAME}${CORSIKA_ID}GenTemp.i3.bz2 $OUTPUT_FOLDER/dataSet/${PRIMARY_NAME}${CORSIKA_ID}Gen.i3.bz2
 
 # DETECTOR_PY=$I3SRC/simprod-scripts/resources/scripts/detector.py

@@ -12,7 +12,8 @@ ABS_PATH_HERE = str(os.path.dirname(os.path.realpath(__file__)))
 ABS_PATH_HERE += "/"
 
 # basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/"
-basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetCleanTanks/"
+basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean1_6/"
+# basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetCleanTanks/"
 
 # hdf5NullListP = sorted(glob.glob(basePath+"p*Clean*.hdf5"))
 # hdf5NullListHe = sorted(glob.glob(basePath+"He*Clean*.hdf5"))
@@ -23,6 +24,7 @@ basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetCleanTanks/"
 # print("file len H He O Fe",nCorFiles(hdf5NullListP),nCorFiles(hdf5NullListHe),nCorFiles(hdf5NullListO),nCorFiles(hdf5NullListFe))
 
 hdf5List = sorted(glob.glob(basePath+"*Clean*.hdf5"))
+print(hdf5List[:1])
 
 submitFileName = ABS_PATH_HERE+"tempSubmitPickle.sub"
 

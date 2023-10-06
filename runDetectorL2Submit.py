@@ -18,8 +18,9 @@ energyList = ['5.0', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8', '5.
 
 simFiles = "/home/enpaudel/icecube/triggerStudy/simFiles/"
 #need corresponding change of dataSetUnique folder in runDetectorL2Cluster, addUniqueRunID.py and DetectorSim.py
-# dataSetUnique = "dataSetUnique1_6/"
-dataSetUnique = "dataSetUnique/"
+dataSetUnique = "dataSetUnique1_6/"
+dataSetGen = "dataSetGen1_6/"
+# dataSetUnique = "dataSetUnique/"
 # dataSetUnique = "dataSetUniqueFRT/"
 # dataSetUnique = "dataSetUniqueWFRT/"
 
@@ -66,7 +67,7 @@ def makeSubFile(corsikaFile,primary):
   #   submitFile.write("+AccountingGroup=\"1_week.$ENV(USER)\" \n\n")
   submitFile.write("priority = {}\n".format(priority))
   submitFile.write("#set arguments to executable\n")
-  submitFile.write("arguments = {0}\n\n".format(corsikaFile))
+  submitFile.write("arguments = {0} {1} {2}\n\n".format(corsikaFile, dataSetGen, dataSetUnique))
   submitFile.write("queue 1\n")
   submitFile.close()
 
@@ -83,7 +84,7 @@ def getCorsikaFiles(basePath,energyList):
     corsikaList=getCORSIKALists(basePath,ienergy)
     # print("corsikaList",corsikaList)
     # corsikaFiles.append(corsikaList[:11])
-    corsikaFiles += corsikaList[0:100]
+    corsikaFiles += corsikaList[0:200]
     # corsikaFiles += corsikaList
   # print("corsika files",corsikaFiles)
   return corsikaFiles
@@ -92,9 +93,8 @@ def submitToCondorFile(corsikaFile,primary):
   makeSubFile(corsikaFile,primary)
   corsikaID = str(corsikaFile).split("/")[-1]
   corsikaID = str(corsikaID).split(".")[0]
-  # simulatedGenFile = simFiles+"dataSetGen1_6/"+primary+corsikaID+"Gen.i3.bz2"
-  simulatedGenFile = simFiles+"dataSetGen/"+primary+corsikaID+"Gen.i3.bz2"
-  simulatedUniqueFile = simFiles+dataSetUnique+primary+corsikaID+"GenDetFiltProcUnique.i3.gz"
+  simulatedGenFile = simFiles+dataSetGen+primary+corsikaID+"Gen.i3.bz2"
+  simulatedUniqueFile = simFiles+dataSetUnique+primary+corsikaID+"GenDetFiltProcUnique.i3.bz2"
   # print("check files",simulatedGenFile,simulatedUniqueFile,os.path.exists(simulatedGenFile), not simulatedUniqueFile,os.path.exists(simulatedGenFile) and not simulatedUniqueFile)
   if os.path.exists(simulatedGenFile) and not os.path.exists(simulatedUniqueFile):
     corsikaID = int(''.join(i for i in corsikaID if i.isdigit()))
@@ -108,12 +108,13 @@ def submitToCondor(corsikaFiles,primary):
     submitToCondorFile(ifiles,primary)
 
 # # print("submitting proton files: ", basePathProton)
+#need to run just two primaries each time due to 20000 job limit
 print("submitting Iron files from: ", basePathIron)
-ironCorsikaFiles = getCorsikaFiles(basePathIron,energyList)
-submitToCondor(ironCorsikaFiles,"Fe")
+# ironCorsikaFiles = getCorsikaFiles(basePathIron,energyList)
+# submitToCondor(ironCorsikaFiles,"Fe")
 
-protonCorsikaFiles = getCorsikaFiles(basePathProton,energyList)
-submitToCondor(protonCorsikaFiles,"p")
+# protonCorsikaFiles = getCorsikaFiles(basePathProton,energyList)
+# submitToCondor(protonCorsikaFiles,"p")
 
 heliumCorsikaFiles = getCorsikaFiles(basePathHelium,energyList)
 submitToCondor(heliumCorsikaFiles,"He")

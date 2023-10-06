@@ -15,7 +15,7 @@ parser.add_argument('input', type=str, nargs='+', default="/home/enpaudel/icecub
 args = parser.parse_args()
 
 
-basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean/"
+basePath = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetClean1_6/"
 
 plotFolder = "/home/enpaudel/icecube/triggerStudy/plots/"
 
@@ -41,7 +41,7 @@ energyBinCenter = [5.1,6.1,7.1,8.1]
 
 print("args.input",args.input)
 
-pickleFile = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetPickle/{}.pkl".format(args.input[0].split("/")[-1].split(".")[0])
+pickleFile = "/home/enpaudel/icecube/triggerStudy/simFiles/dataSetPickle1_6/{}.pkl".format(args.input[0].split("/")[-1].split(".")[0])
 
 print("picklefile",pickleFile)
 

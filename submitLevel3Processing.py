@@ -34,7 +34,7 @@ print("inputList",pinputList)
 
 
 
-submitFileName = ABS_PATH_HERE+"tempSubmitClean.sub"
+submitFileName = ABS_PATH_HERE+"tempSubmitLevel3.sub"
 
 
 def makeSubFile(fileList):
@@ -43,10 +43,10 @@ def makeSubFile(fileList):
 	submitFile.write("## submit description file\n")
 	submitFile.write("########################################\n\n")
 	submitFile.write("Universe   = vanilla\n")
-	submitFile.write("Executable = /home/enpaudel/icecube/triggerStudy/triggerScripts/runTrigProcCleanChunk.sh\n")
-	submitFile.write("Log        = /scratch/enpaudel/log/cleanTrig$(Process).log\n")
-	submitFile.write("Output     = /data/user/enpaudel/triggerStudy/log/cleanTrig$(Process).out\n")
-	submitFile.write("Error      = /data/user/enpaudel/triggerStudy/log/cleanTrig$(Process).err\n")
+	submitFile.write("Executable = /home/enpaudel/icecube/triggerStudy/triggerScripts/level3Processing.sh\n")
+	submitFile.write("Log        = /scratch/enpaudel/log/level3$(Process).log\n")
+	submitFile.write("Output     = /data/user/enpaudel/triggerStudy/log/level3$(Process).out\n")
+	submitFile.write("Error      = /data/user/enpaudel/triggerStudy/log/level3$(Process).err\n")
 	submitFile.write("request_cpus = 1\n")
 	submitFile.write("request_memory = 4GB\n")
 	submitFile.write("request_disk = 1GB\n")
@@ -75,8 +75,8 @@ def submitToCondorFile(fileList,primary):
 	corsikaID = int(''.join(i for i in corsikaID if i.isdigit()))
 	# print("file list",*fileList[:2])
 	print("corsika id",corsikaID,primary)
-	subprocess.call(["condor_submit tempSubmitClean.sub -batch-name {0}---{1}".format(primary,corsikaID)], shell=True)
-	subprocess.call(["rm tempSubmitClean.sub"], shell=True)
+	subprocess.call(["condor_submit tempSubmitLevel3.sub -batch-name {0}---{1}".format(primary,corsikaID)], shell=True)
+	subprocess.call(["rm tempSubmitLevel3.sub"], shell=True)
 
 def submitToCondor(fileList,chunk,primary):
 	fileChunks = [fileList[i:i + chunk] for i in range(0, len(fileList), chunk)]
