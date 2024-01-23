@@ -43,7 +43,7 @@ def makeSubFile(corsikaFile,primary):
   submitFile.write("Output     = /data/user/enpaudel/triggerStudy/log/trigStudyL2{0}{1}.out\n".format(primary,corsikaID))
   submitFile.write("Error      = /data/user/enpaudel/triggerStudy/log/trigStudyL2{0}{1}.err\n".format(primary,corsikaID))
   submitFile.write("request_cpus = 1\n")
-  submitFile.write("request_memory = 3GB\n")
+  submitFile.write("request_memory = 5GB\n")
   submitFile.write("request_disk = 1GB\n")
   submitFile.write("#request_gpus = 1\n")
   submitFile.write("#should_transfer_files   = IF_NEEDED\n")
@@ -110,11 +110,11 @@ def submitToCondor(corsikaFiles,primary):
 # # print("submitting proton files: ", basePathProton)
 #need to run just two primaries each time due to 20000 job limit
 print("submitting Iron files from: ", basePathIron)
-# ironCorsikaFiles = getCorsikaFiles(basePathIron,energyList)
-# submitToCondor(ironCorsikaFiles,"Fe")
+ironCorsikaFiles = getCorsikaFiles(basePathIron,energyList)
+submitToCondor(ironCorsikaFiles,"Fe")
 
-# protonCorsikaFiles = getCorsikaFiles(basePathProton,energyList)
-# submitToCondor(protonCorsikaFiles,"p")
+protonCorsikaFiles = getCorsikaFiles(basePathProton,energyList)
+submitToCondor(protonCorsikaFiles,"p")
 
 heliumCorsikaFiles = getCorsikaFiles(basePathHelium,energyList)
 submitToCondor(heliumCorsikaFiles,"He")

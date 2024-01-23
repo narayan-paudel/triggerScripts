@@ -87,6 +87,7 @@ def delJobs(idleJobs):
 
 ###################### delJobs(idleLines)
 #need to run cmd ls -l  ../simFiles/dataSet/He*Proc* > ../completedJobs.txt
+# ls -l  ../simFiles/dataSetUnique1_6/p*Proc* > ../completedJobs.txt
 ################################################3
 # counting completed jobs
 ################################################

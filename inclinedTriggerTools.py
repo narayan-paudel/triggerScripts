@@ -223,8 +223,20 @@ def extractEvents_(hdfFile):
   coreXRecoList = cog_df["x"].values
   coreYRecoList = cog_df["y"].values
   inclinedFilterList = getValue_(hdfFile,key="inclinedFilter")
-  # newTriggersList = ["SMT102", "SMT103", "SMT104", "SMT1101", "SMT1102", "SMT1103", "SMT1104", "SMT1105", "SMT161","SMT162","SMT163","SMT164","SMT165","SMT171","SMT172","SMT173","SMT174","SMT175","SMT181","SMT182","SMT183","SMT184","SMT185","SMT191","SMT192","SMT193","SMT194","SMT195","SMT2101","SMT2102","SMT2103","SMT2104","SMT2105",  "SMT261","SMT262","SMT263","SMT264","SMT265","SMT271","SMT272","SMT273","SMT274","SMT275","SMT281","SMT282","SMT283",  "SMT284","SMT285","SMT291","SMT292","SMT293","SMT294","SMT295","SMT3101","SMT3102","SMT3103","SMT3104","SMT3105",  "SMT321","SMT322","SMT323","SMT324","SMT325","SMT341","SMT342","SMT343","SMT344","SMT345","SMT361","SMT362",  "SMT363","SMT364","SMT365","SMT371","SMT372","SMT373","SMT374","SMT375","SMT381","SMT382","SMT383","SMT384","SMT385","SMT391","SMT392","SMT393","SMT394","SMT395"]
-  # newTriggersListValues = [getValue_(hdfFile,key="{}".format(itrigger)) for itrigger in newTriggersList]
+  newTriggersList = ["HG5_1","HG5_2","HG5_3","HG5_4","HG5_5","HG5_6","HG6_1","HG6_2","HG6_3","HG6_4","HG6_5","HG6_6","HG7_1",
+    "HG7_2","HG7_3","HG7_4","HG7_5","HG7_6","HG7__3","HG8_1","HG8_2","HG8_3","HG8_4","HG8_5","HG8_6","HLC2","HLC4","HLC6"]
+  # newTriggersList = ["SMT102", "SMT103", "SMT104", "SMT1101", "SMT1102", "SMT1103", "SMT1104", "SMT1105", "SMT161",
+  # "SMT162","SMT163","SMT164","SMT165","SMT171","SMT172","SMT173","SMT174",
+  # "SMT175","SMT181","SMT182","SMT183","SMT184","SMT185","SMT191","SMT192",
+  # "SMT193","SMT194","SMT195","SMT2101","SMT2102","SMT2103","SMT2104","SMT2105",
+  #   "SMT261","SMT262","SMT263","SMT264","SMT265","SMT271","SMT272","SMT273","SMT274",
+  #   "SMT275","SMT281","SMT282","SMT283",  "SMT284","SMT285","SMT291","SMT292","SMT293",
+  #   "SMT294","SMT295","SMT3101","SMT3102","SMT3103","SMT3104","SMT3105",
+  #   "SMT321","SMT322","SMT323","SMT324","SMT325","SMT341","SMT342",
+  #   "SMT343","SMT344","SMT345","SMT361","SMT362","SMT363","SMT364",
+  #   "SMT365","SMT371","SMT372","SMT373","SMT374","SMT375","SMT381",
+  #   "SMT382","SMT383","SMT384","SMT385","SMT391","SMT392","SMT393","SMT394","SMT395"]
+  newTriggersListValues = [getValue_(hdfFile,key="{}".format(itrigger)) for itrigger in newTriggersList]
   weighter = None
   # file_obj = tables.open_file(hdfFile, "r")
   file_obj = pd.HDFStore(hdfFile, "r")
@@ -239,11 +251,14 @@ def extractEvents_(hdfFile):
   else:
     simWeightList = list(np.zeros(len(runList)))
   H4aWeightList = getValue_(hdfFile,key="H4aWeight")
-  HLC6_5000List = getValue_(hdfFile,key="HLC6_5000")
+  if file_obj.__contains__("HLC6_5000"):
+    HLC6_5000List = getValue_(hdfFile,key="HLC6_5000")
+  elif file_obj.__contains__("HLC6"):
+    HLC6_5000List = getValue_(hdfFile,key="HLC6")
   if file_obj.__contains__("HG7_3000"):
     HG7_3000List = getValue_(hdfFile,key="HG7_3000")
-  else:
-    HG7_3000List = getValue_(hdfFile,key="tank7_3000")
+  elif file_obj.__contains__("HG7_3"):
+    HG7_3000List = getValue_(hdfFile,key="HG7_3")
   # tank6_5000List = getValue_(hdfFile,key="tank6_5000")
   # tank6_4000List = getValue_(hdfFile,key="tank6_4000")
   # tank6_3000List = getValue_(hdfFile,key="tank6_3000")
@@ -341,8 +356,8 @@ def extractEvents_(hdfFile):
     # thisEvt.addReco(zenithRecoList[nEvt],coreXRecoList[nEvt],coreYRecoList[nEvt],inclinedFilterList[nEvt])
     thisEvt.nStations = nStations[nEvt]
     thisEvt.nTanks = nTanks[nEvt]
-    # for itrigger,ivalue in zip(newTriggersList,newTriggersListValues):
-    #   setattr(thisEvt,itrigger,ivalue[nEvt])
+    for itrigger,ivalue in zip(newTriggersList,newTriggersListValues):
+      setattr(thisEvt,itrigger,ivalue[nEvt])
     # thisEvt.addDeltaTHLC(deltaTHLCList[nEvt])
     evtObjList.append(thisEvt)
   return evtObjList

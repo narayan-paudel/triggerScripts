@@ -3,7 +3,7 @@
 
 import os
 import sys
-from I3Tray import I3Tray, I3Units
+from icecube.icetray import I3Tray, I3Units
 from icecube.simprod import segments
 from icecube.simprod.util import simprodtray, arguments
 from icecube.simprod.util import ReadI3Summary, WriteI3Summary
@@ -42,7 +42,20 @@ exceptionTanks_LG = {26:61,67:63}
 # 123:(6,3000,"tank6"),124:(7,3000,"tank7"),125:(8,3000,"tank8"),126:(9,3000,"tank9"),127:(10,3000,"tank10"),
 # 133:(6,2000,"tank6"),134:(7,2000,"tank7"),135:(8,2000,"tank8"),136:(9,2000,"tank9"),137:(10,2000,"tank10")}
 
-ConfigIDMap = {102:(6,5000,"HLC6"),30043:(7,3000,"HG7")}
+# ConfigIDMap = {102:(6,5000,"HLC6"),30043:(7,3000,"HG7")}
+ConfigIDMap = {
+102:(6,5000,"hlc",3,"HLC6"),103:(4,5000,"hlc",3,"HLC4"),104:(2,5000,"hlc",3,"HLC2"),
+30043:(7,3000,"icetop-hg-slc",12,"HG7_3"),
+30051:(5,1000,"icetop-hg-slc",12,"HG5_1"),30052:(5,2000,"icetop-hg-slc",12,"HG5_2"),30053:(5,3000,"icetop-hg-slc",12,"HG5_3"),
+30054:(5,4000,"icetop-hg-slc",12,"HG5_4"),30055:(5,5000,"icetop-hg-slc",12,"HG5_5"),30056:(5,6000,"icetop-hg-slc",12,"HG5_6"),
+30061:(6,1000,"icetop-hg-slc",12,"HG6_1"),30062:(6,2000,"icetop-hg-slc",12,"HG6_2"),30063:(6,3000,"icetop-hg-slc",12,"HG6_3"),
+30064:(6,4000,"icetop-hg-slc",12,"HG6_4"),30065:(6,5000,"icetop-hg-slc",12,"HG6_5"),30066:(6,6000,"icetop-hg-slc",12,"HG6_6"),
+30071:(7,1000,"icetop-hg-slc",12,"HG7_1"),30072:(7,2000,"icetop-hg-slc",12,"HG7_2"),30073:(7,3000,"icetop-hg-slc",12,"HG7__3"),
+30074:(7,4000,"icetop-hg-slc",12,"HG7_4"),30075:(7,5000,"icetop-hg-slc",12,"HG7_5"),30076:(7,6000,"icetop-hg-slc",12,"HG7_6"),
+30081:(8,1000,"icetop-hg-slc",12,"HG8_1"),30082:(8,2000,"icetop-hg-slc",12,"HG8_2"),30083:(8,3000,"icetop-hg-slc",12,"HG8_3"),
+30084:(8,4000,"icetop-hg-slc",12,"HG8_4"),30085:(8,5000,"icetop-hg-slc",12,"HG8_5"),30086:(8,6000,"icetop-hg-slc",12,"HG8_6"),
+}
+
 #config id mapped with threshold,timewindow and label
 print("keys",ConfigIDMap.keys())
 
@@ -93,10 +106,9 @@ class TriggerCheck(icetray.I3Module):
     self.GlobalUntriggered = 0
     self.totalEvents = 0
 
-
-
   def checkTriggers(self,frame,triggerHierarchy,config_id):
-    trigLabel = ConfigIDMap[config_id][2]+"_"+str(ConfigIDMap[config_id][1])
+    # trigLabel = ConfigIDMap[config_id][2]+"_"+str(ConfigIDMap[config_id][1])
+    trigLabel = ConfigIDMap[config_id][4]
     if len(triggerHierarchy) == 0:
       frame[trigLabel] = dataclasses.I3Double(0)
     else:
@@ -106,9 +118,6 @@ class TriggerCheck(icetray.I3Module):
       else:
         frame[trigLabel] = dataclasses.I3Double(0)
     return frame
-
-
-
 
 
   def DAQ(self,frame):
@@ -1244,6 +1253,8 @@ tray.Add(hdfwriter.I3HDFWriter, 'hdfNull',
     "MCPrimary","I3EventHeader","I3TopInjectorInfo","HLC6_5000","HG7_3000","tank6_5000","tank6_4000","tank6_3000","tank6_2000",
     "tank7_5000","tank7_4000","tank7_3000","tank7_2000","tank8_5000","tank8_4000","tank8_3000","tank8_2000",
     "tank9_5000","tank9_4000","tank9_3000","tank9_2000","tank10_5000","tank10_4000","tank10_3000","tank10_2000",
+    "HG5_1","HG5_2","HG5_3","HG5_4","HG5_5","HG5_6","HG6_1","HG6_2","HG6_3","HG6_4","HG6_5","HG6_6","HG7_1",
+    "HG7_2","HG7_3","HG7_4","HG7_5","HG7_6","HG7__3","HG8_1","HG8_2","HG8_3","HG8_4","HG8_5","HG8_6","HLC2","HLC4","HLC6",
     "OfflineIceTopHLCTankPulses","OfflineIceTopSLCTankPulses",
     "OfflineIceTopSLCTankPulsesTotalCharge","OfflineIceTopHLCTankPulsesTotalCharge","OfflineIceTopHLCTankPulsesTotalHit",
     "OfflineIceTopSLCTankPulsesTotalHit","OfflineIceTopHLCVEMPulses","OfflineIceTopSLCVEMPulses","OfflineIceTopSLCVEMPulsesTotalCharge",

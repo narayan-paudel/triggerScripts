@@ -55,6 +55,18 @@ GCD_data="/home/enpaudel/icecube/triggerStudy/background/i3_daq/SPSSmokeTest/PFG
 
 # tankConfigIDMap = {103:(4,5000,"HLC"),104:(2,5000,"HLC"),
 # }
+#for additional setting of triggers that were tested
+#triggerConfigID:(threshold,timeWindow,hitSubscription,domset,name)
+tankConfigIDMap = {103:(4,5000,"hlc",3,"HLC4"),104:(2,5000,"hlc",3,"HLC2"),
+30051:(5,1000,"icetop-hg-slc",12,"HG5_1"),30052:(5,2000,"icetop-hg-slc",12,"HG5_2"),30053:(5,3000,"icetop-hg-slc",12,"HG5_3"),
+30054:(5,4000,"icetop-hg-slc",12,"HG5_4"),30055:(5,5000,"icetop-hg-slc",12,"HG5_5"),30056:(5,6000,"icetop-hg-slc",12,"HG5_6"),
+30061:(6,1000,"icetop-hg-slc",12,"HG6_1"),30062:(6,2000,"icetop-hg-slc",12,"HG6_2"),30063:(6,3000,"icetop-hg-slc",12,"HG6_3"),
+30064:(6,4000,"icetop-hg-slc",12,"HG6_4"),30065:(6,5000,"icetop-hg-slc",12,"HG6_5"),30066:(6,6000,"icetop-hg-slc",12,"HG6_6"),
+30071:(7,1000,"icetop-hg-slc",12,"HG7_1"),30072:(7,2000,"icetop-hg-slc",12,"HG7_2"),30073:(7,3000,"icetop-hg-slc",12,"HG7_3"),
+30074:(7,4000,"icetop-hg-slc",12,"HG7_4"),30075:(7,5000,"icetop-hg-slc",12,"HG7_5"),30076:(7,6000,"icetop-hg-slc",12,"HG7_6"),
+30081:(8,1000,"icetop-hg-slc",12,"HG8_1"),30082:(8,2000,"icetop-hg-slc",12,"HG8_2"),30083:(8,3000,"icetop-hg-slc",12,"HG8_3"),
+30084:(8,4000,"icetop-hg-slc",12,"HG8_4"),30085:(8,5000,"icetop-hg-slc",12,"HG8_5"),30086:(8,6000,"icetop-hg-slc",12,"HG8_6"),
+}
 
 def updateConfigID(smtkey,configID):
   """
@@ -71,6 +83,8 @@ def addTrigger(status,tankConfigIDMap,keyTank,triggerTank):
     keyTank.source = dataclasses.ICE_TOP
     triggerTank.trigger_settings["threshold"] = str(tankConfigIDMap[iConfigID][0])
     triggerTank.trigger_settings["timeWindow"] = str(tankConfigIDMap[iConfigID][1])
+    triggerTank.trigger_settings["hitSubscription"] = str(tankConfigIDMap[iConfigID][2])
+    triggerTank.trigger_settings["domSet"] = str(tankConfigIDMap[iConfigID][3])
     status[keyTank] = triggerTank
   return status
 
@@ -144,6 +158,8 @@ def addIT7HGTrigger(GCD_data, GCD_sim):
       outframe[ikey].trigger_status[hg7Key] = hg7Trig
   return outframe
 
+
+
 domset_definitions = {}
 def IceTopDoms(omkey, omgeo):
   """selects IceTop doms"""
@@ -181,8 +197,8 @@ def addDOMSets(frame,domSetsName,domset_definitions):
 def checkTankTrigger(frame):
   detStatus = frame["I3DetectorStatus"]
   for key,trigger in detStatus.trigger_status:
-    if key.config_id in [102,30043]:
-    # if key.config_id in tankConfigIDMap.keys():
+    # if key.config_id in [102,30043]:
+    if key.config_id in tankConfigIDMap.keys():
       print("key",key)
       print("threshold",trigger.trigger_settings["threshold"])
       print("timeWindow",trigger.trigger_settings["timeWindow"])
@@ -195,6 +211,7 @@ def checkTankTrigger(frame):
       print("trigStatus",trigger,trigger.trigger_settings.get('timeWindow', 'N/A'))
       print("trigStatus",trigger,trigger.trigger_settings.get('domSet', 'N/A'))
       print("trigStatus",trigger,trigger.trigger_settings.get('', 'N/A'))
+      print("trigStatus",trigger,trigger.trigger_settings.get('hitSubscription', 'N/A'))
 
 GCDTankTrig = dataio.I3File("{}".format(args.output), "w")
 # GCDTankTrig = dataio.I3File("/data/user/enpaudel/triggerStudy/simFiles/modified_GCD/../GeoCalibDetectorStatus_2020.Run135057.Pass2_V0_Snow210305NoDomSetTankTrigAll.i3.gz", "w")
@@ -202,6 +219,7 @@ for frame in dataio.I3File(args.input,'r'):
   if frame.Stop == icetray.I3Frame.DetectorStatus:
     outframe = addIT7HGTrigger(GCD_data,args.input)
     outframe = addDOMSets(outframe,"DOMSets",domset_definitions)
+    outframe = addTankTrigger(outframe)
     GCDTankTrig.push(outframe)
   else:
     GCDTankTrig.push(frame)

@@ -5,7 +5,8 @@ BASEDIR=$HERE/
 eval `/cvmfs/icecube.opensciencegrid.org/py3-v4.1.1/setup.sh`
 
 PYTHON_SCRIPT=$BASEDIR/triggerProcClean.py
-I3BASE=/data/user/enpaudel/icecube_software/icetray_current
+# I3BASE=/data/user/enpaudel/icecube_software/icetray_current
+I3BASE=/data/user/enpaudel/icecube_software/icetray_work
 I3SRC=$I3BASE/src
 I3BUILD=$I3BASE/build
 ICETRAY_ENV=$I3BUILD/env-shell.sh
