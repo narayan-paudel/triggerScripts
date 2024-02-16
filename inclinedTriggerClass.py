@@ -1450,14 +1450,14 @@ def plotTrigEfficiency(evtList,energyBins,triggerType,containment,weighting):
       if weighting == False:
         totalEvts = len(evtEBin)
         # sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
-        triggerList = [ievt for ievt in evtEBin if abs(int(getattr(ievt,str(itrigger)))-1)<0.01]
+        triggerList = [ievt for ievt in evtEBin if abs(int(getattr(ievt,str(triggerType)))-1)<0.01]
         trigEvts = len(triggerList)
         trigEff = triggerEfficiency(trigEvts,totalEvts)
         nPass = trigEvts
         nFail = totalEvts-trigEvts
       if weighting == True:
         totalEvts = sum(weights)
-        triggerList = [ievt.H4aWeight for ievt in evtEBin if abs(int(getattr(ievt,str(itrigger)))-1)<0.01]
+        triggerList = [ievt.H4aWeight for ievt in evtEBin if abs(int(getattr(ievt,str(triggerType)))-1)<0.01]
         trigEvts = sum(triggerList)
         trigEff = triggerEfficiency(trigEvts,totalEvts)
         nPass = trigEff * len(weights)

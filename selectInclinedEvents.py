@@ -17,7 +17,7 @@ args = parser.parse_args()
 
 inclinationCut = 60 #degree
 energyCut = 10**16 #eV
-fileDir = "/home/enpaudel/dataExp/dataSetClean/"
+fileDir = "/data/user/enpaudel/triggerStudy/simFiles/dataSetClean1_6/"
 
 outputDirIncl = "/home/enpaudel/dataExp/dataSetClean_InclinedHE/"
 outputDirVert = "/home/enpaudel/dataExp/dataSetClean_VerticalLE/"

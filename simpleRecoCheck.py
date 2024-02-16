@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
+
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["mathtext.fontset"] = "dejavuserif"
 plt.rcParams.update({'font.size': 20})
@@ -30,9 +31,11 @@ vertEvents = args.vertEvents
 if not vertEvents:
   fileDir = "/home/enpaudel/dataExp/dataSetClean_InclinedHE/"
   fileName = "combinedDeltaTIncl"
+  plotSuffix = "Incl"
 else:
   fileDir = "/home/enpaudel/dataExp/dataSetClean_VerticalLE/"
   fileName = "combinedDeltaTVert"
+  plotSuffix = "Vert"
 
 inFile = "/home/enpaudel/dataExp/dataSetClean_InclinedHE/FeDAT000001GenDetFiltProcUniqueCleanVEMEvts.i3.gz"
 fileList = sorted(glob.glob(fileDir+"*.i3.*"))
@@ -47,96 +50,86 @@ exceptionTanks_LG = {26:61,67:63}
 outputDir = "/home/enpaudel/dataExp/dataSetClean_InclinedHE/"
 plotFolder = "/home/enpaudel/icecube/triggerStudy/plots/"
 
-# def test7HG(frame):
-#   print(frame["tank7_3000"])
-#   print("test",frame["tank7_3000"]>0)
-#   return frame["tank7_3000"]>0
+def openingAngle(theta1,phi1,theta2,phi2):
+  return np.arccos(np.sin(theta1)*np.sin(theta2)*np.cos(phi1-phi2)+np.cos(theta1)*np.cos(theta2))
 
 def test7HG(frame):
   return frame["HG7_3"]>0
 
+def excludeITSMT(frame):
+  return frame["HLC6"]<1
 
 
-class timeCheck(icetray.I3Module):
+
+class zenithCheck(icetray.I3Module):
   def __init__(self,ctx):
     icetray.I3Module.__init__(self,ctx)
-    self.AddParameter("pulseseriesList","ps",["IceTopTankPulses"])
   def Configure(self):
-    self.pulseseriesList = self.GetParameter("pulseseriesList")
-    self.hitTimes_diff = np.array([])
-    self.hitTimes_duration = []
+    self.openingAngleList = []
+    self.r_diffList = []
 
 
-  def DAQ(self,frame):
+  def Physics(self,frame):
     # if int(frame["I3EventHeader"].event_id) == int(8351):
-    hitTimesEvent = np.array([])
-    for pulseseries in self.pulseseriesList:
-      psm = frame[pulseseries]
-      if psm.__class__ == dataclasses.I3RecoPulseSeriesMapMask or psm.__class__ == dataclasses.I3RecoPulseSeriesMap or psm.__class__ == dataclasses.I3RecoPulseSeriesMapUnion:
-        psm = dataclasses.I3RecoPulseSeriesMap.from_frame(frame, pulseseries)
-      hit_stations = []
-      hit_omkeys = []
-      for om,pulses in psm:
-        for pulse in pulses:
-          hit_stations.append(om[0])
-          hit_omkeys.append(om)
-          break
-      hit_stations = list(set(hit_stations))
-      hit_tanks = []
-      for istation in hit_stations:
-        tanks = [iom for iom in hit_omkeys if (iom[0] == istation and iom[0] not in exceptionTanks_HG.keys()) and (iom[1] == 61 or iom[1]== 63)  or 
-        (iom[0] == istation and iom[0] in [26,39,74] and (iom[1] == 62 or iom[1]== 63) ) or (iom[0] == istation and iom[0] == 67 and (iom[1] == 61 or iom[1] == 64) )]
-        pulses = [psm[om] for om in tanks]
-        hit_tanks += tanks
-        # ipulses = [ipulse for ipulse in pulse for pulse in pulses]
-        hit_times = np.sort([pulse[0].time for pulse in pulses])
-        # hit_times = [ipulse.time for pulse in pulses for ipulse in pulse]
-        hitTimesEvent = np.concatenate((hitTimesEvent,hit_times))
-    hitTimesEvent = np.sort(hitTimesEvent)
-    if len(hitTimesEvent) >= 2:
-      deltaT = np.diff(hitTimesEvent)
-      self.hitTimes_diff = np.concatenate((self.hitTimes_diff,deltaT))
-      self.hitTimes_duration.append(hitTimesEvent[-1]-hitTimesEvent[0])
+    xcore = frame["MCPrimary"].pos.x
+    ycore = frame["MCPrimary"].pos.y
+    xcore_reco = frame["ShowerCOG"].pos.x
+    ycore_reco = frame["ShowerCOG"].pos.y
+    r_diff = np.sqrt((xcore-xcore_reco)**2+(ycore-ycore_reco)**2)/I3Units.m
+    # print("cores",(xcore,ycore),(xcore_reco,ycore_reco),(xcore-xcore_reco,ycore-ycore_reco),r_diff)
+    zenith_true = frame["MCPrimary"].dir.zenith
+    azimuth_true = frame["MCPrimary"].dir.azimuth
+    zenith_reco = frame["ShowerPlane"].dir.zenith
+    azimuth_reco = frame["ShowerPlane"].dir.azimuth
+    openAngle = openingAngle(zenith_true,azimuth_true,zenith_reco,azimuth_reco)
+    # print("zenith True",zenith_reco,zenith_true,np.arcsin(np.sqrt(self.zenithBin[0])),np.arcsin(np.sqrt(self.zenithBin[1])))
+    # if np.arcsin(np.sqrt(self.zenithBin[0])) <= zenith_true < np.arcsin(np.sqrt(self.zenithBin[1])) and not np.isnan(openAngle):
+    self.openingAngleList.append(openAngle*180.0/np.pi)
+    self.r_diffList.append(r_diff)
 
   def Finish(self):
     self.fig = plt.figure(figsize=(8,5))
     gs = gridspec.GridSpec(nrows=1,ncols=1)
     self.ax = self.fig.add_subplot(gs[0])
-    # bins = np.linspace(0,10000,10001)
-    bins = np.linspace(-1,2000,2002)
+    # print(self.zenithDiff,min(self.zenithDiff),max(self.zenithDiff))
+    # bins = np.linspace(min(self.zenithDiff),max(self.zenithDiff),80)
+    # self.ax.hist(self.zenithDiff,bins=bins,histtype="step")
+    # bins = np.linspace(min(self.openingAngleList),max(self.openingAngleList),80)
+    self.openingAngleList = [ielt for ielt in self.openingAngleList if not np.isnan(ielt)]
+    bins = np.linspace(-1,100,102)
     # print(self.openingAngleList,min(self.openingAngleList),max(self.openingAngleList))
-    self.ax.hist(self.hitTimes_diff,bins=bins,histtype="step",label=r"",lw=2.5)
-    # self.ax.hist(self.hitTimes_diff,histtype="step",label=r"",lw=2.5)
+    p68 = np.percentile(self.openingAngleList,68)
+    print(p68)
+    self.ax.hist(self.openingAngleList,bins=bins,histtype="step",label=r"",lw=2.5)
+    self.ax.axvline(p68,ymin=0,ymax=1,color="orange",ls="--",lw=2.5,label=r"p$_{{{:.0f}}}$={:.1f}".format(68,p68))
     self.ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
-    # self.ax.set_xlabel(r"$\psi$ [$^{\circ}$]", fontsize=22)
-    self.ax.set_xlabel(r"time [ns]", fontsize=22)
+    self.ax.set_xlabel(r"$\psi$ [$^{\circ}$]", fontsize=22)
     self.ax.set_ylabel("count", fontsize=22)
-    # self.ax.set_xlim(0,100)
-    # self.ax.set_ylim(10**0,3*10**4)
+    self.ax.set_xlim(0,100)
+    # self.ax.set_ylim(0,4300)
     self.ax.set_yscale("log")
     self.ax.legend(fontsize=18)
-    plt.savefig(plotFolder+"/"+fileName+".png",transparent=False,bbox_inches='tight')
-    plt.savefig(plotFolder+"/"+fileName+".pdf",transparent=False,bbox_inches='tight')
+    plt.savefig(plotFolder+"/openAngleHG7Only"+plotSuffix+".png",transparent=False,bbox_inches='tight')
+    plt.savefig(plotFolder+"/openAngleHG7Only"+plotSuffix+".pdf",transparent=False,bbox_inches='tight')
     plt.close()
+    #####################################################
+    #####################################################
     self.fig = plt.figure(figsize=(8,5))
     gs = gridspec.GridSpec(nrows=1,ncols=1)
     self.ax = self.fig.add_subplot(gs[0])
-    # bins = np.linspace(0,10000,10001)
-    bins = np.linspace(-1,15000,15002)
-    # print(self.openingAngleList,min(self.openingAngleList),max(self.openingAngleList))
-    self.ax.hist(self.hitTimes_duration,bins=bins,histtype="step",label=r"",lw=2.5)
-    # self.ax.hist(self.hitTimes_duration,histtype="step",label=r"",lw=2.5)
+    p68 = np.percentile(self.r_diffList,68)
+    print(p68)
+    bins = np.linspace(-1,2000,2002)
+    # self.ax.hist(self.r_diffList,histtype="step",label=r"",lw=2.5)
+    self.ax.hist(self.r_diffList,bins=bins,histtype="step",label=r"",lw=2.5)
+    self.ax.axvline(p68,ymin=0,ymax=1,color="orange",ls="--",lw=2.5,label=r"p$_{{{:.0f}}}$={:.1f}".format(68,p68))
     self.ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
-    # self.ax.set_xlabel(r"$\psi$ [$^{\circ}$]", fontsize=22)
-    self.ax.set_xlabel(r"time [ns]", fontsize=22)
+    self.ax.set_xlabel(r"abs(r$_{true}$-r$_{reco}$) [m]", fontsize=22)
     self.ax.set_ylabel("count", fontsize=22)
-    # self.ax.set_xlim(0,100)
-    # self.ax.set_ylim(10**0,3*10**4)
     self.ax.set_yscale("log")
-    self.ax.legend(fontsize=18)
-    plt.savefig(plotFolder+"/"+fileName+"Dur.png",transparent=False,bbox_inches='tight')
-    plt.savefig(plotFolder+"/"+fileName+"Dur.pdf",transparent=False,bbox_inches='tight')
-    plt.close()
+    self.ax.legend()
+    plt.savefig(plotFolder+"/coreDiffHG7Only"+plotSuffix+".png",transparent=False,bbox_inches='tight')
+    plt.savefig(plotFolder+"/coreDiffHG7Only"+plotSuffix+".pdf",transparent=False,bbox_inches='tight')
 
 
 
@@ -154,6 +147,10 @@ tray.AddModule(test7HG,"7HG",
               streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
               )
 
+tray.AddModule(excludeITSMT,"notITSMT",
+              streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+              )
+
 def Unify(frame, Keys, Output):
   """
   Simple utility to merge RecoPulseSerieses into a single Union.
@@ -166,8 +163,7 @@ tray.Add(Unify,"UnionHLCSLC",
   Output='IceTopTankPulses',
   streams = [icetray.I3Frame.DAQ],
   )
-tray.AddModule(timeCheck,"t_hits",
-            pulseseriesList=["IceTopTankPulses"],
+tray.AddModule(zenithCheck,"zhits",
             # streams = [icetray.I3Frame.DAQ],
             )
 
