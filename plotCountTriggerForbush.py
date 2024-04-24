@@ -63,8 +63,10 @@ class TriggerRate(icetray.I3Module):
     self.SMTTriggersHLC4 = {}
     self.HG7TriggersHLC2 = {}
     self.SMTTriggersHLC2 = {}
-    self.dictList = [self.HG7Triggers,self.HG7TriggersHLC6,self.HG7TriggersHLC4,self.HG7TriggersHLC2,self.SMTTriggers,self.SMTTriggersHLC6,self.SMTTriggersHLC4,self.SMTTriggersHLC2]
-    self.dictListName = ["HG7Triggers","HG7TriggersHLC6","HG7TriggersHLC4","HG7TriggersHLC2","SMTTriggers","SMTTriggersHLC6","SMTTriggersHLC4","SMTTriggersHLC2"]
+    self.HG7TriggersHLC0 = {}
+    self.SMTTriggersHLC0 = {}
+    self.dictList = [self.HG7Triggers,self.HG7TriggersHLC6,self.HG7TriggersHLC4,self.HG7TriggersHLC2,self.HG7TriggersHLC0,self.SMTTriggers,self.SMTTriggersHLC6,self.SMTTriggersHLC4,self.SMTTriggersHLC2,self.SMTTriggersHLC0]
+    self.dictListName = ["HG7Triggers","HG7TriggersHLC6","HG7TriggersHLC4","HG7TriggersHLC2","HG7TriggersHLC0","SMTTriggers","SMTTriggersHLC6","SMTTriggersHLC4","SMTTriggersHLC2","SMTTriggersHLC0"]
     # self.dictList = [self.HG7Triggers,self.HG7TriggersHLC6,self.HG7TriggersHLC4,self.HG7TriggersHLC2]
     # self.dictListName = ["HG7Triggers","HG7TriggersHLC6","HG7TriggersHLC4","HG7TriggersHLC2"]
 
@@ -108,28 +110,33 @@ class TriggerRate(icetray.I3Module):
         for trigger in frame['DSTTriggers'].unpack(frame['I3DetectorStatus']):
             if trigger.key.config_id == 102 and trigger.fired:
                 self.SMTTriggers[runID] += 1
-                if NCh_HLC >= 2:
+                if NCh_HLC < 1:
+                  self.SMTTriggersHLC0[runID] += 1
+                if NCh_HLC == 2:
                   self.SMTTriggersHLC2[runID] += 1
-                  if NCh_HLC >= 4:
-                    self.SMTTriggersHLC4[runID] += 1
-                    if NCh_HLC >= 6:
-                      self.SMTTriggersHLC6[runID] += 1
+                if NCh_HLC == 4:
+                  self.SMTTriggersHLC4[runID] += 1
+                if NCh_HLC >= 6:
+                  self.SMTTriggersHLC6[runID] += 1
             if trigger.key.config_id == 30043 and trigger.fired:
                 self.HG7Triggers[runID] += 1
-                if NCh_HLC >= 2:
+                if NCh_HLC < 1:
+                  self.HG7TriggersHLC0[runID] += 1
+                if NCh_HLC == 2:
                   self.HG7TriggersHLC2[runID] += 1
-                  if NCh_HLC >= 4:
-                    self.HG7TriggersHLC4[runID] += 1
-                    if NCh_HLC >= 6:
-                      self.HG7TriggersHLC6[runID] += 1
+                if NCh_HLC == 4:
+                  self.HG7TriggersHLC4[runID] += 1
+                if NCh_HLC >= 6:
+                  self.HG7TriggersHLC6[runID] += 1
   def Finish(self):
     print(self.HG7Triggers)
     runList = [139196,139197,139198]
     for runID in runList:      
       print("{}  HG7 {:.1f} Hz, SMT {:.1f} Hz".format(runID,self.HG7Triggers[runID]/runDur[runID],self.SMTTriggers[runID]/runDur[runID]))
-      print("{}  HG7 {:.1f} Hz, SMT {:.1f} Hz".format(runID,self.HG7TriggersHLC6[runID]/runDur[runID],self.SMTTriggersHLC6[runID]/runDur[runID]))
-      print("{}  HG7 {:.1f} Hz, SMT {:.1f} Hz".format(runID,self.HG7TriggersHLC4[runID]/runDur[runID],self.SMTTriggersHLC4[runID]/runDur[runID]))
-      print("{}  HG7 {:.1f} Hz, SMT {:.1f} Hz".format(runID,self.HG7TriggersHLC2[runID]/runDur[runID],self.SMTTriggersHLC2[runID]/runDur[runID]))
+      print("{} 6 HLC HG7 {:.1f} Hz, SMT {:.1f} Hz".format(runID,self.HG7TriggersHLC6[runID]/runDur[runID],self.SMTTriggersHLC6[runID]/runDur[runID]))
+      print("{} 4 HLC HG7 {:.1f} Hz, SMT {:.1f} Hz".format(runID,self.HG7TriggersHLC4[runID]/runDur[runID],self.SMTTriggersHLC4[runID]/runDur[runID]))
+      print("{} 2 HLC HG7 {:.1f} Hz, SMT {:.1f} Hz".format(runID,self.HG7TriggersHLC2[runID]/runDur[runID],self.SMTTriggersHLC2[runID]/runDur[runID]))
+      print("{} 0 HLC HG7 {:.1f} Hz, SMT {:.1f} Hz".format(runID,self.HG7TriggersHLC0[runID]/runDur[runID],self.SMTTriggersHLC0[runID]/runDur[runID]))
       with open('/data/user/enpaudel/triggerStudy/triggerRateForbush{}.txt'.format(runID), 'a+') as f:
         f.write('{} {} {} {} {} {} {} {}'.format(runID,self.HG7Triggers[runID],self.SMTTriggers[runID],self.HG7TriggersHLC6[runID],self.SMTTriggersHLC6[runID],self.HG7TriggersHLC4[runID],self.SMTTriggersHLC4[runID],self.HG7TriggersHLC2[runID],self.SMTTriggersHLC2[runID]))
         f.write("\n")
