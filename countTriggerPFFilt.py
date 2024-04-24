@@ -10,10 +10,10 @@ import subprocess
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--input',"-i",nargs="+",type=str,
-  default="/home/enpaudel/dataExp/run2023/IT7HGTrig/PFFilt_PhysicsFiltering_Run00138616_Subrun00000000_00000197_7HG.i3.gz",
+  default="/data/exp/IceCube/2023/filtered/PFFilt/1231/PFFilt_PhysicsFiltering_Run00138807_Subrun00000000_00000043.tar.bz2",
   help="input data GCD for IceTop")
 parser.add_argument('--GCD',"-g",type=str,
-  default="/home/enpaudel/dataExp/run2023/GCD/PFGCD_Run00138616_Subrun00000000.i3.gz",help="GCD file")
+  default="/home/enpaudel/dataExp/run2023/GCD/PFGCD_Run00138807_Subrun00000000.i3.gz",help="GCD file")
 args = parser.parse_args()
 
 import numpy as np
@@ -27,6 +27,10 @@ inputList = args.input
 sub_run = re.findall(r'\d+',args.input[0].split("/")[-1])[2]
 # sub_run = args.input[0].split("Subrun00000000_")[-1].split(".")[0]
 # print("sub_run",sub_run)
+filename = args.input[0].split("/")[-1]
+print("filename",filename)
+# outputDir = "/data/sim/IceTop/2023/generated/untriggered/run2023/IceTopTrig/"
+outputDir = "/data/sim/IceTop/2023/generated/untriggered/run2023/forbush/"
 
 class TriggerRate(icetray.I3Module):
   def __init__(self,ctx):
@@ -47,9 +51,22 @@ class TriggerRate(icetray.I3Module):
             if trigger.key.config_id == 30043 and trigger.fired:
                 self.HG7Triggers += 1
   def Finish(self):
-    with open('/data/user/enpaudel/triggerStudy/triggerRate{}.txt'.format(self.runID), 'a+') as f:
+    # with open('/data/user/enpaudel/triggerStudy/triggerRate{}.txt'.format(self.runID), 'a+') as f:
+    with open('/data/user/enpaudel/triggerStudy/triggerRateForbush{}.txt'.format(self.runID), 'a+') as f:
       f.write('{} {} {} {}'.format(self.runID,sub_run,self.HG7Triggers,self.HLCTriggers))
       f.write("\n")
+
+def selectIceTopTrigger(frame):
+  hasIT = False
+  if frame.Has("DSTTriggers"):
+    triggerHierarchy = frame['DSTTriggers'].unpack(frame['I3DetectorStatus'])
+    frame["triggerHierarchy"] = triggerHierarchy
+    if len(triggerHierarchy) > 0:
+      icetop_triggers = [t for t in triggerHierarchy if t.key.source == dataclasses.ICE_TOP and t.fired]
+      if len(icetop_triggers) > 0:
+        hasIT = True
+  return hasIT
+
 
 
 
@@ -59,9 +76,19 @@ tray.AddModule("I3Reader","reader",
               # filenameList=inputList[0],
               # filename=GCD,
               )
-tray.AddModule(TriggerRate, "rT",
+# tray.AddModule(TriggerRate, "rT",
+#             # GCD=GCD,
+#             # Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
+#             )
+tray.AddModule(selectIceTopTrigger, "ITTrig",
             # GCD=GCD,
-            # Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
+            Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
             )
+
+tray.AddModule("I3Writer","i3writer",
+            filename=str(outputDir)+filename.split("/")[-1].split(".")[0] + ".i3.gz",
+            streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+            )
+
 tray.Execute()
 tray.Finish()

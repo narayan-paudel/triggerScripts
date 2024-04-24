@@ -79,7 +79,8 @@ energyCut = 10**16 #eV
 exceptionTanks_HG = {39:62,26:62,67:64,74:62}
 exceptionTanks_LG = {26:61,67:63}
 
-outputDir = "/home/enpaudel/dataExp/dataSetCleanFilter/"
+outputDir = "/data/sim/IceTop/2023/generated/untriggered/dataSetCleanFilter/"
+# outputDir = "/data/sim/IceTop/2023/generated/untriggered/testFile/"
 plotFolder = "/home/enpaudel/icecube/triggerStudy/plots/"
 
 def openingAngle(theta1,phi1,theta2,phi2):
@@ -489,7 +490,7 @@ tray.AddModule(PhysicsCopyTriggers,name + '_IceTopTrigCopy',
 from icecube.filterscripts.icetopinclinedfilter import IceTopInclinedFilter
 
 tray.AddSegment(IceTopInclinedFilter, "InclinedFilter",
-                zenithCut = 45,
+                zenithCut = 45, #in degree use I3Units,
                 If = which_split(split_name="IceTopSplitIncl")
                 )
 # make random service
@@ -514,7 +515,8 @@ tray.AddModule("OrPframeFilterMasks", "make_q_filtermask",
 
 
 frame_keeps = ["CleanedTankPulses","FilterMask","I3TriggerHierarchy","IceTopIncl_24",
-"ShowerCOGIncl","ShowerPlaneIncl","ShowerPlaneInclParams","tank7_3000","QTriggerHierarchy","QFilterMask","I3EventHeader","IceTopHLCVEMPulses","IceTopSLCVEMPulses",
+"ShowerCOGIncl","ShowerPlaneIncl","ShowerPlaneInclParams","tank7_3000","QTriggerHierarchy",
+"QFilterMask","I3EventHeader","IceTopHLCVEMPulses","IceTopSLCVEMPulses",
 "IceTopPulses","IceTopVEMPulses","QFilterMask","QTriggerHierarchy","SLCTankPulses",
 "TankPulses","OfflineIceTopSLCVEMPulsesCleanTimeCleanCharge","OfflineIceTopSLCTankPulsesCleanTimeCleanCharge",
 "OfflineIceTopHLCVEMPulsesCleanTimeCleanCharge","OfflineIceTopHLCTankPulsesCleanTimeCleanCharge",
@@ -523,6 +525,24 @@ frame_keeps = ["CleanedTankPulses","FilterMask","I3TriggerHierarchy","IceTopIncl
 tray.AddModule("Keep","frame_keeps",
   keys=frame_keeps,
   If=lambda frame:frame.Stop in [frame.DAQ,frame.Physics])
+
+#############################laputop reco###############################
+from icecube import icetop_Level3_scripts
+from icecube.icetop_Level3_scripts.segments.level3_IceTop import level3_IceTop
+from icecube.recclasses import I3LaputopParams, LaputopParameter as Par
+
+snowLambda = 2.6
+name = ""
+detector = "IC86"
+# SnowFactor=icetop_globals.SnowFactors[detector]
+SnowFactor = snowLambda
+
+tray.AddSegment(icetop_Level3_scripts.segments.level2_IceTop.OfflineIceTopReco, name+'_RTOfflineIceTopReco',
+              Pulses="CleanedTankPulses",
+              Excluded="ClusterCleaningExcludedTanks_both",
+              SnowFactor=SnowFactor,
+              Detector=detector
+              )
 
 
 
