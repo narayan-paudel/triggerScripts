@@ -60,6 +60,7 @@ for ipickle in pickleFiles:
     evtList += ievtList
 firstEvent = evtList[0]
 print("first event",dir(firstEvent))
+evtList = evtList
 
 
 
@@ -165,14 +166,23 @@ triggerListSelectDict = {"HG7_3":"IceTop7HG","HLC6":"IceTopSMT"}
 # "HG7_5":r"7 tanks 5 $\mu$s","HG7_6":r"7 tanks 6 $\mu$s","HG8_1":r"8 tanks 1 $\mu$s","HG8_2":r"8 tanks 2 $\mu$s",
 # "HG8_3":r"8 tanks 3 $\mu$s","HG8_4":r"8 tanks 4 $\mu$s","HG8_5":r"8 tanks 5 $\mu$s","HG8_6":r"8 tanks 6 $\mu$s",
 # "HLC2":r"1 sta 5 mu$\s"$,"HLC4":r"2 sta 5 mu$\s"$,"HLC6":r"3 sta 5 mu$\s"$}
+##################if full triggers is needed#######################
+# triggerListSelectDictTanksFull = {
+# "HG5_6":r"5 tanks 6 $\mu$s","HG6_6":r"6 tanks 6 $\mu$s","HG7_6":r"7 tanks 6 $\mu$s","HG8_6":r"8 tanks 6 $\mu$s",
+# "HG5_5":r"5 tanks 5 $\mu$s","HG6_5":r"6 tanks 5 $\mu$s","HG7_5":r"7 tanks 5 $\mu$s","HG8_5":r"8 tanks 5 $\mu$s",
+# "HG5_4":r"5 tanks 4 $\mu$s","HG6_4":r"6 tanks 4 $\mu$s","HG7_4":r"7 tanks 4 $\mu$s","HG8_4":r"8 tanks 4 $\mu$s",
+# "HG5_3":r"5 tanks 3 $\mu$s","HG6_3":r"6 tanks 3 $\mu$s","HG7_3":r"7 tanks 3 $\mu$s","HG8_3":r"8 tanks 3 $\mu$s",
+# "HG5_2":r"5 tanks 2 $\mu$s","HG6_2":r"6 tanks 2 $\mu$s","HG7_2":r"7 tanks 2 $\mu$s","HG8_2":r"8 tanks 2 $\mu$s",
+# "HG5_1":r"5 tanks 1 $\mu$s","HG6_1":r"6 tanks 1 $\mu$s","HG7_1":r"7 tanks 1 $\mu$s","HG8_1":r"8 tanks 1 $\mu$s",
+# "HLC2":r"1 sta 5 $\mu$s","HLC4":r"2 sta 5 $\mu$s","HLC6":r"3 sta 5 $\mu$s"}
+########################for selected triggers ######################
+# triggerListSelectDictTanksFull = {
+# "HG7_3":r"7 tanks 3 $\mu$s","HLC6":r"3 sta 5 $\mu$s"}
+###########################proper trigger name################
 triggerListSelectDictTanksFull = {
-"HG5_6":r"5 tanks 6 $\mu$s","HG6_6":r"6 tanks 6 $\mu$s","HG7_6":r"7 tanks 6 $\mu$s","HG8_6":r"8 tanks 6 $\mu$s",
-"HG5_5":r"5 tanks 5 $\mu$s","HG6_5":r"6 tanks 5 $\mu$s","HG7_5":r"7 tanks 5 $\mu$s","HG8_5":r"8 tanks 5 $\mu$s",
-"HG5_4":r"5 tanks 4 $\mu$s","HG6_4":r"6 tanks 4 $\mu$s","HG7_4":r"7 tanks 4 $\mu$s","HG8_4":r"8 tanks 4 $\mu$s",
-"HG5_3":r"5 tanks 3 $\mu$s","HG6_3":r"6 tanks 3 $\mu$s","HG7_3":r"7 tanks 3 $\mu$s","HG8_3":r"8 tanks 3 $\mu$s",
-"HG5_2":r"5 tanks 2 $\mu$s","HG6_2":r"6 tanks 2 $\mu$s","HG7_2":r"7 tanks 2 $\mu$s","HG8_2":r"8 tanks 2 $\mu$s",
-"HG5_1":r"5 tanks 1 $\mu$s","HG6_1":r"6 tanks 1 $\mu$s","HG7_1":r"7 tanks 1 $\mu$s","HG8_1":r"8 tanks 1 $\mu$s",
-"HLC2":r"1 sta 5 $\mu$s","HLC4":r"2 sta 5 $\mu$s","HLC6":r"3 sta 5 $\mu$s"}
+"HG7_3":r"7 HG hits 3 $\mu$s","HLC6":r"6 HLC hits 5 $\mu$s"}
+
+
 
 # triggerListSelectDict = {
 # # "HG5_6":r"5 tanks 6 $\mu$s","HG6_6":r"6 tanks 6 $\mu$s","HG7_6":r"7 tanks 6 $\mu$s","HG8_6":r"8 tanks 6 $\mu$s",
@@ -197,12 +207,15 @@ triggerListSelectDictTanksFull = {
 # "HG7_1":r"7 tanks 1 $\mu$s",
 # }
 
+# triggerListSelectDictTanks = {
+# "HG6_4":r"6 tanks 4 $\mu$s","HG6_3":r"6 tanks 3 $\mu$s","HG6_2":r"6 tanks 2 $\mu$s",
+# "HG7_4":r"7 tanks 4 $\mu$s","HG7_3":r"7 tanks 3 $\mu$s","HG7_2":r"7 tanks 2 $\mu$s",
+# }
+
 triggerListSelectDictTanks = {
-"HG6_4":r"6 tanks 4 $\mu$s","HG6_3":r"6 tanks 3 $\mu$s","HG6_2":r"6 tanks 2 $\mu$s",
-"HG7_4":r"7 tanks 4 $\mu$s","HG7_3":r"7 tanks 3 $\mu$s","HG7_2":r"7 tanks 2 $\mu$s",
+"HG6_4":r"6 HG hits 4 $\mu$s","HG6_3":r"6 HG hits 3 $\mu$s","HG6_2":r"6 HG hits 2 $\mu$s",
+"HG7_4":r"7 HG hits 4 $\mu$s","HG7_3":r"7 HG hits 3 $\mu$s","HG7_2":r"7 HG hits 2 $\mu$s",
 }
-
-
 
 
 
@@ -566,7 +579,7 @@ def nHitsPerEvent(eventList,bins,hitType,triggerType,containment):
 
 
 
-# plotRadiusEnergy(energyBinslgE)
+plotRadiusEnergy(energyBinslgE)
 
 # def plotCoreScatter_(x,y,suffix,title):
 #   fig = plt.figure(figsize=(8,5))
@@ -886,6 +899,7 @@ def plotEnergyFlux(eventList,triggerType,yscale,suffix,energyScale,containment):
     ncolor = next(colorIter)
     ax,histSum = plotSteps(evtZenBin,ax,r"{0:.1f}$^{{\circ}}$-{1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[nbin]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[nbin+1]))*180.0/np.pi),energyScale,ncolor=colorsCustom2[nbin])
     totalRate += histSum
+  ax,histSum = plotSteps(eventList,ax,r"{}".format("total"),energyScale,ncolor="gray")
   # ax.hist(energy,bins=hitBins,histtype="step",weights=weights,lw=2.5,label="after weighting",alpha=1)
   # ax.hist(energy,bins=hitBins,histtype="step",weights=adjWeights,lw=2.5,label="after adj weighting",alpha=1)
   ax.tick_params(axis='both',which='both', direction='in', labelsize=20)
@@ -893,12 +907,13 @@ def plotEnergyFlux(eventList,triggerType,yscale,suffix,energyScale,containment):
   # ax.set_ylabel(r"$E^{{{0:.1f}}}$ rate [Hz]".format(energyScale), fontsize=20))
   ax.set_ylabel(r"rate [Hz]".format(energyScale), fontsize=20)
   ax.set_yscale(yscale) 
-  ax.set_ylim(10**-5,10**0.0)
+  ax.set_ylim(10**-5,10**0.5)
   ax.set_xlim(14.0,17.0)
   ax.set_xlim(14.0,16.8)
   # ax.set_xscale('log')
   ax.grid(True,alpha=0.7)
-  ax.text(0.82,0.82,s=r"{0} rate:{1:.1f} Hz".format(triggerListSelectDictTanksFull[triggerType],totalRate),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+  ax.text(0.80,0.82,s=r"{0}".format(triggerListSelectDictTanksFull[triggerType],totalRate),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+  # ax.text(0.80,0.82,s=r"{0} rate:{1:.1f} Hz".format(triggerListSelectDictTanksFull[triggerType],totalRate),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
   # ax.text(0.9,0.9,s=r"{0:.1f} Hz".format(totalRate),horizontalalignment='center',verticalalignment='center', transform=ax.transAxes, bbox=dict(boxstyle='round',facecolor='purple', alpha=0.1))
   # ax.set_title(key,fontsize=16)
   ax.legend(fontsize=10,ncol=3,loc="lower center")
@@ -1019,7 +1034,7 @@ def plotSteps(triggeredEvts,ax,legendLabel,energyScale,ncolor):
     H = [h*(10**E)**energyScale for h,E in zip(hist,binCenter)]
   # ax.hist(energy,bins=hitBins,histtype="step",lw=2.5,label=r"before weighting",alpha=1)
   # ax.step(binCenter,H,"-",where="mid",lw=2.5,label=legendLabel+r", {:.6f} Hz".format(sum(hist)),color=ncolor,alpha=1)
-  ax.step(binCenter,H,"-",where="mid",lw=2.5,label=legendLabel+r", {:.3f} Hz".format(sum(hist)),color=ncolor,alpha=1)
+  ax.step(binCenter,H,"-",where="mid",lw=2.5,label=legendLabel+r", {:.2f} Hz".format(sum(hist)),color=ncolor,alpha=1)
   return ax,sum(hist)
 
 
@@ -1703,7 +1718,7 @@ def plotVerticalTrigEfficiencySelect(evtList,energyBins,triggerTypes,containment
   # ax.text(0.12,0.7,s=r"snow: {0}".format("2021/03"),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
   ax.text(0.70,0.18,s=r"snow: {0}".format("2021/03"),size=14,horizontalalignment='left',verticalalignment='center', transform=ax.transAxes)
   # ax.set_xscale('log')
-  ax.text(0.62,0.5,s="IceCube Preliminary",color="red",size=14,fontWeight='bold',horizontalalignment='left',verticalalignment='center', transform=ax.transAxes)
+  ax.text(0.62,0.5,s="IceCube Preliminary",color="red",size=14,weight='bold',horizontalalignment='left',verticalalignment='center', transform=ax.transAxes)
   ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
   ax.set_ylim(0.0,1.05)
   # ax.set_ylim(0.9,1.01)
@@ -1743,9 +1758,10 @@ def plotInclinedTrigEfficiencySelect(evtList,energyBins,triggerTypes,containment
   gs = gridspec.GridSpec(nrows=1,ncols=1)
   ax = fig.add_subplot(gs[0])
   colorIter = iter(colorsCustom+colorsCustom)
+  n_inclinedBins = 2
   # colorIter = iter(colorsList)
   for ntrig,itrigger in enumerate(triggerTypes):
-      lowEdge = np.arcsin(np.sqrt(sin2ZenBins[-2]))
+      lowEdge = np.arcsin(np.sqrt(sin2ZenBins[-(n_inclinedBins+1)]))
       highEdge = np.arcsin(np.sqrt(sin2ZenBins[-1]))
       evtZenBin = [ievt for ievt in evtList if lowEdge <= ievt.zenith < highEdge]
       energyList = []
@@ -1806,9 +1822,11 @@ def plotInclinedTrigEfficiencySelect(evtList,energyBins,triggerTypes,containment
   ax.set_xlabel(r"log$_{10}$ (E [eV])", fontsize=22)
   ax.set_ylabel(r"trigger efficiency", fontsize=22)
   # ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
-  ax.text(0.70,0.1,s=r"{0:.1f}$^{{\circ}}$ $\leq$ $\theta$ $<${1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[-2]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[-1]))*180.0/np.pi),size=14,horizontalalignment='left',verticalalignment='center', transform=ax.transAxes)
+  ax.text(0.70,0.1,s=r"{0:.1f}$^{{\circ}}$ $\leq$ $\theta$ $<${1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[-(n_inclinedBins+1)]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[-1]))*180.0/np.pi),size=14,horizontalalignment='left',verticalalignment='center', transform=ax.transAxes)
+  print("########################################",np.arcsin(np.sqrt(sin2ZenBins[-(n_inclinedBins+1)]))*180.0/np.pi)
+  print("########################################",r"{0:.1f}$^{{\circ}}$ $\leq$ $\theta$ $<${1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[-(n_inclinedBins+1)]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[-1]))*180.0/np.pi))
   ax.text(0.70,0.18,s=r"snow: {0}".format("2021/03"),size=14,horizontalalignment='left',verticalalignment='center', transform=ax.transAxes)
-  ax.text(0.20,0.5,s="IceCube Preliminary",color="red",size=14,fontWeight='bold',horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+  ax.text(0.20,0.5,s="IceCube Preliminary",color="red",size=14,weight='bold',horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
   # ax.set_xscale('log')
   ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
   ax.set_ylim(0.0,1.05)
@@ -1848,10 +1866,11 @@ def plotInclinedTrigEfficiencySelectTanks(evtList,energyBins,triggerTypes,contai
   fig = plt.figure(figsize=(8,5))
   gs = gridspec.GridSpec(nrows=1,ncols=1)
   ax = fig.add_subplot(gs[0])
+  n_inclinedBins = 2
   colorIter = iter(colorsCustom+colorsCustom)
   # colorIter = iter(colorsList)
   for ntrig,itrigger in enumerate(triggerTypes):
-      lowEdge = np.arcsin(np.sqrt(sin2ZenBins[-2]))
+      lowEdge = np.arcsin(np.sqrt(sin2ZenBins[-(n_inclinedBins+1)]))
       highEdge = np.arcsin(np.sqrt(sin2ZenBins[-1]))
       evtZenBin = [ievt for ievt in evtList if lowEdge <= ievt.zenith < highEdge]
       energyList = []
@@ -1909,10 +1928,10 @@ def plotInclinedTrigEfficiencySelectTanks(evtList,energyBins,triggerTypes,contai
   ax.set_xlabel(r"log$_{10}$ (E [eV])", fontsize=22)
   ax.set_ylabel(r"trigger efficiency", fontsize=22)
   # ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
-  ax.text(0.62,0.1,s=r"{0:.1f}$^{{\circ}}$ $\leq$ $\theta$ $<${1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[-2]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[-1]))*180.0/np.pi),size=14,horizontalalignment='left',verticalalignment='center', transform=ax.transAxes)
+  ax.text(0.62,0.1,s=r"{0:.1f}$^{{\circ}}$ $\leq$ $\theta$ $<${1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[-(n_inclinedBins+1)]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[-1]))*180.0/np.pi),size=14,horizontalalignment='left',verticalalignment='center', transform=ax.transAxes)
   ax.text(0.62,0.16,s=r"snow: {0}".format("2021/03"),size=14,horizontalalignment='left',verticalalignment='center', transform=ax.transAxes)
-  ax.text(0.62,0.5,s="IceCube Preliminary",color="red",size=14,fontWeight='bold',horizontalalignment='left',verticalalignment='top', transform=ax.transAxes)
-  # ax.text(0.62,0.36,s="IceCube Preliminary",color="red",size=14,fontWeight='bold',horizontalalignment='left',verticalalignment='top', transform=ax.transAxes)
+  ax.text(0.62,0.5,s="IceCube Preliminary",color="red",size=14,weight='bold',horizontalalignment='left',verticalalignment='top', transform=ax.transAxes)
+  # ax.text(0.62,0.36,s="IceCube Preliminary",color="red",size=14,weight='bold',horizontalalignment='left',verticalalignment='top', transform=ax.transAxes)
   # ax.set_xscale('log')
   ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
   ax.set_ylim(0.0,1.05)
@@ -1956,6 +1975,7 @@ def plotTrigEfficiencyZenith(evtList,energyBins,triggerType,containment,wilson,w
   gs = gridspec.GridSpec(nrows=1,ncols=1)
   ax = fig.add_subplot(gs[0])
   colorIter = iter(colorsCustom+colorsCustom)
+  size_fig = fig.get_size_inches()
   # colorIter = iter(colorsList)
   # zorders = [0,1,2,3,4,5,6]
   zorders = [60,50,40,30,20,10,9]
@@ -2013,9 +2033,9 @@ def plotTrigEfficiencyZenith(evtList,energyBins,triggerType,containment,wilson,w
   ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
   ax.set_xlabel(r"zenith [$^{\circ}$]", fontsize=22)
   ax.set_ylabel(r"trigger efficiency", fontsize=22)
-  ax.text(0.02,0.62,s="IceCube Preliminary",color="red",size=14,fontWeight='bold',horizontalalignment='left',verticalalignment='center', transform=ax.transAxes)
+  ax.text(0.02,0.62,s="IceCube Preliminary",color="red",size=14,weight='bold',horizontalalignment='left',verticalalignment='center', transform=ax.transAxes)
   # ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
-  ax.text(0.02,0.73,s=r"trig: {0}".format(triggerListSelectDict[triggerType]),size=14,horizontalalignment='left',verticalalignment='center', transform=ax.transAxes,zorder=10002)
+  ax.text(0.02,0.73,s=r"{0}".format(triggerListSelectDict[triggerType]),size=14,horizontalalignment='left',weight='bold',verticalalignment='center', transform=ax.transAxes,zorder=10002)
   ax.text(0.02,0.67,s=r"snow: {0}".format("2021/03"),size=14,horizontalalignment='left',verticalalignment='center', transform=ax.transAxes,zorder=10001)
   # ax.set_xscale('log')
   ax.set_xticks(np.linspace(0,70,8))
@@ -2026,7 +2046,10 @@ def plotTrigEfficiencyZenith(evtList,energyBins,triggerType,containment,wilson,w
   # ax.yaxis.set_minor_locator(MultipleLocator(100))
   ax.xaxis.set_minor_locator(MultipleLocator(5))
   ax.grid(True,alpha=0.5)
-  l1=ax.legend(loc="lower left",title=r"log$_{10}$ [E/eV]",ncol=1,fontsize=14)
+  # l1=ax.legend(loc="lower left",title=r"log$_{10}$ [E/eV]",ncol=1,fontsize=14)
+  l1=ax.legend(loc=(0.0,1.01),title=r"log$_{10}$ [E/eV]",title_fontsize=14,ncol=3,fontsize=14)
+  # l1=ax.legend(loc=(1.01,0.4),title=r"log$_{10}$ [E/eV]",title_fontsize=14,ncol=1,fontsize=14)
+  l1._legend_box.width = size_fig[0]*54.5  # <-- Setting new width
   l1.set_zorder(10000)
   # l1=ax.legend(loc="upper left",title=r"log$_{10}$ [E/eV]",title_fontsize=14,fontsize=14).set_zorder(10000)
   # l1=ax.legend(loc="upper left",fontsize=14).set_zorder(10000)

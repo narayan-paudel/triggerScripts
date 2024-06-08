@@ -47,7 +47,8 @@ fileDir = "/data/user/enpaudel/triggerStudy/simFiles/dataSetClean1_6/"
 exceptionTanks_HG = {39:62,26:62,67:64,74:62}
 exceptionTanks_LG = {26:61,67:63}
 
-outputDir = "/home/enpaudel/dataExp/dataSetClean_InclinedHE/"
+# outputDir = "/home/enpaudel/dataExp/dataSetClean_InclinedHE/"
+outputDir = "/home/enpaudel/dataExp/dataSetClean_InclinedHE_7HG_reco/"
 plotFolder = "/home/enpaudel/icecube/triggerStudy/plots/"
 
 def openingAngle(theta1,phi1,theta2,phi2):
@@ -101,12 +102,12 @@ class zenithCheck(icetray.I3Module):
     p68 = np.percentile(self.openingAngleList,68)
     print(p68)
     self.ax.hist(self.openingAngleList,bins=bins,histtype="step",label=r"",lw=2.5)
-    self.ax.axvline(p68,ymin=0,ymax=1,color="orange",ls="--",lw=2.5,label=r"p$_{{{:.0f}}}$={:.1f}".format(68,p68))
+    self.ax.axvline(p68,ymin=0,ymax=1,color="orange",ls="--",lw=2.5,label=r"p$_{{{:.0f}}}$={:.1f}$^{{\circ}}$".format(68,p68))
     self.ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
     self.ax.set_xlabel(r"$\psi$ [$^{\circ}$]", fontsize=22)
     self.ax.set_ylabel("count", fontsize=22)
     self.ax.set_xlim(0,100)
-    # self.ax.set_ylim(0,4300)
+    self.ax.set_ylim(0.9,5*10**3)
     self.ax.set_yscale("log")
     self.ax.legend(fontsize=18)
     plt.savefig(plotFolder+"/openAngleHG7Only"+plotSuffix+".png",transparent=False,bbox_inches='tight')
@@ -167,10 +168,10 @@ tray.AddModule(zenithCheck,"zhits",
             # streams = [icetray.I3Frame.DAQ],
             )
 
-# tray.AddModule("I3Writer","i3writer",
-#             filename=str(outputDir)+fileName,
-#             streams=[icetray.I3Frame.Simulation,icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-#             )
+tray.AddModule("I3Writer","i3writer",
+            filename=str(outputDir)+fileName+".i3.gz",
+            streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+            )
 
 tray.Execute()
 tray.Finish()

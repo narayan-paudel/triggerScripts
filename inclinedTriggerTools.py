@@ -631,7 +631,7 @@ def addReco(evtList,recoObjList):
 # energyBins = 10**np.linspace(5, 8.0, 31)
 # # energyBins = 10**np.linspace(5, 8.0, 7)
 # energyBinslgE = np.linspace(5.0,8.9,4000)
-energyBinCenter = [5.1,6.1,7.1,8.1]
+energyBinCenter = [5.1,6.1,7.1]
 # print("energy bins",energyBins)
 
 def plotRadiusEnergy(energyBins):
@@ -659,6 +659,52 @@ def plotRadiusEnergy(energyBins):
   ax.xaxis.set_minor_locator(MultipleLocator(0.1))
   plt.savefig(plotFolder+"simRadius.pdf",transparent=False,bbox_inches='tight')
   plt.close()
+
+energyBinslgE = np.linspace(5.0,7.9999,4000)
+plotRadiusEnergy(energyBinslgE)
+
+
+def plotAreaEnergy(energyBins):
+  areaList = [np.pi*Rdisk(ienergy)**2/(1000*1000) for ienergy in energyBins]
+  areaBinValue = [np.pi*Rdisk(ienergy)**2 for ienergy in energyBinCenter]
+  fig = plt.figure(figsize=(8,5))
+  gs = gridspec.GridSpec(nrows=1,ncols=1)
+  ax = fig.add_subplot(gs[0])
+  ax.plot(energyBins,areaList,"-",lw=2.5,c=qualitative_colors(3)[1],label="simulation",alpha=1)
+  # ax.plot(angleBins,totalEvts_list,"o-",c=next(colorsIter),label="total Evts",alpha=1)
+  # for x in energyBinCenter:
+  #   ax.text(x,np.pi*Rdisk(x)**2/(1000*1000)+0.2,s="{0:.2f} km$^{{2}}$".format(np.pi*Rdisk(x)**2/(1000*1000)))
+  ax.axhline(y=1.0,xmin=0,xmax=1,color=qualitative_colors(3)[0],ls="--",label="IceTop",lw=2.5,alpha=0.7)
+  # ax.text(x,np.pi*Rdisk(x)**2/(1000*1000)+0.2,s="{0:.2f} km$^{{2}}$".format(np.pi*Rdisk(x)**2/(1000*1000)))
+  ax.set_xlabel(r"log$_{10}$(Energy[GeV])", fontsize=20)
+  ax.set_ylabel(r"area [km$^{2}$]", fontsize=20)
+  ax.tick_params(axis='both',which='both',direction='in', labelsize=20)
+  ax.tick_params(which='both', width=1.5)
+  ax.tick_params(which='major', length=7)
+  ax.tick_params(which='minor', length=4)
+  # ax.set_yscale('log')
+  ax.grid(True,alpha=0.5)
+  ax.set_ylim(0,10)
+  ax.set_xlim(4.9,8.0)
+  ax.legend(fontsize=18)
+  # ax.legend(fontsize=14,ncol=2)
+  ax.yaxis.set_minor_locator(MultipleLocator(100))
+  ax.xaxis.set_minor_locator(MultipleLocator(0.1))
+  plt.savefig(plotFolder+"simArea.pdf",transparent=False,bbox_inches='tight')
+  plt.close()
+
+energyBinslgE = np.linspace(5.0,7.9999,4000)
+plotAreaEnergy(energyBinslgE)
+
+
+
+
+
+
+
+
+
+
 
 
 # def plotCoreScatter_(x,y,suffix,title):

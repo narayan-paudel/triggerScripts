@@ -20,7 +20,8 @@ I3SRC=$I3BASE/src
 I3BUILD=$I3BASE/build
 ICETRAY_ENV=$I3BUILD/env-shell.sh
 
-PYTHON_SCRIPT=$BASEDIR/countTriggerPFFilt.py
+# PYTHON_SCRIPT=$BASEDIR/countTriggerPFFilt.py
+PYTHON_SCRIPT=$BASEDIR/countTriggerEventPFFilt.py
 
 
 # fileDir="/home/enpaudel/icecube/triggerStudy/simFiles/ITGen/"

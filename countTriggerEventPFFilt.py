@@ -36,8 +36,10 @@ class TriggerRate(icetray.I3Module):
   def __init__(self,ctx):
     icetray.I3Module.__init__(self,ctx)
   def Configure(self):
-    self.HG7Triggers = 0
-    self.HLCTriggers = 0
+    self.HG7TriggerEvents = 0
+    self.HG7_HLCTriggerEvents = 0
+    self.HG7_NoHLCTriggerEvents = 0
+    self.HLCTriggerEvents = 0
 
 
   def Physics(self,frame):
@@ -45,16 +47,22 @@ class TriggerRate(icetray.I3Module):
     if frame.Has("I3EventHeader"):
       self.runID = frame["I3EventHeader"].run_id
       if frame.Has("DSTTriggers"):
-        for trigger in frame['DSTTriggers'].unpack(frame['I3DetectorStatus']):
-            # if trigger.key.config_id == 30043 and trigger.fired:
-            if trigger.key.config_id == 102 and trigger.fired:
-                self.HLCTriggers += 1
-            if trigger.key.config_id == 30043 and trigger.fired:
-                self.HG7Triggers += 1
+        triggerHierarchy = frame['DSTTriggers'].unpack(frame['I3DetectorStatus'])
+        SMTTriggers = [t for t in triggerHierarchy if (t.key.config_id == 102 and t.fired)]
+        HG7Triggers = [t for t in triggerHierarchy if (t.key.config_id == 30043 and t.fired)]
+        if len(SMTTriggers) > 0:
+          self.HLCTriggerEvents += 1
+        if len(HG7Triggers) > 0:
+          self.HG7TriggerEvents += 1
+          if len(SMTTriggers) < 1:
+            self.HG7_NoHLCTriggerEvents += 1
+          elif len(SMTTriggers) > 0:
+            self.HG7_HLCTriggerEvents += 1
+
   def Finish(self):
-    # with open('/data/user/enpaudel/triggerStudy/triggerRate{}.txt'.format(self.runID), 'a+') as f:
-    with open('/data/user/enpaudel/triggerStudy/triggerRateForbush{}.txt'.format(self.runID), 'a+') as f:
-      f.write('{} {} {} {}'.format(self.runID,sub_run,self.HG7Triggers,self.HLCTriggers))
+    with open('/data/user/enpaudel/triggerStudy/rateFilesEvents/triggerEventRate{}.txt'.format(self.runID), 'a+') as f:
+    # with open('/data/user/enpaudel/triggerStudy/triggerEventRateForbush{}.txt'.format(self.runID), 'a+') as f:
+      f.write('{} {} {} {} {} {}'.format(self.runID,sub_run,self.HG7TriggerEvents,self.HLCTriggerEvents,self.HG7_NoHLCTriggerEvents,self.HG7_HLCTriggerEvents))
       f.write("\n")
 
 def selectIceTopTrigger(frame):
@@ -86,10 +94,10 @@ tray.AddModule(selectIceTopTrigger, "ITTrig",
             Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
             )
 
-tray.AddModule("I3Writer","i3writer",
-            filename=str(outputDir)+filename.split("/")[-1].split(".")[0] + ".i3.gz",
-            streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-            )
+# tray.AddModule("I3Writer","i3writer",
+#             filename=str(outputDir)+filename.split("/")[-1].split(".")[0] + ".i3.gz",
+#             streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+#             )
 
 tray.Execute()
 tray.Finish()

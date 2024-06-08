@@ -68,7 +68,9 @@ energyCut = 10**16 #eV
 exceptionTanks_HG = {39:62,26:62,67:64,74:62}
 exceptionTanks_LG = {26:61,67:63}
 
-outputDir = "/home/enpaudel/dataExp/dataSetClean_InclinedHE/"
+# outputDir = "/home/enpaudel/dataExp/dataSetClean_InclinedHE/"
+
+outputDir = "/home/enpaudel/dataExp/dataSetClean_InclinedHE_7HG_reco"
 plotFolder = "/home/enpaudel/icecube/triggerStudy/plots/"
 
 def openingAngle(theta1,phi1,theta2,phi2):
@@ -400,10 +402,10 @@ tray.AddModule(zenithCheck,"zhits",
             # streams = [icetray.I3Frame.DAQ],
             )
 
-# tray.AddModule("I3Writer","i3writer",
-#             filename=str(outputDir)+fileName,
-#             streams=[icetray.I3Frame.Simulation,icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
-#             )
+tray.AddModule("I3Writer","i3writer",
+            filename=str(outputDir)+fileName,
+            streams=[icetray.I3Frame.Simulation,icetray.I3Frame.DAQ,icetray.I3Frame.Physics],
+            )
 
 tray.Execute()
 tray.Finish()

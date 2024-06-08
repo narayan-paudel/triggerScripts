@@ -34,7 +34,7 @@ def selectEvents(frame,zcut,Ecut):
   return testZenith(frame,zcut) and testEnergy(frame,Ecut)
 
 def selectVertEvents(frame,zcut,Emin,Emax):
-  return np.rad2deg(frame["MCPrimary"].dir.zenith) <= zcut and frame["MCPrimary"].energy * 10**9 >= Emin and frame["MCPrimary"].energy * 10**9 <= Emax
+  return np.rad2deg(frame["MCPrimary"].dir.zenith) <= zcut and frame["MCPrimary"].energy * 10**9 >= Emin and frame["MCPrimary"].energy * 10**9 < Emax
 
 fileList = sorted(glob.glob(fileDir+"*.i3.*"))
 for ifile in fileList:
