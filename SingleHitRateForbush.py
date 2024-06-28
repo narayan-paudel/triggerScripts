@@ -226,3 +226,4 @@ tray.AddModule(TriggerRateBins, "rT",
 
 tray.Execute()
 tray.Finish()
+

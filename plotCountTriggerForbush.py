@@ -230,8 +230,10 @@ class TriggerRateBins(icetray.I3Module):
     print("timebins",self.timeBins)
     # t_ref = Time("2024-03-24 23:00:00").mjd
     t_ref = Time("2024-03-24 23:50:00").mjd #this time goes -->
+    # t_ref = Time("2024-03-24 23:46:57").mjd #this time goes -->
     self.timeBinsMJD = [t_ref + (ielt/(86400.)) for ielt in self.timeBins] #3 hours
     timeBinsSeconds = [ielt+(23*60+50)*60 for ielt in self.timeBins] # <--
+    # timeBinsSeconds = [ielt+(23*60+46)*60+57+self.timeBinSize/2 for ielt in self.timeBins] # <--
     print("timeBinsSeconds",timeBinsSeconds)
     self.timeBinsHour = [r"{:02d}:{:02d}:{:03.1f}".format(*getTimeSecond(ielt)) for ielt in timeBinsSeconds]
     # self.timeBinsHour = [TimeDelta(ielt) for ielt in timeBinsSeconds]
@@ -403,6 +405,62 @@ class TriggerRateBins(icetray.I3Module):
 
 
 
+
+def SPERate(rateFile,DOM):
+  """
+  get date and rate from SPE rate file
+  """
+  f = open(rateFile,"r")
+  lines = f.readlines()
+  rateSPE = []
+  dateSPE = []
+  for x in lines:
+      print(x.split("\t"))
+      dateSPE.append(x.split('\t')[3])
+      rateSPE.append(float(x.split('\t')[4]))
+  f.close()
+  print("date rate",len(dateSPE),len(rateSPE))
+  print("date rate",dateSPE,rateSPE)
+  fig = plt.figure(figsize=(8,5))
+  gs = gridspec.GridSpec(nrows=1,ncols=1)
+  ax = fig.add_subplot(gs[0])
+  rateNames = ["7HG"]
+  ax.errorbar(dateSPE[4:22],rateSPE[4:22],yerr=[(1.0/np.sqrt(irate)) for irate in rateSPE[4:22]],fmt="o",ls="-",lw = 2.5,ms=8,label= r"run:{}, DOM:{}".format(139197,DOM),alpha=1)
+  ax.tick_params(axis='both',which='both', direction='in', labelsize=16)
+  # secax = ax.secondary_xaxis('top')
+  # secax.tick_params(axis='both',which='both', direction='in', labelsize=10)
+  ax.tick_params(axis='x', labelrotation=90)
+  # secax.tick_params(axis='x', labelrotation=90)
+  # ax.xaxis.get_major_locator().set_params(integer=True)
+  # ax.set_xlabel(r"$Q_{tot}$ [m]", fontsize=22)
+  # ax.set_ylabel(r"$\theta$$^{\circ}$", fontsize=22)
+  ax.set_ylabel("SPE rate [Hz]", fontsize=20)
+  # ax.set_xlabel("Q$_{tot} [VEM]$", fontsize=22)
+  ax.set_xlabel("time", fontsize=20)
+  # secax.set_xlabel("day", fontsize=11)
+  # ax.set_xticklabels(self.timeBinsHour)
+  # ax.set_xticks(timeBinsMJD,timeBinsHour)
+  # ax.ticklabel_format(useOffset=False)
+  # ax.set_yscale("log")
+  # ax.set_xlim(-600,600)
+  # ax.set_ylim(0,None) #zoom yhigh
+  # ax.set_ylim(23,28) #zoom yhigh
+  # ax.set_ylim(3,6.2) #zoom ylow
+  plt.grid(visible=True, which='major', axis='both',alpha=0.6)
+  ax.legend(fontsize=18,ncol=1)
+  plt.savefig(plotFolder+"/trigCountSPE{}.pdf".format(DOM),transparent=False,bbox_inches='tight')
+  plt.savefig(plotFolder+"/trigCountSPE{}.png".format(DOM),transparent=False,bbox_inches='tight')
+
+
+rateFile = "/home/enpaudel/icecube/triggerStudy/forbushDecrease/59-63-SPE-rates-25Mar2024.txt"
+DOM = "59-63"
+SPERate(rateFile,DOM)
+rateFile = "/home/enpaudel/icecube/triggerStudy/forbushDecrease/29-63-SPE-rates-25Mar2024.txt"
+DOM = "29-63"
+SPERate(rateFile,DOM)
+
+
+
 tray = I3Tray()
 tray.AddModule("I3Reader","reader",
               FilenameList=[GCD]+inputList,
@@ -413,10 +471,19 @@ tray.AddModule("I3Reader","reader",
 #             # GCD=GCD,
 #             # Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
 #             )
+###################################
+###################################
 tray.AddModule(TriggerRateBins, "rT",
             # GCD=GCD,
             # Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
             )
+
+# tray.AddModule(TriggerRateBins, "rT",
+#             # GCD=GCD,
+#             # Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
+#             )
+##################################
+##################################
 
 # tray.AddModule(selectIceTopTrigger, "ITTrig",
 #             # GCD=GCD,

@@ -62,6 +62,8 @@ firstEvent = evtList[0]
 print("first event",dir(firstEvent))
 evtList = evtList
 
+coincSMT = True
+
 
 
 # colorsList = ['#9467bd', '#e377c2','#1f77b4','#2ca02c','#bcbd22','#ff7f0e','#8c564b','#7f7f7f','#17becf','#d62728',
@@ -877,6 +879,9 @@ def plotEnergyFlux(eventList,triggerType,yscale,suffix,energyScale,containment):
   plots energy flux
   """
   eventList = [ievt for ievt in eventList if abs(getattr(ievt,triggerType)-0)>0.01]
+  if coincSMT:
+    eventList = [ievt for ievt in eventList if abs(getattr(ievt,"HLC6")-0)>0.01]
+
   if containment == True:
     # eventList = containedEvents(eventList,410)
     eventList = containedEvents(eventList,410)
@@ -1945,7 +1950,9 @@ def plotInclinedTrigEfficiencySelectTanks(evtList,energyBins,triggerTypes,contai
   ax.grid(True,alpha=0.5)
   # l1=ax.legend(loc="upper left",ncol=2,columnspacing=0.8,fontsize=12)
   # l1=ax.legend(loc=(0.02,0.76),ncol=2,columnspacing=0.8,fontsize=12)
-  l1=ax.legend(loc=(0.02,0.42),ncol=1,columnspacing=0.8,handlelength=2.5,fontsize=14)
+  handles, labels = ax.get_legend_handles_labels()
+  # ax.legend(handles = handles[::-1], labels = labels, frameon = True, loc = 'upper left', bbox_to_anchor = (1.05, 1))
+  l1=ax.legend(handles=[handles[2],handles[1],handles[0],handles[5],handles[4],handles[3]],loc=(0.02,0.42),ncol=1,columnspacing=0.8,handlelength=2.5,fontsize=14)
   # l1=ax.legend(loc="upper left",fontsize=12)
   point_dash = mlines.Line2D([], [], linestyle='--',lw=2.0,color='gray', marker='',markersize=5, label=r"0.98")
   # l2 = ax.legend(handles=[point_dash],loc="center left",fontsize=13,framealpha=0.1,handlelength=1.4,handletextpad=0.5)
@@ -2061,7 +2068,7 @@ def plotTrigEfficiencyZenith(evtList,energyBins,triggerType,containment,wilson,w
   ax.add_artist(l1)
   ax.add_artist(l2)
   plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"Weight"+str(weighting)+"EfficiencyZenith.pdf",transparent=False,bbox_inches='tight')
-  plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"Weight"+str(weighting)+"EfficiencyZenith.png",transparent=False,bbox_inches='tight')
+  plt.savefig(plotFolder+"/trig"+str(triggerType)+"cont"+str(containment)+"Weight"+str(weighting)+"EfficiencyZenith.png",dpi=100,transparent=False,bbox_inches='tight')
   plt.close()
 
 

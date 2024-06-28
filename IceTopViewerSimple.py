@@ -218,14 +218,155 @@ def eventView(xA,yA,xB,yB,xA_unhit,yA_unhit,xB_unhit,yB_unhit,tlist,tAlist,tBlis
   plt.savefig(plotFolder+"eventView{:d}.png".format(eventID),transparent=False,bbox_inches='tight')
   plt.close()
 
-inputFile = "/home/enpaudel/icecube/triggerStudy/simFilesTest/inclinedFe.i3.gz"
-eventID = 5421454
+# inputFile = "/home/enpaudel/icecube/triggerStudy/simFilesTest/inclinedFe.i3.gz"
+# eventID = 5421454
+# xAlist,yAlist,xBlist,yBlist,xA_unhit,yA_unhit,xB_unhit,yB_unhit,tlist,tAlist_n,tBlist_n,qAlist_n,qBlist_n,eventID = getPlotParams(inputFile,eventID,pulses,icetray.I3Frame.DAQ)
+# eventView(xAlist,yAlist,xBlist,yBlist,xA_unhit,yA_unhit,xB_unhit,yB_unhit,tlist,tAlist_n,tBlist_n,qAlist_n,qBlist_n,eventID)
+
+# inputFile = "/home/enpaudel/icecube/triggerStudy/simFilesTest/verticalFe.i3.gz"
+# eventID = 741466
+# xAlist,yAlist,xBlist,yBlist,xA_unhit,yA_unhit,xB_unhit,yB_unhit,tlist,tAlist_n,tBlist_n,qAlist_n,qBlist_n,eventID = getPlotParams(inputFile,eventID,pulses,icetray.I3Frame.DAQ)
+# eventView(xAlist,yAlist,xBlist,yBlist,xA_unhit,yA_unhit,xB_unhit,yB_unhit,tlist,tAlist_n,tBlist_n,qAlist_n,qBlist_n,eventID)
+
+def getPlotParamsData(inputFile,eventID,sub_event_id,pulseName,timeRange,whichFrame):
+  for f in dataio.I3File(inputFile,'r'):
+    if f.Stop == whichFrame:
+      if f['I3EventHeader'].event_id == eventID and f['I3EventHeader'].sub_event_id == 0:      
+        eventN = f['I3EventHeader'].event_id
+        runN = f['I3EventHeader'].run_id
+        # print(whichFrame,eventN)
+        # print(f)
+        # psm = f[pulses]
+        psm = dataclasses.I3RecoPulseSeriesMap.from_frame(f,pulseName)
+        markerListA = []
+        markerListB = []
+        xAlist = []
+        yAlist = []
+        tAlist = []
+        qAlist = []
+        xBlist = []
+        yBlist = []
+        tBlist = []
+        qBlist = []
+        om_hits = []
+        for om,pulses in psm:
+          om_hits.append(om)
+          if om.om in [61,62]:
+            xA = posKeyDict[om].x
+            yA = posKeyDict[om].y
+            chargeA = sum([c.charge for c in pulses])
+            tA = pulses[0].time*I3Units.ns/1000
+            # print("tA",tA)
+            if timeRange[0] < tA <= timeRange[1]:
+              xAlist.append(xA)
+              yAlist.append(yA)
+              tAlist.append(tA)
+              qAlist.append(np.log10(chargeA))
+              markerListA.append(MarkerStyle("o", fillstyle="left"))
+          elif om.om in [63,64]:
+            xB = posKeyDict[om].x
+            yB = posKeyDict[om].y
+            chargeB = sum([c.charge for c in pulses])
+            tB = pulses[0].time*I3Units.ns/1000
+            # print("tB",tB)
+            if timeRange[0] < tB <= timeRange[1]:
+              xBlist.append(xB)
+              yBlist.append(yB)
+              tBlist.append(tB)
+              qBlist.append(np.log10(chargeB))
+              markerListB.append(MarkerStyle("o", fillstyle="right"))
+        print("id",eventN,runN)
+  print(om_hits)
+  om_unhits = [om for om in omkeys if om not in om_hits]
+  xA_unhit = [posKeyDict[om].x for om in om_unhits if om.om in [61]]
+  xB_unhit = [posKeyDict[om].x for om in om_unhits if om.om in [63]]
+  yA_unhit = [posKeyDict[om].y for om in om_unhits if om.om in [61]]
+  yB_unhit = [posKeyDict[om].y for om in om_unhits if om.om in [63]]
+  print(om_hits)
+  print("maxt",max(tBlist))
+  # tBlist.remove(max(tBlist))
+  tlist = tAlist + tBlist
+  print("maxt",max(tBlist),max(tAlist),max(tlist),min(tlist),max(tlist)-min(tlist))
+  qlist = qAlist + qBlist
+  tAlist_n = (tAlist - np.min(tlist)) / (np.max(tlist) - np.min(tlist))
+  tBlist_n = (tBlist - np.min(tlist)) / (np.max(tlist) - np.min(tlist))
+  qAlist_n = (qAlist - np.min(qlist)) / (np.max(qlist) - np.min(qlist))
+  qBlist_n = (qBlist - np.min(qlist)) / (np.max(qlist) - np.min(qlist))
+  return xAlist,yAlist,xBlist,yBlist,xA_unhit,yA_unhit,xB_unhit,yB_unhit,tlist,tAlist_n,tBlist_n,qAlist_n,qBlist_n,eventID
+
+
+
+
+
+def eventViewData(xA,yA,xB,yB,xA_unhit,yA_unhit,xB_unhit,yB_unhit,tlist,tAlist,tBlist,qA,qB,eventID,runID):
+  """additionally adds a circle of radius r m """
+  # colors = cmap(tlist)
+  fig = plt.figure(figsize=(8,8))
+  gs = gridspec.GridSpec(ncols=1,nrows=1)
+  ax = fig.add_subplot(gs[0])
+  # ax.plot(x,y,"o",ms=7,mew=2,mfc='none',c=cmap,s=q,label="tank A",alpha=1)
+  # print("plotting scatter",len(x),len(y),len(colors),len(q))
+  cmap = plt.get_cmap('rainbow_r')
+  colorsA = cmap(tAlist_n)
+  colorsB = cmap(tBlist_n)
+  qA = np.asarray(qA)
+  qB = np.asarray(qB)
+  # marker = semicircle_marker('up')
+  # ax.scatter(xA,yA,c=colors,s=1000*q, marker=MarkerStyle("o", fillstyle="left"),label="tank A",alpha=0.5)
+  t = Affine2D().rotate_deg(45)
+  sc=ax.scatter(xA,yA,c=colorsA,s=1500*qA, marker=MarkerStyle("o", fillstyle="left"),label="tank A",alpha=1)
+  ax.scatter(xB,yB,c=colorsB,s=1500*qB, marker=MarkerStyle("o", fillstyle="right"),label="tank B",alpha=1)
+  ax.scatter(xA_unhit,yA_unhit,marker=MarkerStyle("o", fillstyle="left"),c="gray",label="unhit",alpha=0.3)
+  ax.scatter(xB_unhit,yB_unhit,marker=MarkerStyle("o", fillstyle="right"),c="gray",label="unhit",alpha=0.3)
+  # ax.scatter(xB_unhit,yB_unhit,marker=MarkerStyle("o", fillstyle="right"),ms=5,mew=2,mfc='none',c="gray",label="unhit",alpha=0.3)
+  # ax.plot(x[1],y[1],"o",ms=7,mew=2,mfc='none',c=qualitative_colors(5)[2],label="tank B",alpha=1)
+  # ax.plot(xCirc,yCirc,'-',c=qualitative_colors(5)[3],lw=3.0,label="r = {:.1f} m".format(r))
+  ax.set_xlabel(r"x [m]", fontsize=24)
+  ax.set_ylabel(r"y [m]", fontsize=24)
+  ax.tick_params(axis='both',which='both',direction='in', labelsize=24)
+  ax.tick_params(which='both', width=1.5)
+  ax.tick_params(which='major', length=7)
+  ax.tick_params(which='minor', length=4)
+  # ax.set_yscale('log')
+  ax.grid(True,alpha=0.5)
+  ax.set_aspect("equal")
+  ax.set_ylim(-650,650)
+  ax.set_xlim(-650,650)
+  # for ix,iy,ista in zip(x[0],y[0],stations):
+  #   ax.text(ix-40,iy-40,s=r"{}".format(ista),size=12)
+  # ax.legend(fontsize=14)
+  # ax.legend(fontsize=14,ncol=2)
+  # ax.yaxis.set_minor_locator(MultipleLocator(100))
+  # ax.xaxis.set_minor_locator(MultipleLocator(0.1))
+  timeBar = [0.0, 0.5, 1.0]
+  timeBarScaled = [ielt*(np.max(tlist) - np.min(tlist)) for ielt in timeBar]
+  cbar = fig.colorbar(sc,ax=ax,ticks=timeBar,fraction=0.047,pad=0.015)
+  sc.set_cmap('rainbow_r')
+  print(timeBar,["{:.2f}".format(timeBarScaled[0]),"{:.2f}".format(timeBarScaled[1]),"{:.2f}".format(timeBarScaled[2])])
+  # cbar.ax.set_xticklabels([ielt*(np.max(tlist) - np.min(tlist)) for ielt in timeBar])
+  cbar.set_ticklabels(["{:.2f}".format(timeBarScaled[0]),"{:.2f}".format(timeBarScaled[1]),"{:.2f}".format(timeBarScaled[2])])
+  cbar.ax.tick_params(axis='both',which='both', direction='in', labelsize=24)
+  cbar.set_label(r'time [$\mathrm{\mu}$s]',fontsize=24)
+  # cbar.ax.set_ylabel(r"count", fontsize=24)
+  plt.savefig(plotFolder+"eventDataView{:d}_{:d}.pdf".format(runID,eventID),transparent=False,bbox_inches='tight')
+  plt.savefig(plotFolder+"eventDataView{:d}_{:d}.png".format(runID,eventID),transparent=False,bbox_inches='tight')
+  plt.close()
+
+# inputFile = "/home/enpaudel/dataExp/run2023/IT7HGTrigL2/PFFilt_PhysicsFiltering_Run00138615_Subrun00000000_00000000_7HGL2ITReco.i3.gz"
+# #remove first and last element based on timing
+# eventID = 141354
+# SubEventID = 0
+# runID = 138615
+# pulseName = "CleanedTankPulses"
+# timeRange = [7.2,13] #in mus
+# xAlist,yAlist,xBlist,yBlist,xA_unhit,yA_unhit,xB_unhit,yB_unhit,tlist,tAlist_n,tBlist_n,qAlist_n,qBlist_n,eventID = getPlotParamsData(inputFile,eventID,SubEventID,pulseName,timeRange,icetray.I3Frame.Physics)
+# eventViewData(xAlist,yAlist,xBlist,yBlist,xA_unhit,yA_unhit,xB_unhit,yB_unhit,tlist,tAlist_n,tBlist_n,qAlist_n,qBlist_n,runID,eventID)
+
+
+#reference simulations
+inputFile = "/home/enpaudel/dataExp/dataSetClean_InclinedHE/FeDAT000667GenDetFiltProcUniqueCleanVEMEvts.i3.gz"
+eventID = 742418
+erunID = 742
+pulses = "IceTopPulses"
 xAlist,yAlist,xBlist,yBlist,xA_unhit,yA_unhit,xB_unhit,yB_unhit,tlist,tAlist_n,tBlist_n,qAlist_n,qBlist_n,eventID = getPlotParams(inputFile,eventID,pulses)
 eventView(xAlist,yAlist,xBlist,yBlist,xA_unhit,yA_unhit,xB_unhit,yB_unhit,tlist,tAlist_n,tBlist_n,qAlist_n,qBlist_n,eventID)
-
-inputFile = "/home/enpaudel/icecube/triggerStudy/simFilesTest/verticalFe.i3.gz"
-eventID = 741466
-xAlist,yAlist,xBlist,yBlist,xA_unhit,yA_unhit,xB_unhit,yB_unhit,tlist,tAlist_n,tBlist_n,qAlist_n,qBlist_n,eventID = getPlotParams(inputFile,eventID,pulses)
-eventView(xAlist,yAlist,xBlist,yBlist,xA_unhit,yA_unhit,xB_unhit,yB_unhit,tlist,tAlist_n,tBlist_n,qAlist_n,qBlist_n,eventID)
-
-     

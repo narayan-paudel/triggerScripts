@@ -85,14 +85,14 @@ tray.AddModule("I3Reader","reader",
               # filenameList=inputList[0],
               # filename=GCD,
               )
-# tray.AddModule(TriggerRate, "rT",
-#             # GCD=GCD,
-#             # Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
-#             )
-tray.AddModule(selectIceTopTrigger, "ITTrig",
+tray.AddModule(TriggerRate, "rT",
             # GCD=GCD,
-            Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
+            # Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
             )
+# tray.AddModule(selectIceTopTrigger, "ITTrig",
+#             # GCD=GCD,
+#             Streams=[icetray.I3Frame.DAQ,icetray.I3Frame.Physics]
+#             )
 
 # tray.AddModule("I3Writer","i3writer",
 #             filename=str(outputDir)+filename.split("/")[-1].split(".")[0] + ".i3.gz",
