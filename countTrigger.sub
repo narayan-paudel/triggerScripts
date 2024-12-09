@@ -8,7 +8,7 @@ Log        = /scratch/enpaudel/log/countTrigPFFilt.log
 Output     = /data/user/enpaudel/triggerStudy/log/countTrigPFFilt.out
 Error      = /data/user/enpaudel/triggerStudy/log/countTrigPFFilt.err
 request_cpus = 1
-request_memory = 2GB
+request_memory = 10GB
 request_disk = 1GB
 #request_gpus = 1
 #should_transfer_files   = IF_NEEDED
@@ -19,5 +19,5 @@ request_disk = 1GB
 ##long job
 priority = 100000
 #set arguments to executable
-arguments = /data/sim/IceTop/2023/generated/untriggered/run2023/GCD/PFGCD_Run00138683_Subrun00000000.i3.gz /data/exp/IceCube/2023/filtered/PFFilt/1214/PFFilt_PhysicsFiltering_Run00138683_Subrun00000000_00000095.tar.bz2 
+arguments = /data/sim/IceTop/2023/generated/untriggered/run2023/GCD/PFGCD_Run00139836_Subrun00000000.i3.gz /data/exp/IceCube/2024/filtered/PFFilt/0905/PFFilt_PhysicsFiltering_Run00139836_Subrun00000000_00000383.tar.bz2 
 queue 1

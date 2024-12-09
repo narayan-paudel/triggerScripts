@@ -60,7 +60,7 @@ class TriggerRate(icetray.I3Module):
             self.HG7_HLCTriggerEvents += 1
 
   def Finish(self):
-    with open('/data/user/enpaudel/triggerStudy/rateFilesEvents/triggerEventRate{}.txt'.format(self.runID), 'a+') as f:
+    with open('/data/user/enpaudel/triggerStudy/rateFilesEvents/triggerEventRate2024Test{}.txt'.format(self.runID), 'a+') as f:
     # with open('/data/user/enpaudel/triggerStudy/triggerEventRateForbush{}.txt'.format(self.runID), 'a+') as f:
       f.write('{} {} {} {} {} {}'.format(self.runID,sub_run,self.HG7TriggerEvents,self.HLCTriggerEvents,self.HG7_NoHLCTriggerEvents,self.HG7_HLCTriggerEvents))
       f.write("\n")

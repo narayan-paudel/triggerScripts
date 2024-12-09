@@ -89,8 +89,8 @@ if weekwise:
     runThisWeek = [irun for irun in runObjList if startRun <= irun.runID < endRun]
     HG7rateList = [irun.HG7rate for irun in runThisWeek]
     HG7rateFRTList = [irun.HG7rateFRT for irun in runThisWeek]
-    ax.errorbar(iweek,np.mean(HG7rateList),yerr=np.std(HG7rateList)/np.sqrt(len(HG7rateList)),fmt="s",ls="-",lw = 2.5,ms=12,c=colorsCustom[0],label='_nolegend_' if i>0 else r"{}".format("data"),alpha=0.8)
-    ax.errorbar(iweek,np.mean(HG7rateFRTList),yerr=np.std(HG7rateFRTList)/np.sqrt(len(HG7rateFRTList)),fmt="o",ls="-",lw = 2.5,ms=12,c=colorsCustom[2],label='_nolegend_' if i>0 else r"{}".format("FRT"),alpha=0.8)
+    ax.errorbar(iweek,np.mean(HG7rateList),yerr=np.std(HG7rateList)/np.sqrt(len(HG7rateList)),fmt="s",mfc="None",mew=3.0,ls="-",lw = 2.5,ms=13,c=colorsCustom[0],label='_nolegend_' if i>0 else r"{}".format("data"),alpha=0.8)
+    ax.errorbar(iweek,np.mean(HG7rateFRTList),yerr=np.std(HG7rateFRTList)/np.sqrt(len(HG7rateFRTList)),fmt="o",mfc="None",mew=3.0,ls="-",lw = 2.5,ms=13,c=colorsCustom[2],label='_nolegend_' if i>0 else r"{}".format("FRT"),alpha=0.8)
   ax.tick_params(axis='both',which='both', direction='in', labelsize=20, pad=8)
   ax.set_ylabel("rate [Hz]", fontsize=20)
   ax.set_xlabel("week", fontsize=20)

@@ -1751,6 +1751,132 @@ plotVerticalTrigEfficiencySelect(evtList,10**np.linspace(5.0, 7.8, 29),triggerTy
 plotVerticalTrigEfficiencySelect(evtList,10**np.linspace(5.0, 7.8, 29),triggerTypes=triggerListSelectDict.keys(),containment=True,wilson=True,weighting=False)
 
 
+
+def plotCountHLCTrigEfficiencySelect(evtList,energyBins,triggerTypes,containment,wilson,weighting):
+  '''
+  plots trigger efficiency in different zenith bins
+  '''
+  print("plotting trigger efficiency for ",triggerTypes)
+  if containment == True:
+    # evtList = containedEvents(evtList,640)
+    evtList = containedEvents(evtList,410)
+  fig = plt.figure(figsize=(8,5))
+  gs = gridspec.GridSpec(nrows=1,ncols=1)
+  ax = fig.add_subplot(gs[0])
+  colorIter = iter(colorsCustom+colorsCustom)
+  # colorIter = iter(colorsList)
+  n_inclinedBins = 2
+  iHLCDict = {-1:"All IT7HG",0:"0 HLC",2:"2 HLC",4:"4 HLC",6:"6+ HLC"}
+  for ntrig,itrigger in enumerate(triggerTypes):
+    # for izen in [(np.arcsin(np.sqrt(sin2ZenBins[0])),np.arcsin(np.sqrt(sin2ZenBins[1]))),
+    for izen in [(np.arcsin(np.sqrt(sin2ZenBins[-(n_inclinedBins+1)])),np.arcsin(np.sqrt(sin2ZenBins[-1])))]:
+      lowEdge,highEdge = izen
+      for inHLC in [-1,0,2,4,6]:
+        evtZenBin = [ievt for ievt in evtList if lowEdge <= ievt.zenith < highEdge]
+        energyList = []
+        efficiencyList = []
+        wilsonMeanList = []
+        errorListLow = []
+        errorListHigh = []
+        # ncolor = colorsCustom2[ntrig]
+        ncolor = multiple_color[inHLC+1]
+        for ebin, ebinStart in enumerate(energyBins[:-1]):
+          lowEdge_E = energyBins[ebin]
+          highEdge_E = energyBins[ebin+1]
+          evtEBin = [ievt for ievt in evtZenBin if lowEdge_E <= ievt.energy < highEdge_E]
+          # totalEvts = len(evtEBin)
+          weights = [ievt.H4aWeight for ievt in evtEBin]
+          if weighting == False:
+            totalEvts = len(evtEBin)
+            # sta3 = [ievt.ITSMTTriggered*ievt.H4aWeight for ievt in evtEBin]
+            if inHLC == -1:
+              triggerList = [ievt for ievt in evtEBin if abs(int(getattr(ievt,str(itrigger)))-1)<0.01]
+            elif inHLC == 6:
+              triggerList = [ievt for ievt in evtEBin if abs(int(getattr(ievt,str(itrigger)))-1)<0.01 and abs(int(getattr(ievt,str(nHLC))))>5]
+            elif inHLC in [0,2,4]:
+              triggerList = [ievt for ievt in evtEBin if abs(int(getattr(ievt,str(itrigger)))-1)<0.01 and abs(int(getattr(ievt,str(nHLC))))==inHLC]
+            trigEvts = len(triggerList)
+            trigEff = triggerEfficiency(trigEvts,totalEvts)
+            nPass = trigEvts
+            nFail = totalEvts-trigEvts
+          if weighting == True:
+            totalEvts = sum(weights)
+            if inHLC == -1:
+              triggerList = [ievt.H4aWeight for ievt in evtEBin if abs(int(getattr(ievt,str(itrigger)))-1)<0.01]
+            elif inHLC == 6:
+              triggerList = [ievt.H4aWeight for ievt in evtEBin if abs(int(getattr(ievt,str(itrigger)))-1)<0.01 and abs(int(getattr(ievt,"nHLCVEM")))>5]
+            elif inHLC in [0,2,4]:
+              triggerList = [ievt.H4aWeight for ievt in evtEBin if abs(int(getattr(ievt,str(itrigger)))-1)<0.01 and abs(int(getattr(ievt,"nHLCVEM")))==inHLC]
+
+            trigEvts = sum(triggerList)
+            trigEff = triggerEfficiency(trigEvts,totalEvts)
+            nPass = trigEff * len(weights)
+            nFail = (1-trigEff) * len(weights)
+          efficiencyList.append(trigEff)
+          #####################################################################################
+          #binomial interval
+          # wilsonErr = binomial_proportion(nsel=len(triggerList), ntot=totalEvts,coverage=0.68)
+          #####################################################################################
+          wilsonM = WilsonMean(nPass=nPass, nFail=nFail)
+          wilsonErr = WilsonError(nPass=nPass, nFail=nFail)
+          ErrorH = wilsonM + wilsonErr - trigEff
+          ErrorL = trigEff - (wilsonM - wilsonErr)
+          # print("wilson calculation",totalEvts,len(triggerList),trigEff,wilsonErr)
+          wilsonMeanList.append(wilsonM)
+          errorListLow.append(ErrorL)
+          errorListHigh.append(ErrorH)
+          energyList.append(np.log10((lowEdge_E+highEdge_E)/2.0*10**9))
+        # ax.errorbar(energyList,efficiencyList,yerr=np.asarray([errorListLow,errorListHigh]),fmt="o",ls="-",lw = 2.5,c=ncolor,label=str(triggerListSelectDict[itrigger]),alpha=1)
+        # ax.errorbar(energyList,wilsonMeanList,yerr=np.asarray([errorListLow,errorListHigh]),fmt="none",lw=2.5,c=ncolor,label=str(triggerListSelectDict[itrigger]),alpha=1)
+        # ax.errorbar(energyList,efficiencyList,yerr=np.asarray([errorListLow,errorListHigh]),fmt=markers2[ntrig],ls="-",lw=2.5,c=ncolor,label=str(triggerListSelectDict[itrigger]),alpha=1)
+        ax.errorbar(energyList,efficiencyList,yerr=np.asarray([errorListLow,errorListHigh]),fmt=markers2[ntrig],ls="-",lw=2.5,c=ncolor,label=str(iHLCDict[inHLC]),alpha=1)
+        # ax.plot(energyList,efficiencyList,".",ls='-',lw = 2.5,c=ncolor,alpha=1)
+  ax.tick_params(axis='both',which='both', direction='in', labelsize=22)
+  ax.set_xlabel(r"log$_{10}$ (E [eV])", fontsize=22)
+  ax.set_ylabel(r"trigger efficiency", fontsize=22)
+  # ax.set_title("OfflineIceTop"+LCType+"TankPulses",fontsize=24)
+  ax.text(0.70,0.26,s=r"{0:.1f}$^{{\circ}}$ $\leq$ $\theta$ $<${1:.1f}$^{{\circ}}$".format(np.arcsin(np.sqrt(sin2ZenBins[-(n_inclinedBins+1)]))*180.0/np.pi,np.arcsin(np.sqrt(sin2ZenBins[-1]))*180.0/np.pi),size=14,horizontalalignment='left',verticalalignment='center', transform=ax.transAxes)
+  # ax.text(0.12,0.7,s=r"snow: {0}".format("2021/03"),size=13,horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+  ax.text(0.70,0.18,s=r"snow: {0}".format("2021/03"),size=14,horizontalalignment='left',verticalalignment='center', transform=ax.transAxes)
+  # ax.set_xscale('log')
+  # ax.text(0.62,0.5,s="IceCube Preliminary",color="red",size=14,weight='bold',horizontalalignment='left',verticalalignment='center', transform=ax.transAxes)
+  ax.axhline(y=0.98,xmin=0,xmax=1,color="gray",linestyle="--",lw=2.0)
+  ax.set_ylim(0.0,1.05)
+  # ax.set_ylim(0.9,1.01)
+  # ax.set_xlim(14,17)
+  ax.set_xlim(14,16.8)
+  # ax.set_xlim(15.8,17)
+  # ax.yaxis.set_minor_locator(MultipleLocator(100))
+  ax.xaxis.set_minor_locator(MultipleLocator(0.1))
+  ax.grid(True,alpha=0.5)
+  # l1=ax.legend(loc="upper left",fontsize=12)
+  l1=ax.legend(ncol=2,loc=(0.01,0.70),fontsize=13)
+  # l1=ax.legend(loc="upper left",fontsize=12)
+  point_dash = mlines.Line2D([], [], linestyle='--',lw=2.0,color='gray', marker='',markersize=5, label=r"0.98")
+  # l2 = ax.legend(handles=[point_dash],loc="center left",fontsize=13,framealpha=0.1,handlelength=1.4,handletextpad=0.5)
+  l2 = ax.legend(handles=[point_dash],fontsize=14,framealpha=0.1,handlelength=1.4,handletextpad=0.5,bbox_to_anchor=(0.18,0.7),bbox_transform=ax.transAxes,prop={"family":"serif","size":14})
+  ax.add_artist(l1)
+  ax.add_artist(l2)
+  plt.savefig(plotFolder+"/trigCountHLCcont"+str(containment)+"Weight"+str(weighting)+"EfficiencySelect.pdf",transparent=False,bbox_inches='tight')
+  plt.savefig(plotFolder+"/trigCountHLCcont"+str(containment)+"Weight"+str(weighting)+"EfficiencySelect.png",transparent=False,bbox_inches='tight')
+  plt.close()
+
+# plotVerticalTrigEfficiencySelect(evtList,energyBins,triggerTypes=triggerListSelect,containment=True)
+# plotVerticalTrigEfficiencySelect(evtList,10**np.linspace(5.0, 8.0, 30),triggerTypes=triggerListSelectDict.keys(),containment=True)
+plotCountHLCTrigEfficiencySelect(evtList,10**np.linspace(5.0, 7.8, 29),triggerTypes=["HG7_3"],containment=True,wilson=True,weighting=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
 def plotInclinedTrigEfficiencySelect(evtList,energyBins,triggerTypes,containment,wilson,weighting):
   '''
   plots trigger efficiency in different zenith bins
